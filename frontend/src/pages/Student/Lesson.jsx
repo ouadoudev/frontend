@@ -497,7 +497,7 @@ const Lesson = () => {
               <CardHeader className="relative p-0 rounded-md border border-opacity-10 overflow-hidden">
                 <video
                   ref={videoRef}
-                  className="w-full max-h-[250px] sm:max-h-[360px] md:max-h-[502px] rounded-md bg-muted object-contain"
+                  className="w-full lg:max-h-[250px]  rounded-md bg-muted object-contain"
                   controls
                   controlsList="nodownload"
                   preload="metadata"
