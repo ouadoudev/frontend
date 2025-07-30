@@ -538,10 +538,6 @@
 
 // export default CreateCourseForm;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bd0f9bb8235f216e63b369a2b360d01910837d0e
 import { useEffect, useState, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { createCourse } from "@/store/courseSlice"
