@@ -713,12 +713,9 @@ import { fetchLesson, fetchRelatedLessons } from "../../store/lessonSlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { updateProgress } from "@/store/courseProgressSlice";
-import ReviewForm from "@/components/ReviewForm";
-import ReviewList from "@/components/ReviewList";
-import { fetchReviews } from "@/store/reviewSlice";
 import { fetchLessonQuestions } from "@/store/questionSlice";
 import DiscussionForum from "@/components/DiscussionForum";
-import QuizComponent from "@/components/QuizComponent";
+import QuizComponent from "@/components/dashboard/quiz/QuizComponent";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -755,7 +752,6 @@ const Lesson = () => {
     dispatch(fetchLesson(id));
     dispatch(fetchRelatedLessons(id));
     dispatch(fetchLessonQuestions(id));
-    dispatch(fetchReviews({ lessonId: id }));
   }, [dispatch, id]);
 
   useEffect(() => {
@@ -1059,20 +1055,6 @@ const Lesson = () => {
               style={{ maxHeight: "680px", overflowY: "auto" }}
             >
               <DiscussionForum lessonId={lesson._id} />
-            </Card>
-            <Card
-              className="flex flex-col bg-transparent"
-              style={{ maxHeight: "470px", overflowY: "auto" }}
-            >
-              <CardHeader>
-                <CardTitle>Reviews:</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ReviewForm lessonId={lesson._id} />
-              </CardContent>
-              <CardContent>
-                <ReviewList lessonId={lesson._id} />
-              </CardContent>
             </Card>
           </div>
         </div>
