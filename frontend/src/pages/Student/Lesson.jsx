@@ -332,7 +332,7 @@
 // };
 
 // export default Lesson;
-
+import { isMobile } from "react-device-detect";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -380,7 +380,6 @@ const Lesson = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const videoRef = useRef(null);
   const [isPiPActive, setIsPiPActive] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Consider screens <= 768px as mobile
 
   useEffect(() => {
     dispatch(fetchLesson(id));
@@ -408,16 +407,6 @@ const Lesson = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isPiPActive]);
-
-  // Handle window resize to update isMobile state
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const handlePlayLesson = async (lessonId) => {
     try {
@@ -477,6 +466,9 @@ const Lesson = () => {
     }
   };
 
+  // Determine PDF page width based on device type
+  const pdfPageWidth = isMobile ? 300 : 800; // Adjust width for mobile vs. desktop
+
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center h-64">
@@ -514,7 +506,7 @@ const Lesson = () => {
                 </h2>
 
                 <div className="space-y-2">
-                  {lesson.pdf && lesson.pdf.url && !isMobile ? (
+                  {lesson.pdf && lesson.pdf.url ? (
                     <div className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white">
                       <ScrollArea className="h-[600px] p-4 bg-gray-50 rounded-md">
                         <Document
@@ -527,27 +519,11 @@ const Lesson = () => {
                             <Page
                               key={`page_${index + 1}`}
                               pageNumber={index + 1}
-                              width={Math.min(window.innerWidth - 48, 800)}
+                              width={pdfPageWidth} // Use dynamic width based on isMobile
                             />
                           ))}
                         </Document>
                       </ScrollArea>
-                    </div>
-                  ) : lesson.pdf && lesson.pdf.url && isMobile ? (
-                    <div className="mt-6 p-4 bg-gray-50 rounded-md text-center">
-                      <p className="text-gray-600">
-                        PDF viewing is not available on mobile devices. Please
-                        download the PDF to view it.
-                      </p>
-                      <Button
-                        onClick={handleDownload}
-                        variant="outline"
-                        size="sm"
-                        className="mt-4 flex items-center gap-2 mx-auto"
-                      >
-                        <Download className="w-4 h-4" />
-                        Download PDF
-                      </Button>
                     </div>
                   ) : (
                     <ReactQuill
