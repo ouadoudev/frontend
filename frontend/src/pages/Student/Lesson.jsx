@@ -493,25 +493,26 @@ const Lesson = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 w-full">
           {lesson && (
+    <div className="w-full rounded-md overflow-hidden mb-4">
+      <video
+        ref={videoRef}
+        className="w-full max-h-[502px] rounded-md bg-muted"
+        controls
+        controlsList="nodownload"
+        preload="metadata"
+        onPlay={() => setIsPiPActive(false)}
+      >
+        <source src={lesson.video.url} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
             <Card className="mb-6 border-hidden">
               <CardHeader className="relative p-0 rounded-md border border-opacity-10 overflow-hidden">
-                <video
-                  ref={videoRef} 
-                  className="w-full max-h-[502px] rounded-md bg-muted"
-                  controls
-                  controlsList="nodownload"
-                  preload="metadata"
-                  onPlay={() => setIsPiPActive(false)} 
-                >
-                  <source src={lesson.video.url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <h2 className="text-xl sm:text-2xl md:text-3xl text-center font-bold px-2">
+                          <h2 className="text-xl sm:text-2xl md:text-3xl text-center font-bold px-2">
                   {lesson.title}
                 </h2>
-
+              </CardHeader>
+              <CardContent className="pt-4">
                 <div className="space-y-2">
                   {isMobile ? (
                     <ReactQuill
