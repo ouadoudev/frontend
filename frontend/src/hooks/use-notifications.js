@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchUserNotifications, addNotification, clearError } from "@/store/notificationSlice"
