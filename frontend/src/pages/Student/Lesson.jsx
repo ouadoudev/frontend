@@ -711,12 +711,6 @@ import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchLesson, fetchRelatedLessons } from "../../store/lessonSlice";
-import { updateProgress } from "@/store/courseProgressSlice";
-import { fetchLessonQuestions } from "@/store/questionSlice";
-import DiscussionForum from "@/components/DiscussionForum";
-import QuizComponent from "@/components/dashboard/quiz/QuizComponent";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import {
   Card,
   CardContent,
@@ -725,20 +719,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { updateProgress } from "@/store/courseProgressSlice";
+import { fetchLessonQuestions } from "@/store/questionSlice";
+import DiscussionForum from "@/components/DiscussionForum";
+import QuizComponent from "@/components/dashboard/quiz/QuizComponent";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { BookOpenCheck, BrainCircuit, Download } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
-import katex from "katex";
-import "katex/dist/katex.min.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
 window.katex = katex;
 
 const Lesson = () => {
@@ -748,13 +750,13 @@ const Lesson = () => {
   const { lesson, relatedLessons, error, status } = useSelector(
     (state) => state.lesson
   );
+  const [numPages, setNumPages] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const videoRef = useRef(null);
   const [isPiPActive, setIsPiPActive] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [numPages, setNumPages] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const isMobile = window.innerWidth <= 768;
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchLesson(id));
@@ -764,24 +766,63 @@ const Lesson = () => {
 
   useEffect(() => {
     const handleScroll = async () => {
-      if (
-        document.pictureInPictureEnabled &&
-        videoRef.current &&
-        !isPiPActive &&
-        !videoRef.current.paused &&
-        window.scrollY > 200
-      ) {
-        try {
-          await videoRef.current.requestPictureInPicture();
-          setIsPiPActive(true);
-        } catch (error) {
-          console.warn("PiP unsupported:", error);
+      if (!videoRef.current) return;
+
+      const scrollY = window.scrollY;
+
+      if (window.innerWidth <= 768) {
+        // Collapse video on mobile if scrolled more than 150px
+        setIsCollapsed(scrollY > 150);
+      } else {
+        // Desktop: picture-in-picture mode if scrolled beyond 200px and playing
+        if (
+          !isPiPActive &&
+          !videoRef.current.paused &&
+          scrollY > 200 &&
+          document.pictureInPictureEnabled
+        ) {
+          try {
+            await videoRef.current.requestPictureInPicture();
+            setIsPiPActive(true);
+          } catch (error) {
+            console.error("Error entering PiP mode:", error);
+          }
         }
       }
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isPiPActive]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Listen fullscreen change to sync state (handle Esc etc.)
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+    };
+  }, []);
+
+  const handlePlayLesson = async (lessonId) => {
+    try {
+      setIsPiPActive(false);
+      navigate(`/lessons/${lessonId}`);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
 
   const handleCompleteLesson = async () => {
     try {
@@ -794,11 +835,6 @@ const Lesson = () => {
     }
   };
 
-  const handlePlayLesson = (lessonId) => {
-    setIsPiPActive(false);
-    navigate(`/lessons/${lessonId}`);
-  };
-
   const formatDuration = (seconds) => {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
@@ -808,18 +844,28 @@ const Lesson = () => {
     ].join(":");
   };
 
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
+  };
+
   const handleDownload = async () => {
     try {
-      const response = await fetch(lesson.pdf.url, { mode: "cors" });
+      const response = await fetch(lesson.pdf.url, {
+        mode: "cors",
+      });
+
       if (!response.ok) throw new Error("Failed to fetch the file");
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = `${lesson.title || "lesson"}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download failed:", error);
@@ -829,7 +875,7 @@ const Lesson = () => {
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -839,175 +885,230 @@ const Lesson = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      {lesson && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left section */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader className="p-0 rounded-md overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="w-full max-h-[250px] sm:max-h-[360px] md:max-h-[502px] object-contain bg-muted"
-                  controls
-                  controlsList="nodownload"
-                  preload="metadata"
-                  onPlay={() => setIsPiPActive(false)}
-                >
-                  <source src={lesson.video.url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </CardHeader>
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 w-full">
+          {lesson && (
+            <>
+              {/* Video container with sticky/collapsible behavior */}
+              <div
+                className={`z-30 transition-all duration-300 ease-in-out bg-muted rounded-md overflow-hidden mb-4 ${
+                  isMobile
+                    ? isCollapsed
+                      ? "fixed top-0 left-0 w-full h-20"
+                      : "relative w-full max-h-[502px]"
+                    : "sticky top-4"
+                }`}
+                style={{ boxShadow: "0 2px 8px rgb(0 0 0 / 0.1)" }}
+              >
+                <div className="relative w-full h-full">
+                  <video
+                    ref={videoRef}
+                    className={`w-full h-full object-cover ${
+                      isMobile && isCollapsed ? "rounded-none" : "rounded-md"
+                    }`}
+                    controls
+                    controlsList="nodownload"
+                    preload="metadata"
+                    onPlay={() => setIsPiPActive(false)}
+                  >
+                    <source src={lesson.video.url} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
 
-              <CardContent className="pt-4">
-                <h2 className="text-xl sm:text-2xl text-center font-bold">
-                  {lesson.title}
-                </h2>
+                  {/* Fullscreen Toggle Button */}
+                  <button
+                    onClick={() => {
+                      const video = videoRef.current;
+                      if (!video) return;
 
-                {lesson.pdf?.url ? (
-                  <div className="mt-6 border rounded-md shadow-sm bg-white p-4">
-                    <Document
-                      file={lesson.pdf.url}
-                      onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                      loading={<p>Chargement du PDF…</p>}
-                      error={<p>Erreur de chargement du PDF.</p>}
-                    >
-                      <Page
-                        pageNumber={currentPage}
-                        width={Math.min(window.innerWidth - 48, 800)}
+                      if (!document.fullscreenElement) {
+                        video.requestFullscreen();
+                        setIsFullscreen(true);
+                      } else {
+                        document.exitFullscreen();
+                        setIsFullscreen(false);
+                      }
+                    }}
+                    className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded hover:bg-black transition"
+                  >
+                    {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Lesson Content Card */}
+              <Card className="border-hidden mb-6">
+                <CardContent className="pt-4">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl text-center font-bold px-2">
+                    {lesson.title}
+                  </h2>
+
+                  <div className="space-y-2">
+                    {isMobile ? (
+                      <ReactQuill
+                        theme="snow"
+                        value={lesson.content}
+                        readOnly
+                        modules={{ toolbar: false, formula: true }}
+                        formats={[
+                          "header",
+                          "font",
+                          "size",
+                          "bold",
+                          "italic",
+                          "underline",
+                          "strike",
+                          "color",
+                          "background",
+                          "align",
+                          "link",
+                          "image",
+                          "video",
+                          "list",
+                          "bullet",
+                          "formula",
+                          "direction",
+                        ]}
+                        className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
                       />
-                    </Document>
-                    {isMobile && numPages > 1 && (
-                      <div className="flex justify-between items-center mt-2">
-                        <Button
-                          disabled={currentPage === 1}
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(1, prev - 1))
-                          }
-                        >
-                          Précédente
-                        </Button>
-                        <span>
-                          Page {currentPage} sur {numPages}
-                        </span>
-                        <Button
-                          disabled={currentPage === numPages}
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(numPages, prev + 1)
-                            )
-                          }
-                        >
-                          Suivante
-                        </Button>
+                    ) : lesson.pdf?.url ? (
+                      <div className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white">
+                        <ScrollArea className="h-[600px] p-4 bg-gray-50 rounded-md">
+                          <Document
+                            file={lesson.pdf.url}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            loading={<p>Loading PDF...</p>}
+                            error={<p>Failed to load PDF.</p>}
+                          >
+                            {Array.from(new Array(numPages), (_, index) => (
+                              <Page
+                                key={`page_${index + 1}`}
+                                pageNumber={index + 1}
+                                width={Math.min(window.innerWidth - 48, 800)}
+                              />
+                            ))}
+                          </Document>
+                        </ScrollArea>
                       </div>
+                    ) : (
+                      <ReactQuill
+                        theme="snow"
+                        value={lesson.content}
+                        readOnly
+                        modules={{ toolbar: false, formula: true }}
+                        formats={[
+                          "header",
+                          "font",
+                          "size",
+                          "bold",
+                          "italic",
+                          "underline",
+                          "strike",
+                          "color",
+                          "background",
+                          "align",
+                          "link",
+                          "image",
+                          "video",
+                          "list",
+                          "bullet",
+                          "formula",
+                          "direction",
+                        ]}
+                        className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
+                      />
                     )}
                   </div>
-                ) : (
-                  <ReactQuill
-                    theme="snow"
-                    value={lesson.content}
-                    readOnly
-                    modules={{ toolbar: false, formula: true }}
-                    formats={[
-                      "header",
-                      "bold",
-                      "italic",
-                      "underline",
-                      "strike",
-                      "list",
-                      "bullet",
-                      "formula",
-                      "link",
-                      "image",
-                      "video",
-                    ]}
-                    className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
-                  />
-                )}
-              </CardContent>
+                </CardContent>
 
-              <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 p-4 border-t">
-                <Button
-                  onClick={handleCompleteLesson}
-                  className="flex items-center gap-2 w-full sm:w-auto"
-                  variant="outline"
-                  size="sm"
-                >
-                  <BookOpenCheck className="w-4 h-4" />
-                  Marquer comme terminée
-                </Button>
-
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 w-full sm:w-auto"
-                    >
-                      <BrainCircuit className="w-4 h-4" />
-                      Lancer le quiz
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-h-[90vh] overflow-y-auto">
-                    <QuizComponent lessonId={id} />
-                  </DialogContent>
-                </Dialog>
-
-                {lesson.pdf?.url && (
+                <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-2 p-4 border-t border-gray-200">
                   <Button
-                    onClick={handleDownload}
+                    className="flex items-center gap-2 w-full sm:w-auto justify-center"
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 w-full sm:w-auto"
+                    onClick={handleCompleteLesson}
                   >
-                    <Download className="w-4 h-4" />
-                    Télécharger le support
+                    <BookOpenCheck className="w-4 h-4" />
+                    Marquer comme terminée
                   </Button>
-                )}
-              </CardFooter>
-            </Card>
 
-            {/* Related lessons */}
-            <Card>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 w-full sm:w-auto justify-center"
+                      >
+                        <BrainCircuit className="w-4 h-4" />
+                        Lancer le quiz
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <QuizComponent lessonId={id} />
+                    </DialogContent>
+                  </Dialog>
+
+                  {lesson.pdf?.url && (
+                    <Button
+                      onClick={handleDownload}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 w-full sm:w-auto justify-center"
+                    >
+                      <Download className="w-4 h-4" />
+                      Télécharger le support
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            </>
+          )}
+
+          {/* Related Lessons */}
+          {lesson && (
+            <Card className="mb-6">
               <CardHeader>
-                <CardTitle className="text-center">
-                  Poursuivre l’apprentissage
+                <CardTitle className="mx-auto">
+                  Poursuivre l’Apprentissage
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {relatedLessons?.length ? (
+                {relatedLessons && relatedLessons.length > 0 ? (
                   <Carousel>
                     <CarouselContent>
-                      {relatedLessons.map((rl) => (
+                      {relatedLessons.map((relatedLesson) => (
                         <CarouselItem
-                          key={rl._id}
-                          className="basis-full sm:basis-1/2 md:basis-1/3"
+                          key={relatedLesson._id}
+                          className="basis-[80%] sm:basis-1/2 md:basis-1/3"
                         >
                           <Card className="flex flex-col">
                             <div className="relative group">
                               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
-                                  className="bg-blue-500 text-white hover:bg-blue-600"
-                                  onClick={() => handlePlayLesson(rl._id)}
+                                  className="bg-blue-500 text-white hover:bg-blue-600 rounded-xl px-4 py-2"
+                                  onClick={() =>
+                                    handlePlayLesson(relatedLesson._id)
+                                  }
                                 >
                                   Play
                                 </Button>
                               </div>
                               <CardHeader className="p-0">
                                 <img
-                                  src={rl.thumbnail?.url}
-                                  alt={rl.title}
+                                  src={relatedLesson.thumbnail?.url}
+                                  alt={relatedLesson.title}
                                   className="w-full h-32 object-cover rounded-t-lg"
                                 />
                               </CardHeader>
                             </div>
-                            <CardContent className="p-4">
+                            <CardContent className="flex-grow p-4">
                               <h3 className="text-sm font-semibold">
-                                {rl.title}
+                                {relatedLesson.title}
                               </h3>
                               <span className="text-xs">
-                                {formatDuration(rl.video.duration)} min
+                                {formatDuration(relatedLesson.video.duration)}{" "}
+                                min
                               </span>
                             </CardContent>
                           </Card>
@@ -1017,23 +1118,25 @@ const Lesson = () => {
                   </Carousel>
                 ) : (
                   <p className="text-center text-gray-500">
-                    Aucune leçon en relation
+                    Aucune leçon en relation pour le moment
                   </p>
                 )}
               </CardContent>
             </Card>
-          </div>
+          )}
+        </div>
 
-          {/* Right sidebar */}
-          <div>
+        <div>
+          {lesson && (
             <Card className="lg:sticky lg:top-4 h-[560px] lg:h-[680px]">
               <DiscussionForum lessonId={lesson._id} />
             </Card>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
 export default Lesson;
+
