@@ -339,7 +339,6 @@ import { fetchLesson, fetchRelatedLessons } from "../../store/lessonSlice";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -379,7 +378,7 @@ const Lesson = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const videoRef = useRef(null);
   const [isPiPActive, setIsPiPActive] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1280); // Consider screens <= 768px as mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1280);
 
   useEffect(() => {
     dispatch(fetchLesson(id));
@@ -408,7 +407,6 @@ const Lesson = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isPiPActive]);
 
-  // Handle window resize to update isMobile state
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -441,7 +439,6 @@ const Lesson = () => {
   const formatDuration = (seconds) => {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-
     return [
       minutes.toString().padStart(2, "0"),
       secs.toString().padStart(2, "0"),
@@ -493,146 +490,147 @@ const Lesson = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 w-full">
           {lesson && (
-    <div className="w-full rounded-md overflow-hidden mb-4">
-      <video
-        ref={videoRef}
-        className="w-full max-h-[502px] rounded-md bg-muted"
-        controls
-        controlsList="nodownload"
-        preload="metadata"
-        onPlay={() => setIsPiPActive(false)}
-      >
-        <source src={lesson.video.url} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    </div>
-            <Card className="mb-6 border-hidden">
-              <CardHeader className="relative p-0 rounded-md border border-opacity-10 overflow-hidden">
-                          <h2 className="text-xl sm:text-2xl md:text-3xl text-center font-bold px-2">
-                  {lesson.title}
-                </h2>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="space-y-2">
-                  {isMobile ? (
-                    <ReactQuill
-                      id="lesson-content"
-                      theme="snow"
-                      value={lesson.content}
-                      readOnly
-                      modules={{ toolbar: false, formula: true }}
-                      formats={[
-                        "header",
-                        "font",
-                        "size",
-                        "bold",
-                        "italic",
-                        "underline",
-                        "strike",
-                        "color",
-                        "background",
-                        "align",
-                        "link",
-                        "image",
-                        "video",
-                        "list",
-                        "bullet",
-                        "formula",
-                        "direction",
-                      ]}
-                      className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
-                    />
-                  ) : lesson.pdf && lesson.pdf.url ? (
-                    <div className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white">
-                      <ScrollArea className="h-[600px] p-4 bg-gray-50 rounded-md">
-                        <Document
-                          file={lesson.pdf.url}
-                          onLoadSuccess={onDocumentLoadSuccess}
-                          loading={<p>Loading PDF...</p>}
-                          error={<p>Failed to load PDF.</p>}
-                        >
-                          {Array.from(new Array(numPages), (_, index) => (
-                            <Page
-                              key={`page_${index + 1}`}
-                              pageNumber={index + 1}
-                              width={Math.min(window.innerWidth - 48, 800)}
-                            />
-                          ))}
-                        </Document>
-                      </ScrollArea>
-                    </div>
-                  ) : (
-                    <ReactQuill
-                      id="lesson-content"
-                      theme="snow"
-                      value={lesson.content}
-                      readOnly
-                      modules={{ toolbar: false, formula: true }}
-                      formats={[
-                        "header",
-                        "font",
-                        "size",
-                        "bold",
-                        "italic",
-                        "underline",
-                        "strike",
-                        "color",
-                        "background",
-                        "align",
-                        "link",
-                        "image",
-                        "video",
-                        "list",
-                        "bullet",
-                        "formula",
-                        "direction",
-                      ]}
-                      className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
-                    />
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-2 p-4 border-t border-gray-200">
-                <Button
-                  className="flex items-center gap-2 w-full sm:w-auto justify-center"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCompleteLesson}
+            <div className="mb-6">
+              <div className="w-full rounded-md overflow-hidden mb-4">
+                <video
+                  ref={videoRef}
+                  className="w-full max-h-[502px] rounded-md bg-muted"
+                  controls
+                  controlsList="nodownload"
+                  preload="metadata"
+                  onPlay={() => setIsPiPActive(false)}
                 >
-                  <BookOpenCheck className="w-4 h-4" />
-                  Marquer comme terminée
-                </Button>
+                  <source src={lesson.video.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
 
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
+              <Card className="border-hidden">
+                <CardContent className="pt-4">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl text-center font-bold px-2">
+                    {lesson.title}
+                  </h2>
+
+                  <div className="space-y-2">
+                    {isMobile ? (
+                      <ReactQuill
+                        theme="snow"
+                        value={lesson.content}
+                        readOnly
+                        modules={{ toolbar: false, formula: true }}
+                        formats={[
+                          "header",
+                          "font",
+                          "size",
+                          "bold",
+                          "italic",
+                          "underline",
+                          "strike",
+                          "color",
+                          "background",
+                          "align",
+                          "link",
+                          "image",
+                          "video",
+                          "list",
+                          "bullet",
+                          "formula",
+                          "direction",
+                        ]}
+                        className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
+                      />
+                    ) : lesson.pdf?.url ? (
+                      <div className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white">
+                        <ScrollArea className="h-[600px] p-4 bg-gray-50 rounded-md">
+                          <Document
+                            file={lesson.pdf.url}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            loading={<p>Loading PDF...</p>}
+                            error={<p>Failed to load PDF.</p>}
+                          >
+                            {Array.from(new Array(numPages), (_, index) => (
+                              <Page
+                                key={`page_${index + 1}`}
+                                pageNumber={index + 1}
+                                width={Math.min(window.innerWidth - 48, 800)}
+                              />
+                            ))}
+                          </Document>
+                        </ScrollArea>
+                      </div>
+                    ) : (
+                      <ReactQuill
+                        theme="snow"
+                        value={lesson.content}
+                        readOnly
+                        modules={{ toolbar: false, formula: true }}
+                        formats={[
+                          "header",
+                          "font",
+                          "size",
+                          "bold",
+                          "italic",
+                          "underline",
+                          "strike",
+                          "color",
+                          "background",
+                          "align",
+                          "link",
+                          "image",
+                          "video",
+                          "list",
+                          "bullet",
+                          "formula",
+                          "direction",
+                        ]}
+                        className="mt-6 border border-gray-300 rounded-md shadow-sm bg-white"
+                      />
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-2 p-4 border-t border-gray-200">
+                  <Button
+                    className="flex items-center gap-2 w-full sm:w-auto justify-center"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCompleteLesson}
+                  >
+                    <BookOpenCheck className="w-4 h-4" />
+                    Marquer comme terminée
+                  </Button>
+
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 w-full sm:w-auto justify-center"
+                      >
+                        <BrainCircuit className="w-4 h-4" />
+                        Lancer le quiz
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <QuizComponent lessonId={id} />
+                    </DialogContent>
+                  </Dialog>
+
+                  {lesson.pdf?.url && (
                     <Button
+                      onClick={handleDownload}
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-2 w-full sm:w-auto justify-center"
                     >
-                      <BrainCircuit className="w-4 h-4" />
-                      Lancer le quiz
+                      <Download className="w-4 h-4" />
+                      Télécharger le support
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <QuizComponent lessonId={id} />
-                  </DialogContent>
-                </Dialog>
-
-                {lesson.pdf?.url && (
-                  <Button
-                    onClick={handleDownload}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 w-full sm:w-auto justify-center"
-                  >
-                    <Download className="w-4 h-4" />
-                    Télécharger le support
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
+                  )}
+                </CardFooter>
+              </Card>
+            </div>
           )}
+
           {lesson && (
             <Card className="mb-6">
               <CardHeader>
@@ -674,7 +672,9 @@ const Lesson = () => {
                                 {relatedLesson.title}
                               </h3>
                               <span className="text-xs">
-                                {formatDuration(relatedLesson.video.duration)}{" "}
+                                {formatDuration(
+                                  relatedLesson.video.duration
+                                )}{" "}
                                 min
                               </span>
                             </CardContent>
