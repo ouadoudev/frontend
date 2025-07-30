@@ -379,7 +379,7 @@ const Lesson = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const videoRef = useRef(null);
   const [isPiPActive, setIsPiPActive] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Consider screens <= 768px as mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1280); // Consider screens <= 768px as mobile
 
   useEffect(() => {
     dispatch(fetchLesson(id));
