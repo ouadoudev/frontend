@@ -496,12 +496,12 @@ const Lesson = () => {
             <Card className="mb-6 border-hidden">
               <CardHeader className="relative p-0 rounded-md border border-opacity-10 overflow-hidden">
                 <video
-                  ref={videoRef}
-                  className="w-full lg:max-h-[250px]  rounded-md bg-muted object-contain"
+                  ref={videoRef} 
+                  className="w-full max-h-[502px] rounded-md bg-muted"
                   controls
                   controlsList="nodownload"
                   preload="metadata"
-                  onPlay={() => setIsPiPActive(false)}
+                  onPlay={() => setIsPiPActive(false)} 
                 >
                   <source src={lesson.video.url} type="video/mp4" />
                   Your browser does not support the video tag.
