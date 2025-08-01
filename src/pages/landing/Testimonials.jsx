@@ -552,8 +552,6 @@
 
 // export default Testimonials;
 
-"use client"
-
 import {
   Card,
   CardContent,
