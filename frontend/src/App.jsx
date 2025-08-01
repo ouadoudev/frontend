@@ -84,7 +84,7 @@ import PendingRevenuesAdmin from "./components/dashboard/revenue/PendingRevenues
 
 
 
-axios.defaults.baseURL = "https://najihoun-api.onrender.com";
+axios.defaults.baseURL = "http://localhost:3000";
 axios.defaults.withCredentials = true;
 
 const App = () => {

@@ -864,13 +864,13 @@ const Overview = () => {
     dispatch(fetchUserNotifications(authUser.id));
   };
 
-  const manageStudents = () =>{
-    navigate("/students")
-  }
+  const manageStudents = () => {
+    navigate("/students");
+  };
 
-  const manageTeachers = ()=>{
-    navigate("/teachers")
-  }
+  const manageTeachers = () => {
+    navigate("/teachers");
+  };
 
   // Calculer le total des paiements en attente
   const pendingPayoutsTotal =
@@ -907,17 +907,48 @@ const Overview = () => {
 
   const studentChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
         text: `Répartition des élèves (${studentChartData.total} élèves)`,
-        font: { size: 16, weight: "bold" },
+        font: { size: 14, weight: "bold" },
       },
-      legend: { display: false },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+      },
+    },
+    layout: {
+      padding: {
+        left: 10,
+        right: 10,
+        top: 20,
+        bottom: 10,
+      },
     },
     scales: {
-      y: { beginAtZero: true },
-      x: { ticks: { maxRotation: 30, minRotation: 0 } },
+      x: {
+        ticks: {
+          autoSkip: true,
+          maxRotation: 45,
+          minRotation: 0,
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12,
+          },
+        },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12,
+          },
+        },
+      },
     },
   };
 
@@ -946,17 +977,48 @@ const Overview = () => {
 
   const teacherChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
         text: `Répartition par discipline (${teacherChartData.total} enseignants)`,
         font: { size: 16, weight: "bold" },
       },
-      legend: { display: false },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+      },
+    },
+    layout: {
+      padding: {
+        left: 10,
+        right: 10,
+        top: 20,
+        bottom: 10,
+      },
     },
     scales: {
-      y: { beginAtZero: true },
-      x: { ticks: { maxRotation: 30, minRotation: 0 } },
+      x: {
+        ticks: {
+          autoSkip: true,
+          maxRotation: 45,
+          minRotation: 0,
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12,
+          },
+        },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12,
+          },
+        },
+      },
     },
   };
 
@@ -1015,20 +1077,21 @@ const Overview = () => {
                 </AvatarFallback>
               </Avatar>
             </div>
-            <div className="flex-1 space-y-2">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex-1 space-y-2 text-center sm:text-left">
+              <div className="flex flex-row flex-wrap justify-center sm:justify-start items-center gap-3">
                 <h1 className="text-2xl font-bold">{authUser.username}</h1>
-                <Badge className="bg-purple-100 text-purple-800">
+                <Badge className="bg-purple-100 text-purple-800 whitespace-nowrap">
                   {authUser.role}
                 </Badge>
                 {authUser.isOnline && (
-                  <Badge className="bg-green-100 text-green-800">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                  <Badge className="bg-green-100 text-green-800 flex items-center whitespace-nowrap">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1" />
                     En ligne
                   </Badge>
                 )}
               </div>
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 text-sm text-muted-foreground items-center sm:items-start justify-center sm:justify-start">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   {authUser.email}
@@ -1038,7 +1101,8 @@ const Overview = () => {
                   {authUser.phone || "Aucun numéro de téléphone"}
                 </div>
               </div>
-              <p className="text-muted-foreground leading-relaxed pb-5 m-4">
+
+              <p className="text-muted-foreground leading-relaxed pb-5 mx-4 sm:mx-0">
                 {authUser.bio || "Aucune biographie disponible"}
               </p>
             </div>
@@ -1063,7 +1127,9 @@ const Overview = () => {
                 <p className="text-3xl font-semibold tabular-nums text-foreground">
                   {totalUsers.toLocaleString()}
                 </p>
-                <p className="text-sm text-muted-foreground">Total utilisateurs</p>
+                <p className="text-sm text-muted-foreground">
+                  Total utilisateurs
+                </p>
                 <div className="flex items-center gap-1 text-xs mt-1">
                   {growth.totalUsersGrowth > 0 ? (
                     <ArrowUpIcon className="w-3 h-3 text-green-500" />
@@ -1114,7 +1180,7 @@ const Overview = () => {
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 text-xs"
-                  onClick={manageStudents}
+                    onClick={manageStudents}
                   >
                     <GraduationCap className="w-4 h-4" />
                     Gérer les élèves
@@ -1135,7 +1201,9 @@ const Overview = () => {
                 <p className="text-3xl font-semibold tabular-nums text-foreground">
                   {totalTeachers.toLocaleString()}
                 </p>
-                <p className="text-sm text-muted-foreground">Enseignants actifs</p>
+                <p className="text-sm text-muted-foreground">
+                  Enseignants actifs
+                </p>
                 <div className="flex items-center gap-1 text-xs mt-1">
                   {growth.totalTeachersGrowth > 0 ? (
                     <ArrowUpIcon className="w-3 h-3 text-green-500" />
@@ -1162,7 +1230,7 @@ const Overview = () => {
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 text-xs"
-                     onClick={manageTeachers}
+                    onClick={manageTeachers}
                   >
                     <Users className="w-4 h-4" />
                     Gérer les enseignants
@@ -1173,7 +1241,7 @@ const Overview = () => {
           </CardHeader>
         </Card>
 
-           <Card className="transition-shadow hover:shadow-lg bg-gradient-to-br from-white to-gray-50 border">
+        <Card className="transition-shadow hover:shadow-lg bg-gradient-to-br from-white to-gray-50 border">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-purple-100 rounded-xl shadow-inner">
@@ -1183,7 +1251,9 @@ const Overview = () => {
                 <p className="text-3xl font-semibold tabular-nums text-foreground">
                   {onlineUsers.toLocaleString()}
                 </p>
-                <p className="text-sm text-muted-foreground">Utilisateurs en ligne</p>
+                <p className="text-sm text-muted-foreground">
+                  Utilisateurs en ligne
+                </p>
                 <div className="flex items-center gap-1 text-xs mt-1">
                   {onlineUsers > 1 ? (
                     <ArrowUpIcon className="w-3 h-3 text-green-500" />
@@ -1191,7 +1261,8 @@ const Overview = () => {
                     <ArrowDownIcon className="w-3 h-3 text-red-500" />
                   )}
                   <span>
-                    {((onlineUsers / totalUsers) * 100).toFixed(2)}% des utilisateurs
+                    {((onlineUsers / totalUsers) * 100).toFixed(2)}% des
+                    utilisateurs
                   </span>
                 </div>
               </div>
@@ -1235,9 +1306,12 @@ const Overview = () => {
                     `${pendingPayoutsTotal.toFixed(2)} MAD`
                   )}
                 </p>
-                <p className="text-sm text-muted-foreground">Paiements en attente</p>
+                <p className="text-sm text-muted-foreground">
+                  Paiements en attente
+                </p>
                 <div className="text-xs mt-1">
-                  {pendingMonthlyRevenues.length} enseignants en attente de paiement
+                  {pendingMonthlyRevenues.length} enseignants en attente de
+                  paiement
                 </div>
               </div>
             </div>
@@ -1362,26 +1436,36 @@ const Overview = () => {
           <CardContent>
             <ScrollArea className="h-80">
               <div className="space-y-3">
-                {topSubjects?.length > 0 ? (
-                  topSubjects
-                    .sort((a, b) => b.enrolls - a.enrolls)
-                    .slice(0, 8)
-                    .map((subject, index) => (
-                      <div
-                        key={subject._id || index}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <p className="font-medium">{subject.title}</p>
-                        <Badge variant="secondary">
-                          {subject.enrolls} inscriptions
-                        </Badge>
-                      </div>
-                    ))
+                {topSubjects && topSubjects.length > 0 ? (
+                  topSubjects.some((subject) => subject.enrolls > 0) ? (
+                    topSubjects
+                      .filter((subject) => subject.enrolls > 0)
+                      .sort((a, b) => b.enrolls - a.enrolls)
+                      .slice(0, 8)
+                      .map((subject, index) => (
+                        <div
+                          key={subject._id || index}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
+                          <p className="font-medium">{subject.title}</p>
+                          <Badge variant="secondary">
+                            {subject.enrolls} inscriptions
+                          </Badge>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-64">
+                      <Sparkles className="w-12 h-12 text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">
+                        Aucune matière n’a encore d’inscriptions.
+                      </p>
+                    </div>
+                  )
                 ) : (
                   <div className="flex flex-col items-center justify-center h-64">
                     <Sparkles className="w-12 h-12 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
-                      Aucune donnée de matière disponible
+                      Aucune donnée de matière disponible.
                     </p>
                   </div>
                 )}

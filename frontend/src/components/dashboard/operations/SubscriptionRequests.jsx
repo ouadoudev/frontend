@@ -108,8 +108,8 @@ const SubscriptionRequests = () => {
 
   return (
     <main className="w-full mb-8 overflow-hidden rounded-lg shadow-xs">
-      <div className="w-full overflow-x-auto">
-        <Card>
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Demandes d’abonnement</CardTitle>
             <CardDescription>
@@ -122,12 +122,12 @@ const SubscriptionRequests = () => {
                 <TableHeader>
                   <TableRow className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
                     <TableHead className="px-4 py-3">
-                      Nom d’utilisateur
+                      Étudiants
                     </TableHead>
                     <TableHead className="px-4 py-3">Forfait</TableHead>
                     <TableHead className="px-4 py-3">Disciplines</TableHead>
                     <TableHead className="px-4 py-3">
-                      Numéro de facture
+                      Facture
                     </TableHead>
                     <TableHead className="px-4 py-3">Statut</TableHead>
                     <TableHead className="px-4 py-3">Actions</TableHead>

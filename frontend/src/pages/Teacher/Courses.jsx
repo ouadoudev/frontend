@@ -130,8 +130,8 @@ const Courses = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Gestion des Cours</CardTitle>
             <CardDescription>
@@ -139,21 +139,26 @@ const Courses = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <Button
-                  className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                  onClick={handleCreateNewCourse}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un cours
-                </Button>
-              </div>
-              <div className="flex flex-row gap-4 items-center">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              {/* Bouton "Ajouter un cours" */}
+              <Button
+                className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                onClick={handleCreateNewCourse}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un cours
+              </Button>
+
+              {/* Filtres */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full md:w-auto">
                 {user.role === "admin" && (
                   <>
-                    <div className="flex flex-col">
-                      <Label htmlFor="subjectFilter" className="mb-1">
+                    {/* Discipline */}
+                    <div>
+                      <Label
+                        htmlFor="subjectFilter"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Discipline :
                       </Label>
                       <select
@@ -162,7 +167,7 @@ const Courses = () => {
                           setSelectedSubject(e.target.value || null)
                         }
                         value={selectedSubject || ""}
-                        className="py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Toutes</option>
                         {subjects.map((subject, index) => (
@@ -172,8 +177,13 @@ const Courses = () => {
                         ))}
                       </select>
                     </div>
-                    <div className="flex flex-col">
-                      <Label htmlFor="teacherFilter" className="mb-1">
+
+                    {/* Enseignant */}
+                    <div>
+                      <Label
+                        htmlFor="teacherFilter"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Enseignant :
                       </Label>
                       <select
@@ -182,7 +192,7 @@ const Courses = () => {
                           setSelectedTeacher(e.target.value || null)
                         }
                         value={selectedTeacher || ""}
-                        className="py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Tous</option>
                         {teachers.map((teacher, index) => (
@@ -194,8 +204,13 @@ const Courses = () => {
                     </div>
                   </>
                 )}
-                <div className="flex flex-col">
-                  <Label htmlFor="levelFilter" className="mb-1">
+
+                {/* Niveau */}
+                <div>
+                  <Label
+                    htmlFor="levelFilter"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Niveau :
                   </Label>
                   <select
@@ -204,7 +219,7 @@ const Courses = () => {
                       setSelectedEducationalLevel(e.target.value || null)
                     }
                     value={selectedEducationalLevel || ""}
-                    className="py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Tous</option>
                     {educationalLevels.map((level, index) => (

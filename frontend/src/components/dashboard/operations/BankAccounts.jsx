@@ -184,8 +184,8 @@ const BankAccounts = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Comptes bancaires</CardTitle>
             <CardDescription>Gérez vos comptes bancaires liés.</CardDescription>
@@ -240,7 +240,7 @@ const BankAccounts = () => {
                           variant="outline"
                           onClick={() => openEditDialog(acc)}
                         >
-                          <FileEditIcon className="w-4 h-4 mr-1" /> Modifier
+                          <FileEditIcon className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -248,7 +248,7 @@ const BankAccounts = () => {
                           onClick={() => handleDelete(acc._id)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <TrashIcon className="w-4 h-4 mr-1" /> Supprimer
+                          <TrashIcon className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>

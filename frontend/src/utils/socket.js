@@ -17,7 +17,7 @@ class SocketManager {
     this.isConnecting = true
 
     try {
-      this.socket = io("https://najihoun-api.onrender.com", {
+      this.socket = io("http://localhost:3000", {
         transports: ["websocket", "polling"], // Add polling as fallback
         withCredentials: true,
         reconnection: true,

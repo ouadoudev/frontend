@@ -28,7 +28,7 @@ export const fetchUserById = createAsyncThunk(
 
 export const educationalDetails = createAsyncThunk(
   "users/educationalDetails",
-  async (details, { getState, dispatch,rejectWithValue }) => {
+  async (details, { getState, dispatch, rejectWithValue }) => {
     try {
       const state = getState();
       const user = loggedUser(state);
@@ -37,15 +37,11 @@ export const educationalDetails = createAsyncThunk(
         throw new Error("User not authenticated");
       }
 
-      const response = await axios.post(
-        `/users/educational-details`,
-        details,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
+      const response = await axios.post(`/users/educational-details`, details, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       dispatch(updateUserSuccess(response.data.user));
       return response.data.user;
     } catch (error) {
@@ -62,12 +58,16 @@ export const educationalDetails = createAsyncThunk(
 
 export const assignEducationToTeacher = createAsyncThunk(
   "user/assignEducationToTeacher",
-  async ({ userId, educationalCycles, educationalLevels }, {  dispatch, rejectWithValue }) => {
+  async (
+    { userId, educationalCycles, educationalLevels },
+    { dispatch, rejectWithValue }
+  ) => {
     try {
-      const response = await axios.post(
-        "/users/assign-educational-details",
-        { userId, educationalCycles, educationalLevels },
-      );
+      const response = await axios.post("/users/assign-educational-details", {
+        userId,
+        educationalCycles,
+        educationalLevels,
+      });
 
       dispatch(updateUserSuccess(response.data));
       return response.data;
@@ -85,7 +85,7 @@ export const assignEducationToTeacher = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   "user/updateUser",
-  async ({ id, userData }, { getState, dispatch,rejectWithValue }) => {
+  async ({ id, userData }, { getState, dispatch, rejectWithValue }) => {
     try {
       const state = getState();
       const user = loggedUser(state);
@@ -144,13 +144,10 @@ export const fetchCvByUserId = createAsyncThunk(
   "user/fetchCvByUserId",
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/users/cv/${userId}`, {
-        responseType: "blob",
-      });
-      const cvUrl = URL.createObjectURL(response.data);
-      return { cvUrl };
+      const response = await axios.get(`/users/cv/${userId}`);
+      return response.data;
     } catch (err) {
-      return rejectWithValue(err.response.data);
+      return rejectWithValue(err.response?.data || "Network error");
     }
   }
 );
@@ -197,9 +194,7 @@ const userSlice = createSlice({
   initialState: {
     users: [],
     user: null,
-    cv: {
-      cvUrl: null,
-    },
+    cv: null,
     status: "idle",
     error: null,
   },
@@ -236,7 +231,7 @@ const userSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.user = action.payload.user; 
+        state.user = action.payload.user;
         localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(updateUser.rejected, (state, action) => {
@@ -260,16 +255,17 @@ const userSlice = createSlice({
         state.error = action.payload;
       })
 
-      .addCase(fetchCvByUserId.pending, (state) => {
-        state.status = "loading";
+       .addCase(fetchCvByUserId.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchCvByUserId.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.cv.cvUrl = action.payload.cvUrl;
+        state.status = 'succeeded';
+        state.cv = action.payload; 
       })
       .addCase(fetchCvByUserId.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
+        state.status = 'failed';
+        state.error = action.payload || 'Failed to fetch CV';
       })
       // Hiring teacher
       .addCase(hiringTeacher.pending, (state) => {
@@ -311,7 +307,6 @@ const userSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       });
-      ;
   },
 });
 

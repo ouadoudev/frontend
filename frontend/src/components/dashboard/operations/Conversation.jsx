@@ -20,7 +20,7 @@
 // import { Textarea } from "../ui/textarea";
 
 // // Socket.IO client setup
-// const socket = io("https://najihoun-api.onrender.com", {
+// const socket = io("http://localhost:3000", {
 //   transports: ["websocket"],
 //   withCredentials: true,
 // });
@@ -256,14 +256,14 @@
 //                                 className="w-full rounded"
 //                               >
 //                                 <source
-//                                   src={`https://najihoun-api.onrender.com/${media.url}`}
+//                                   src={`http://localhost:3000/${media.url}`}
 //                                   type="video/mp4"
 //                                 />
 //                                 Your browser does not support the video tag.
 //                               </video>
 //                             ) : (
 //                               <a
-//                                 href={`https://najihoun-api.onrender.com/${media.url}`}
+//                                 href={`http://localhost:3000/${media.url}`}
 //                                 download
 //                                 className="text-blue-500 underline"
 //                               >
@@ -927,14 +927,14 @@ const Conversation = () => {
                             <div key={media._id} className="mt-2">
                               {media.type === "image" ? (
                                 <img
-                                  src={`https://najihoun-api.onrender.com/${media.url}`}
+                                  src={`http://localhost:3000/${media.url}`}
                                   alt="Shared image"
                                   className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => window.open(`https://najihoun-api.onrender.com/${media.url}`, "_blank")}
+                                  onClick={() => window.open(`http://localhost:3000/${media.url}`, "_blank")}
                                 />
                               ) : media.type === "video" ? (
                                 <video controls className="max-w-full h-auto rounded-lg" preload="metadata">
-                                  <source src={`https://najihoun-api.onrender.com/${media.url}`} type="video/mp4" />
+                                  <source src={`http://localhost:3000/${media.url}`} type="video/mp4" />
                                   Your browser does not support the video tag.
                                 </video>
                               ) : (

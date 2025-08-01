@@ -99,7 +99,9 @@ const TestimonialsList = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">
-      <Card>
+
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Gestion des témoignages</CardTitle>
           <CardDescription>
@@ -231,6 +233,7 @@ const TestimonialsList = () => {
           )}
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 };

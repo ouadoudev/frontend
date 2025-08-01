@@ -11,7 +11,7 @@
 // import io from "socket.io-client";
 
 // // Create a single socket instance
-// const socket = io("https://najihoun-api.onrender.com", {
+// const socket = io("http://localhost:3000", {
 //   transports: ["websocket"],
 //   withCredentials: true,
 // });
@@ -132,7 +132,7 @@
 //                     <div key={media._id} className="mt-2">
 //                       {media.type === "image" ? (
 //                         <img
-//                           src={`https://najihoun-api.onrender.com/${media.url}`}
+//                           src={`http://localhost:3000/${media.url}`}
 //                           alt="media"
 //                           className="max-w-full h-auto rounded"
 //                         />
@@ -142,7 +142,7 @@
 //                           className="max-w-full h-auto rounded"
 //                         >
 //                           <source
-//                             src={`https://najihoun-api.onrender.com/${media.url}`}
+//                             src={`http://localhost:3000/${media.url}`}
 //                             type="video/mp4"
 //                           />
 //                           Your browser does not support the video tag.
@@ -207,6 +207,9 @@
 // };
 
 // export default Messages;
+
+"use client"
+
 import { useEffect, useRef, useState, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { createMessage, fetchMessages } from "@/store/messageSlice"
@@ -238,7 +241,7 @@ import io from "socket.io-client"
 
 // Enhanced socket configuration with reconnection logic
 const createSocket = () => {
-  return io("https://najihoun-api.onrender.com", {
+  return io("http://localhost:3000", {
     transports: ["websocket"],
     withCredentials: true,
     reconnection: true,
@@ -539,14 +542,14 @@ const Messages = ({ currentConversation }) => {
                     <div key={media._id} className="mt-2">
                       {media.type === "image" ? (
                         <img
-                          src={`https://najihoun-api.onrender.com/${media.url}`}
+                          src={`http://localhost:3000/${media.url}`}
                           alt="Shared image"
                           className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => window.open(`https://najihoun-api.onrender.com/${media.url}`, "_blank")}
+                          onClick={() => window.open(`http://localhost:3000/${media.url}`, "_blank")}
                         />
                       ) : media.type === "video" ? (
                         <video controls className="max-w-full h-auto rounded-lg" preload="metadata">
-                          <source src={`https://najihoun-api.onrender.com/${media.url}`} type="video/mp4" />
+                          <source src={`http://localhost:3000/${media.url}`} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
                       ) : (

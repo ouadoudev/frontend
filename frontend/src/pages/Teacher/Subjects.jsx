@@ -1643,7 +1643,13 @@ import {
 } from "../../components/ui/pagination";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
-import { FileEditIcon, PlayIcon, TrashIcon, Plus, Sparkles } from "lucide-react";
+import {
+  FileEditIcon,
+  PlayIcon,
+  TrashIcon,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -1727,8 +1733,8 @@ const Subjects = () => {
   const totalPages = Math.ceil(filteredSubjects.length / itemsPerPage);
   return (
     <div className="bg-gray-100 min-h-screen p-8">
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Disciplines</CardTitle>
             <CardDescription>
@@ -1737,20 +1743,23 @@ const Subjects = () => {
           </CardHeader>
 
           <CardContent>
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <Button
-                  className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                  onClick={handleCreateSubject}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter une discipline
-                </Button>
-              </div>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              {/* Bouton Ajouter une discipline */}
+              <Button
+                className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                onClick={handleCreateSubject}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter une discipline
+              </Button>
 
-              <div className="flex flex-row gap-4 items-center">
-                <div className="flex flex-col">
-                  <Label htmlFor="levelFilter" className="mb-1">
+              {/* Filtres Niveau et Filière */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto">
+                <div>
+                  <Label
+                    htmlFor="levelFilter"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Niveau :
                   </Label>
                   <select
@@ -1759,7 +1768,7 @@ const Subjects = () => {
                       setSelectedEducationalLevel(e.target.value || "")
                     }
                     value={selectedEducationalLevel || ""}
-                    className="py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Tous les niveaux</option>
                     {validEducationalLevels.map((level, index) => (
@@ -1769,15 +1778,19 @@ const Subjects = () => {
                     ))}
                   </select>
                 </div>
-                <div className="flex flex-col">
-                  <Label htmlFor="streamFilter" className="mb-1">
+
+                <div>
+                  <Label
+                    htmlFor="streamFilter"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Filière :
                   </Label>
                   <select
                     id="streamFilter"
                     onChange={(e) => setSelectedStream(e.target.value || "")}
                     value={selectedStream || ""}
-                    className="py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Toutes les filières</option>
                     {validStreams.map((stream, index) => (
@@ -1789,6 +1802,7 @@ const Subjects = () => {
                 </div>
               </div>
             </div>
+
             <Table>
               <TableHeader>
                 <TableRow className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
@@ -1815,7 +1829,7 @@ const Subjects = () => {
                     <TableCell className="px-4 py-3">
                       {subject.educationalLevel}
                     </TableCell>
-                    <TableCell className="px-4 py-3">
+                    <TableCell className="text-center">
                       {subject.stream}
                     </TableCell>
                     <TableCell className="px-4 py-3">
@@ -1832,7 +1846,7 @@ const Subjects = () => {
                           onClick={() => handlePlaySubject(subject._id)}
                           className="bg-transparent"
                         >
-                          <PlayIcon className="w-4 h-4 mr-1" /> Voir
+                          <PlayIcon className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -1840,7 +1854,7 @@ const Subjects = () => {
                           onClick={() => handleEditSubject(subject._id)}
                           className="bg-transparent"
                         >
-                          <FileEditIcon className="w-4 h-4 mr-1" /> Modifier
+                          <FileEditIcon className="w-4 h-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -1848,7 +1862,7 @@ const Subjects = () => {
                           onClick={() => handleDeleteSubject(subject._id)}
                           className="bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <TrashIcon className="w-4 h-4 mr-1" /> Supprimer
+                          <TrashIcon className="w-4 h-4" /> 
                         </Button>
                       </div>
                     </TableCell>
@@ -1858,21 +1872,20 @@ const Subjects = () => {
             </Table>
 
             {currentSubjects.length === 0 && (
-                <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-center my-12"
-          >
-            <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-2xl font-semibold mb-2">
-              Aucune matière n’a été ajoutée pour le moment.
-
-            </h3>
-            <p className="text-muted-foreground">
-            Il n’y a actuellement aucune matière à afficher.
-            </p>
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-center my-12"
+              >
+                <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-2xl font-semibold mb-2">
+                  Aucune matière n’a été ajoutée pour le moment.
+                </h3>
+                <p className="text-muted-foreground">
+                  Il n’y a actuellement aucune matière à afficher.
+                </p>
+              </motion.div>
             )}
 
             {totalPages > 1 && (
@@ -1920,7 +1933,7 @@ const Subjects = () => {
       <ConfirmDialog
         show={showDeleteConfirm}
         title="Confirmer la suppression"
-       message="Êtes-vous sûr de vouloir supprimer cette matière ? Cette action est irréversible."
+        message="Êtes-vous sûr de vouloir supprimer cette matière ? Cette action est irréversible."
         onCancel={() => {
           setShowDeleteConfirm(false);
           setSubjectToDelete(null);

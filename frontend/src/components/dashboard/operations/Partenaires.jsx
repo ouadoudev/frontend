@@ -87,8 +87,8 @@ const Partenaires = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen p-8">
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <Card>
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Partenaires</CardTitle>
             <CardDescription>

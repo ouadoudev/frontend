@@ -64,7 +64,7 @@ const Register = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://najihoun-api.onrender.com/auth/google";
+    window.location.href = "http://localhost:3000/auth/google";
   };
 
   const role = useSelector((state) => state.auth.user);

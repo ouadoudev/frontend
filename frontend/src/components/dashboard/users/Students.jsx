@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/pagination";
 import { Button } from "../../ui/button";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 const Students = () => {
   const dispatch = useDispatch();
@@ -75,8 +75,8 @@ const Students = () => {
   const totalPages = Math.ceil(studentUsers.length / itemsPerPage);
   return (
     <main className="bg-gray-100 min-h-screen p-8">
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <Card>
+     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Étudiants</CardTitle>
             <CardDescription>
@@ -136,13 +136,13 @@ const Students = () => {
                         <TableCell className="px-4 py-3 text-sm">
                           {user.email}
                         </TableCell>
-                        <TableCell className="px-4 py-3 text-sm">
+                        <TableCell className="text-center text-sm">
                           {user.educationalCycle}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-sm">
                           {new Date(user.createdAt).toLocaleDateString()}
                         </TableCell>
-                        <TableCell className="px-4 py-3 text-sm">
+                        <TableCell className="text-center text-sm">
                           {user.enrolledSubjects.length}
                         </TableCell>
                         <TableCell className="px-4 py-3 text-sm">
@@ -152,7 +152,7 @@ const Students = () => {
                             onClick={() => handleDeleteUser(user._id)}
                             className="bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            Supprimer
+                           <Trash2 className="w-4 h-4" />
                           </Button>
                         </TableCell>
                       </TableRow>

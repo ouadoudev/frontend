@@ -39,6 +39,7 @@ import {
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { fetchReviews } from "@/store/reviewSlice";
+import UserProfileActions from "@/components/profile/userActions";
 
 const Subject = () => {
   const { id } = useParams();
@@ -85,7 +86,6 @@ const Subject = () => {
     0,
     4
   );
-
 
   const getDirection = (text) => {
     const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
@@ -160,65 +160,64 @@ const Subject = () => {
                   : "Cours"}
               </h2>
               <Carousel className="w-full">
-                <CarouselContent >
+                <CarouselContent>
                   {newCourses?.map((course) => {
                     const titleDir = getDirection(course.title);
                     const descriptionDir = getDirection(course.description);
                     return (
-                        <CarouselItem
-                      key={course._id}
-                      className="md:basis-1/2 lg:basis-1/2 "
-                    >
-                      <Card className="flex flex-col w-80">
-                        <CardHeader className="p-0">
-                          <img
-                            src={course.thumbnail.url}
-                            alt={`${course.title} thumbnail`}
-                            className="w-full h-32 object-cover rounded-t-lg"
-                          />
-                        </CardHeader>
+                      <CarouselItem
+                        key={course._id}
+                        className="md:basis-1/2 lg:basis-1/2 "
+                      >
+                        <Card className="flex flex-col w-80">
+                          <CardHeader className="p-0">
+                            <img
+                              src={course.thumbnail.url}
+                              alt={`${course.title} thumbnail`}
+                              className="w-full h-32 object-cover rounded-t-lg"
+                            />
+                          </CardHeader>
 
-                        <CardContent className="flex-grow p-4">
-                          <h3
-                            className={`text-lg font-semibold mb-2 ${
-                              titleDir === "rtl" ? "text-right" : "text-left"
-                            }`}
-                            dir={titleDir}
-                          >
-                            {course.title}
-                          </h3>
+                          <CardContent className="flex-grow p-4">
+                            <h3
+                              className={`text-lg font-semibold mb-2 ${
+                                titleDir === "rtl" ? "text-right" : "text-left"
+                              }`}
+                              dir={titleDir}
+                            >
+                              {course.title}
+                            </h3>
 
-                          <p
-                            className={`text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2 ${
-                              descriptionDir === "rtl"
-                                ? "text-right"
-                                : "text-left"
-                            }`}
-                            dir={descriptionDir}
-                          >
-                            {course.description}
-                          </p>
+                            <p
+                              className={`text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2 ${
+                                descriptionDir === "rtl"
+                                  ? "text-right"
+                                  : "text-left"
+                              }`}
+                              dir={descriptionDir}
+                            >
+                              {course.description}
+                            </p>
 
-                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                            <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                            <span>{course.rating || "N/A"}</span>
-                          </div>
-                        </CardContent>
+                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                              <Star className="w-4 h-4 mr-1 text-yellow-400" />
+                              <span>{course.rating || "N/A"}</span>
+                            </div>
+                          </CardContent>
 
-                        <CardFooter className="p-4">
-                          <Button
-                            onClick={() => handlePlayCourse(course._id)}
-                            className="w-full"
-                          >
-                            {titleDir === "rtl"
-                              ? "ابدأ الدرس"
-                              : "Commencer le cours"}
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    </CarouselItem>
-                    )
-                    
+                          <CardFooter className="p-4">
+                            <Button
+                              onClick={() => handlePlayCourse(course._id)}
+                              className="w-full bg-gradient-to-br from-blue-600 to-purple-600"
+                            >
+                              {titleDir === "rtl"
+                                ? "ابدأ الدرس"
+                                : "Commencer le cours"}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      </CarouselItem>
+                    );
                   })}
                 </CarouselContent>
               </Carousel>
@@ -322,7 +321,7 @@ const Subject = () => {
                               {course.teacher.username}
                             </span>
                           </div>
-                          <Button onClick={() => handlePlayCourse(course._id)}>
+                          <Button onClick={() => handlePlayCourse(course._id)} className="bg-gradient-to-br from-blue-600 to-purple-600">
                             Start Course
                           </Button>
                         </div>
@@ -383,7 +382,7 @@ const Subject = () => {
                         <Button
                           variant="outline"
                           onClick={() => navigate(`/teacher/${_id}`)}
-                          className="mx-auto"
+                          className="mx-auto hover:"
                         >
                           {getDirection(user?.name || "") === "rtl"
                             ? "عرض الملف الشخصي"
@@ -397,7 +396,7 @@ const Subject = () => {
           </Carousel>
         </div>
         <div>
-          <Card className="sticky top-4">
+          <Card className="sticky top-8">
             <CardHeader>
               <CardTitle className="flex justify-center">
                 {getDirection(subject?.title || "") === "rtl"

@@ -1660,9 +1660,10 @@ const AdminRevenuePanel = () => {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top",
+        display: false,
       },
       tooltip: {
         callbacks: {
@@ -1679,6 +1680,13 @@ const AdminRevenuePanel = () => {
           callback: function (value) {
             return `${value} MAD`;
           },
+          precision: 0,
+        },
+      },
+      x: {
+        ticks: {
+          maxRotation: 45,
+          minRotation: 0,
         },
       },
     },
@@ -1690,13 +1698,9 @@ const AdminRevenuePanel = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <h1 className="lg:text-3xl font-bold text-xl text-gray-800 flex items-center gap-2">
               Administration des revenus
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Gérez les paiements des enseignants et le suivi des revenus.
-              Surveillez les revenus de la plateforme et les indicateurs financiers.
-            </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -1754,19 +1758,22 @@ const AdminRevenuePanel = () => {
           {/* Summary Cards */}
           <Card className="lg:col-span-4">
             <CardHeader className="pb-3">
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                {/* Titre + Info Tooltip */}
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
                   <Activity className="h-5 w-5" />
                   Aperçu des revenus
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-muted-foreground" />
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Résumé de toutes les activités de revenus</p>
                     </TooltipContent>
                   </Tooltip>
                 </CardTitle>
+
+                {/* Selecteur de période */}
                 <Select
                   value={platformFilters.timeframe}
                   onValueChange={(value) => {
@@ -1778,7 +1785,7 @@ const AdminRevenuePanel = () => {
                   }}
                   disabled={loading}
                 >
-                  <SelectTrigger className="max-w-56">
+                  <SelectTrigger className="w-full sm:w-56">
                     <SelectValue placeholder="Sélectionner la période" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1883,439 +1890,463 @@ const AdminRevenuePanel = () => {
           {/* Charts */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
                 <PieChart className="h-5 w-5" />
                 Revenus par matière
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80 p-4">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               ) : (
-                <Bar data={subjectChartData} options={chartOptions} />
+                <div className="relative w-full h-full">
+                  <Bar data={subjectChartData} options={chartOptions} />
+                </div>
               )}
             </CardContent>
           </Card>
 
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
                 <TrendingUp className="h-5 w-5" />
                 Tendance mensuelle des revenus
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80 p-4">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               ) : (
-                <Line data={monthlyTrendChartData} options={chartOptions} />
+                <div className="relative w-full h-full">
+                  <Line data={monthlyTrendChartData} options={chartOptions} />
+                </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Transactions des frais de plateforme
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : platformFees.data?.length === 0 ? (
-              <div className="text-center py-12 space-y-2">
-                <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900">
-                  Aucun enregistrement de frais trouvé
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Les frais de plateforme apparaîtront ici lorsque les abonnements seront traités
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader className="bg-gray-50">
-                      <TableRow>
-                        <TableHead>Matière</TableHead>
-                        <TableHead>Période</TableHead>
-                        <TableHead className="text-right">Montant</TableHead>
-                        <TableHead>Enregistré le</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {platformFees.data?.map((fee) => (
-                        <TableRow key={fee._id} className="hover:bg-gray-50">
-                          <TableCell>{fee.subject?.title || "N/A"}</TableCell>
-                          <TableCell>
-                            {fee.month}/{fee.year}
-                          </TableCell>
-                          <TableCell className="text-right font-medium text-purple-800">
-                            {fee.amount.toFixed(2)} MAD
-                          </TableCell>
-                          <TableCell>
-                            {format(
-                              new Date(fee.createdAt),
-                              "yyyy-MM-dd HH:mm"
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Affichage de{" "}
-                    {(platformFilters.page - 1) * platformFilters.limit + 1} à{" "}
-                    {Math.min(
-                      platformFilters.page * platformFilters.limit,
-                      platformFees.total
-                    )}{" "}
-                    sur {platformFees.total} entrées
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setPlatformFilters((prev) => ({
-                          ...prev,
-                          page: Math.max(prev.page - 1, 1),
-                        }))
-                      }
-                      disabled={platformFilters.page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setPlatformFilters((prev) => ({
-                          ...prev,
-                          page: Math.min(
-                            prev.page + 1,
-                            platformFees.totalPages
-                          ),
-                        }))
-                      }
-                      disabled={
-                        platformFilters.page === platformFees.totalPages
-                      }
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Enregistrements de revenus</CardTitle>
-              <Button variant="ghost" onClick={handleResetFilters}>
-                Réinitialiser les filtres
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Année
-                </label>
-                <Select
-                  value={filters.year}
-                  onValueChange={(value) => handleFilterChange("year", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Toutes les années" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="a">Toutes les années</SelectItem>
-                    {yearOptions.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mois
-                </label>
-                <Select
-                  value={filters.month}
-                  onValueChange={(value) => handleFilterChange("month", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tous les mois" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="a">Tous les mois</SelectItem>
-                    {monthNames.map((month) => (
-                      <SelectItem key={month.value} value={month.value}>
-                        {month.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Statut
-                </label>
-                <Select
-                  value={filters.status}
-                  onValueChange={(value) => handleFilterChange("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tous les statuts" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="a">Tous les statuts</SelectItem>
-                    <SelectItem value="paid">Payé</SelectItem>
-                    <SelectItem value="pending">En attente</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Période
-                </label>
-                <Select
-                  value={filters.timeFilter}
-                  onValueChange={(value) =>
-                    handleFilterChange("timeFilter", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Toutes périodes" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes périodes</SelectItem>
-                    <SelectItem value="30days">30 derniers jours</SelectItem>
-                    <SelectItem value="90days">90 derniers jours</SelectItem>
-                    <SelectItem value="6months">6 derniers mois</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rechercher
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Rechercher par enseignant ou email..."
-                    className="pl-10"
-                    value={filters.search}
-                    onChange={(e) =>
-                      handleFilterChange("search", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : filteredRevenues.length === 0 ? (
-              <div className="text-center py-12 space-y-2">
-                <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900">
-                  Aucun enregistrement de revenu trouvé
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Essayez d'ajuster vos filtres ou critères de recherche
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader className="bg-gray-50">
-                      <TableRow>
-                        <TableHead>Enseignant</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Période</TableHead>
-                        <TableHead className="text-right">Montant</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Payé le</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedRevenues.map((revenue) => (
-                        <TableRow
-                          key={revenue._id}
-                          className="hover:bg-gray-50"
-                        >
-                          <TableCell>
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2 text-primary" />
-                              {revenue.teacher?.username || "N/A"}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {revenue.teacher?.email || "N/A"}
-                          </TableCell>
-                          <TableCell>
-                            {revenue.month}/{revenue.year}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {revenue.totalAmount.toFixed(2)} MAD
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={revenue.paid ? "default" : "secondary"}
-                              className={
-                                revenue.paid
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }
-                            >
-                              {revenue.paid ? "Payé" : "En attente"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {revenue.paidAt
-                              ? format(
-                                  new Date(revenue.paidAt),
-                                  "yyyy-MM-dd HH:mm"
-                                )
-                              : "-"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {!revenue.paid && (
-                              <Button
-                                onClick={() => handlePay(revenue._id)}
-                                disabled={payingId === revenue._id}
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                {payingId === revenue._id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                ) : null}
-                                Marquer comme payé
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Affichage de {(currentPage - 1) * itemsPerPage + 1} à{" "}
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      filteredRevenues.length
-                    )}{" "}
-                    sur {filteredRevenues.length} entrées
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Teacher Performance */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Performance des enseignants
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow>
-                    <TableHead>Enseignant</TableHead>
-                    <TableHead>Mois totaux</TableHead>
-                    <TableHead>Mois payés</TableHead>
-                    <TableHead>Mois en attente</TableHead>
-                    <TableHead className="text-right">Montant total</TableHead>
-                    <TableHead className="text-right">Montant payé</TableHead>
-                    <TableHead className="text-right">Montant en attente</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Object.values(teacherPerformance).map((teacherData) => (
-                    <TableRow key={teacherData.teacher._id}>
-                      <TableCell className="font-medium">
-                        {teacherData.teacher.username}
-                      </TableCell>
-                      <TableCell>{teacherData.months}</TableCell>
-                      <TableCell>{teacherData.paidMonths}</TableCell>
-                      <TableCell>{teacherData.pendingMonths}</TableCell>
-                      <TableCell className="text-right">
-                        {teacherData.totalAmount.toFixed(2)} MAD
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {teacherData.paidAmount.toFixed(2)} MAD
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {teacherData.pendingAmount.toFixed(2)} MAD
-                      </TableCell>
-                    </TableRow>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Transactions des frais de plateforme
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
                   ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-        {/* <Card className="lg:col-span-2">
+                </div>
+              ) : platformFees.data?.length === 0 ? (
+                <div className="text-center py-12 space-y-2">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Aucun enregistrement de frais trouvé
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Les frais de plateforme apparaîtront ici lorsque les
+                    abonnements seront traités
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader className="bg-gray-50">
+                        <TableRow>
+                          <TableHead>Matière</TableHead>
+                          <TableHead>Période</TableHead>
+                          <TableHead className="text-right">Montant</TableHead>
+                          <TableHead>Enregistré le</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {platformFees.data?.map((fee) => (
+                          <TableRow key={fee._id} className="hover:bg-gray-50">
+                            <TableCell>{fee.subject?.title || "N/A"}</TableCell>
+                            <TableCell>
+                              {fee.month}/{fee.year}
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-purple-800">
+                              {fee.amount.toFixed(2)} MAD
+                            </TableCell>
+                            <TableCell>
+                              {format(
+                                new Date(fee.createdAt),
+                                "yyyy-MM-dd HH:mm"
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Affichage de{" "}
+                      {(platformFilters.page - 1) * platformFilters.limit + 1} à{" "}
+                      {Math.min(
+                        platformFilters.page * platformFilters.limit,
+                        platformFees.total
+                      )}{" "}
+                      sur {platformFees.total} entrées
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setPlatformFilters((prev) => ({
+                            ...prev,
+                            page: Math.max(prev.page - 1, 1),
+                          }))
+                        }
+                        disabled={platformFilters.page === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setPlatformFilters((prev) => ({
+                            ...prev,
+                            page: Math.min(
+                              prev.page + 1,
+                              platformFees.totalPages
+                            ),
+                          }))
+                        }
+                        disabled={
+                          platformFilters.page === platformFees.totalPages
+                        }
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  Enregistrements de revenus
+                </CardTitle>
+
+                <Button
+                  variant="ghost"
+                  onClick={handleResetFilters}
+                  className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Année
+                  </label>
+                  <Select
+                    value={filters.year}
+                    onValueChange={(value) => handleFilterChange("year", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes les années" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="a">Toutes les années</SelectItem>
+                      {yearOptions.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Mois
+                  </label>
+                  <Select
+                    value={filters.month}
+                    onValueChange={(value) =>
+                      handleFilterChange("month", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tous les mois" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="a">Tous les mois</SelectItem>
+                      {monthNames.map((month) => (
+                        <SelectItem key={month.value} value={month.value}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Statut
+                  </label>
+                  <Select
+                    value={filters.status}
+                    onValueChange={(value) =>
+                      handleFilterChange("status", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tous les statuts" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="a">Tous les statuts</SelectItem>
+                      <SelectItem value="paid">Payé</SelectItem>
+                      <SelectItem value="pending">En attente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Période
+                  </label>
+                  <Select
+                    value={filters.timeFilter}
+                    onValueChange={(value) =>
+                      handleFilterChange("timeFilter", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Toutes périodes" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes périodes</SelectItem>
+                      <SelectItem value="30days">30 derniers jours</SelectItem>
+                      <SelectItem value="90days">90 derniers jours</SelectItem>
+                      <SelectItem value="6months">6 derniers mois</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rechercher
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Rechercher par enseignant ou email..."
+                      className="pl-10"
+                      value={filters.search}
+                      onChange={(e) =>
+                        handleFilterChange("search", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : filteredRevenues.length === 0 ? (
+                <div className="text-center py-12 space-y-2">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Aucun enregistrement de revenu trouvé
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Essayez d'ajuster vos filtres ou critères de recherche
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader className="bg-gray-50">
+                        <TableRow>
+                          <TableHead>Enseignant</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Période</TableHead>
+                          <TableHead className="text-right">Montant</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>Payé le</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedRevenues.map((revenue) => (
+                          <TableRow
+                            key={revenue._id}
+                            className="hover:bg-gray-50"
+                          >
+                            <TableCell>
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 mr-2 text-primary" />
+                                {revenue.teacher?.username || "N/A"}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {revenue.teacher?.email || "N/A"}
+                            </TableCell>
+                            <TableCell>
+                              {revenue.month}/{revenue.year}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {revenue.totalAmount.toFixed(2)} MAD
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={revenue.paid ? "default" : "secondary"}
+                                className={
+                                  revenue.paid
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }
+                              >
+                                {revenue.paid ? "Payé" : "En attente"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {revenue.paidAt
+                                ? format(
+                                    new Date(revenue.paidAt),
+                                    "yyyy-MM-dd HH:mm"
+                                  )
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {!revenue.paid && (
+                                <Button
+                                  onClick={() => handlePay(revenue._id)}
+                                  disabled={payingId === revenue._id}
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  {payingId === revenue._id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ) : null}
+                                  Marquer comme payé
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Affichage de {(currentPage - 1) * itemsPerPage + 1} à{" "}
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        filteredRevenues.length
+                      )}{" "}
+                      sur {filteredRevenues.length} entrées
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Teacher Performance */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
+                <User className="h-5 w-5" />
+                Performance des enseignants
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader className="bg-gray-50">
+                    <TableRow>
+                      <TableHead>Enseignant</TableHead>
+                      <TableHead>Mois totaux</TableHead>
+                      <TableHead>Mois payés</TableHead>
+                      <TableHead>Mois en attente</TableHead>
+                      <TableHead className="text-right">
+                        Montant total
+                      </TableHead>
+                      <TableHead className="text-right">Montant payé</TableHead>
+                      <TableHead className="text-right">
+                        Montant en attente
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.values(teacherPerformance).map((teacherData) => (
+                      <TableRow key={teacherData.teacher._id}>
+                        <TableCell className="font-medium">
+                          {teacherData.teacher.username}
+                        </TableCell>
+                        <TableCell>{teacherData.months}</TableCell>
+                        <TableCell>{teacherData.paidMonths}</TableCell>
+                        <TableCell>{teacherData.pendingMonths}</TableCell>
+                        <TableCell className="text-right">
+                          {teacherData.totalAmount.toFixed(2)} MAD
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {teacherData.paidAmount.toFixed(2)} MAD
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {teacherData.pendingAmount.toFixed(2)} MAD
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+          {/* <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -2342,6 +2373,7 @@ const AdminRevenuePanel = () => {
             )}
           </CardContent>
         </Card> */}
+        </div>
       </div>
     </TooltipProvider>
   );

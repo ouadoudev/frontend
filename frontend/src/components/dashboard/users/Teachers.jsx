@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { X, GraduationCap, Plus, Sparkles } from "lucide-react";
+import { X, GraduationCap, Plus, Sparkles, Trash2, User } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Table,
@@ -224,8 +224,8 @@ const Teachers = () => {
         cancelText="Annuler"
         destructive
       />
-      <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <Card>
+     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Enseignants</CardTitle>
             <CardDescription>
@@ -351,15 +351,14 @@ const Teachers = () => {
                             onClick={() => openAssignDialog(user)}
                             className="bg-transparent text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                           >
-                            <GraduationCap className="w-4 h-4 mr-1" />
-                            Assigner
+                            <GraduationCap className="w-4 h-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => navigate(`/teacher/${user._id}`)}
                           >
-                            Profil
+                            <User className="w-4 h-4" />
                           </Button>
                           <Button
                             size="sm"
@@ -367,7 +366,7 @@ const Teachers = () => {
                             onClick={() => handleDeleteUser(user._id)}
                             className="bg-transparent text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            Supprimer
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </TableCell>
