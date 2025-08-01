@@ -20,7 +20,7 @@ export const fetchReviews = createAsyncThunk(
       // }
 
       const response = await axios.get(
-        `http://localhost:3000/reviews/${courseId}`,
+        `http://najihoun-api.onrender.com//reviews/${courseId}`,
         // {
         //   headers: {
         //     Authorization: `Bearer ${user.token}`,
@@ -53,7 +53,7 @@ export const createReview = createAsyncThunk(
       };
 
       const response = await axios.post(
-        `http://localhost:3000/reviews/${courseId}`,
+        `http://najihoun-api.onrender.com//reviews/${courseId}`,
         reviewPayload,
         {
           headers: {
@@ -83,7 +83,7 @@ export const updateReview = createAsyncThunk(
       }
 
       const response = await axios.put(
-        `http://localhost:3000/reviews/${courseId}/${reviewId}`,
+        `http://najihoun-api.onrender.com//reviews/${courseId}/${reviewId}`,
         reviewData,
         {
           headers: {
@@ -115,7 +115,7 @@ export const deleteReview = createAsyncThunk(
       }
 
       await axios.delete(
-        `http://localhost:3000/reviews/${courseId}/${reviewId}`,
+        `http://najihoun-api.onrender.com//reviews/${courseId}/${reviewId}`,
         {
           headers: {
             Authorization: `Bearer ${user.token}`,

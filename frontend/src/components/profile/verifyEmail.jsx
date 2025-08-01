@@ -16,7 +16,7 @@ const VerifyEmail = () => {
     const verify = async () => {
       if (token) {
         try {
-          const response = await axios.post('http://localhost:3000/users/verify-email', { token });
+          const response = await axios.post('http://najihoun-api.onrender.com//users/verify-email', { token });
           if (response.data.error) {
             setError(response.data.error);
             toast.error(response.data.error);

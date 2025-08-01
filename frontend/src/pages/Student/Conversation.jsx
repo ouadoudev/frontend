@@ -595,14 +595,14 @@ const Conversation = () => {
                               <div key={media._id} className="mt-2">
                                 {media.type === "image" ? (
                                   <img
-                                    src={`http://localhost:3000/${media.url}`}
+                                    src={`http://najihoun-api.onrender.com//${media.url}`}
                                     alt="Shared image"
                                     className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => window.open(`http://localhost:3000/${media.url}`, "_blank")}
+                                    onClick={() => window.open(`http://najihoun-api.onrender.com//${media.url}`, "_blank")}
                                   />
                                 ) : media.type === "video" ? (
                                   <video controls className="max-w-full h-auto rounded-lg" preload="metadata">
-                                    <source src={`http://localhost:3000/${media.url}`} type="video/mp4" />
+                                    <source src={`http://najihoun-api.onrender.com//${media.url}`} type="video/mp4" />
                                     Your browser does not support the video tag.
                                   </video>
                                 ) : (
