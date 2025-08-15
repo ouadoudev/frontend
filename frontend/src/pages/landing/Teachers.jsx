@@ -140,6 +140,11 @@ const TeacherCard = ({ teacher, index }) => {
   const ref = useRef(null);
   const navigate = useNavigate();
   const isInView = useInView(ref, { once: true });
+        const getDirection = (text) => {
+  const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
+  return rtlChars.test(text) ? "rtl" : "ltr";
+};
+
 
   return (
     <motion.div
@@ -180,7 +185,8 @@ const TeacherCard = ({ teacher, index }) => {
               {teacher.discipline}
             </Badge>
 
-            <p className="text-sm text-gray-600 mb-6 line-clamp-2 leading-relaxed">
+            <p className="text-sm text-gray-600 mb-6 line-clamp-2 leading-relaxed"
+            dir={getDirection(teacher.bio)}>
               {teacher.bio}
             </p>
 

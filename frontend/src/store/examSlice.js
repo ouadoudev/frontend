@@ -42,51 +42,51 @@ export const deleteExam = createAsyncThunk(
 );
 
 // Get Exams by Course
-// export const getAllCourseExams = createAsyncThunk(
-//   "exam/getAllCourseExams",
-//   async (courseId, { getState , rejectWithValue }) => {
-//     try {
-//        const state = getState();
-//       const user = loggedUser(state);
-//          if (!user || !user.id || !user.token) {
-//         throw new Error("User not authenticated");
-//       }
-//       const res = await axios.get(`/exam/course/${courseId}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${user.token}`,
-//             "Content-Type": "application/json",
-//           },
-//         });
-//       return res.data.exams; 
-//     } catch (err) {
-//       return rejectWithValue(err.response?.data || err.message);
-//     }
-//   }
-// );
 export const getAllCourseExams = createAsyncThunk(
   "exam/getAllCourseExams",
-  async (courseId, { getState, rejectWithValue }) => {
+  async (courseId, { getState , rejectWithValue }) => {
     try {
-      const state = getState()
-      const user = loggedUser(state)
-
-      if (!user || !user.id || !user.token) {
-        throw new Error("User not authenticated")
+       const state = getState();
+      const user = loggedUser(state);
+         if (!user || !user.id || !user.token) {
+        throw new Error("User not authenticated");
       }
-
-      const res = await axios.get(`/exam/course/${courseId}`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-      })
-      return res.data.exams
+      const res = await axios.get(`/exam/course/${courseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      return res.data.exams; 
     } catch (err) {
-      return rejectWithValue(err.response?.data || err.message)
+      return rejectWithValue(err.response?.data || err.message);
     }
-  },
-)
+  }
+);
+// export const getAllCourseExams = createAsyncThunk(
+//   "exam/getAllCourseExams",
+//   async (courseId, { getState, rejectWithValue }) => {
+//     try {
+//       const state = getState()
+//       const user = loggedUser(state)
+
+//       if (!user || !user.id || !user.token) {
+//         throw new Error("User not authenticated")
+//       }
+
+//       const res = await axios.get(`/exam/course/${courseId}`, {
+//         headers: {
+//           Authorization: `Bearer ${user.token}`,
+//           "Content-Type": "application/json",
+//         },
+//       })
+//       return res.data.exams
+//     } catch (err) {
+//       return rejectWithValue(err.response?.data || err.message)
+//     }
+//   },
+// )
 
 // Get Exam by ID - Updated to handle course data
 export const getExamById = createAsyncThunk(

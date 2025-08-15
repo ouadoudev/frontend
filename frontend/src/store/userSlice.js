@@ -56,6 +56,22 @@ export const educationalDetails = createAsyncThunk(
   }
 );
 
+export const updateEducationalDetails = createAsyncThunk(
+  "user/updateEducationalDetails",
+  async ({ userId, educationalCycle, educationalLevel, stream }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        "/users/update-educational-details",
+        { userId, educationalCycle, educationalLevel, stream }
+      );
+      return response.data.user;
+    } catch (err) {
+      const error = err.response?.data?.message || "Failed to update educational details.";
+      return rejectWithValue(error);
+    }
+  }
+);
+
 export const assignEducationToTeacher = createAsyncThunk(
   "user/assignEducationToTeacher",
   async (
@@ -287,6 +303,21 @@ const userSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(educationalDetails.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+       .addCase(updateEducationalDetails.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(updateEducationalDetails.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+      })
+      .addCase(updateEducationalDetails.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })

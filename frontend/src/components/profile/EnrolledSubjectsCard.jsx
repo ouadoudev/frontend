@@ -94,7 +94,10 @@ export function EnrolledSubjectsCard({
               );
             })
           ) : (
-            <div className="p-20">
+            <div className="flex flex-col gap-2 pt-16">
+              <div className="text-sm text-center text-muted-foreground mb-2">
+               Le savoir est un pouvoir. Explorez de nouvelles disciplines aujourd'hui 
+              </div>
               <Button
                 variant="outline"
                 onClick={handleSubscribe}

@@ -34,11 +34,6 @@ export const addLesson = createAsyncThunk(
           Authorization: `Bearer ${user.token}`,
           "Content-Type": "multipart/form-data",
         },
-        onUploadProgress: (progressEvent) => {
-          if (formData.onUploadProgress) {
-            formData.onUploadProgress(progressEvent);
-          }
-        },
       });
       dispatch(fetchLessons());
       return response.data;
@@ -58,6 +53,21 @@ export const fetchLesson = createAsyncThunk(
       return rejectWithValue(
         error.response?.data?.message ||
           "An error occurred while fetching the lesson."
+      );
+    }
+  }
+);
+
+export const fetchLessonsByCourse = createAsyncThunk(
+  "lessons/fetchLessonsByCourse",
+  async (courseId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/courses/${courseId}/lessons`);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "An error occurred while fetching lessons for the course."
       );
     }
   }
@@ -178,6 +188,19 @@ const lessonSlice = createSlice({
       .addCase(deleteLesson.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
+      })
+
+      .addCase(fetchLessonsByCourse.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(fetchLessonsByCourse.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.lessons = action.payload;
+      })
+      .addCase(fetchLessonsByCourse.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
       })
 
       .addCase(fetchLesson.pending, (state) => {

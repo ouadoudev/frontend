@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { loggedUser, logout } from "@/store/authSlice";
-import {  Menu, X } from "lucide-react";
+import { fetchUsers } from "@/store/userSlice";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -21,8 +22,22 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector(loggedUser);
+  const users = useSelector((state) => state.user.users);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      setLoading(true);
+      await dispatch(fetchUsers());
+      setLoading(false);
+    };
+    loadUsers();
+  }, [dispatch]);
+
+  // Vérifie s'il y a un admin
+  const adminExists = users?.some((u) => u.role === "admin");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,19 +74,13 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <svg
-                className="h-10 w-10 text-primary"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-              <span className="text-xl font-bold text-primary">
-                PrimeAcademy
+              <img
+                src="/tamadrus_logo.png"
+                className="h-12 mb-3"
+                alt="tamadrus logo"
+              />
+              <span className="font-semibold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Tamadrus
               </span>
             </Link>
           </div>
@@ -134,17 +143,29 @@ const Header = () => {
             </NavigationMenu>
           </div>
           <div className="hidden lg:flex items-center space-x-4">
-            {!user ? (
+            {!user && !loading ? (
               <>
-                <Button variant="ghost" onClick={() => navigate("/login")}>
-                  Se connecter
-                </Button>
-                <Button
-                  onClick={() => navigate("/register/teacher")}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600"
-                >
-                  Devenir Enseignant
-                </Button>
+                {!adminExists ? (
+                  <Button
+                    className="bg-gradient-to-r from-blue-600 to-purple-600"
+                    onClick={() => navigate("/register/admin")}
+                  >
+                    Register Admin
+                  </Button>
+                ) : (
+                  <>
+                    {" "}
+                    <Button variant="ghost" onClick={() => navigate("/login")}>
+                      Se connecter
+                    </Button>
+                    <Button
+                      onClick={() => navigate("/register/teacher")}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600"
+                    >
+                      Devenir Enseignant
+                    </Button>
+                  </>
+                )}
               </>
             ) : (
               <>

@@ -61,18 +61,24 @@ const ExamView = () => {
     }
   }, [currentExam]);
 
-  const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+const formatTime = (seconds, isRTL = false) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
 
-    if (hours > 0) {
-      return `${hours}h ${minutes.toString().padStart(2, "0")}min ${secs
-        .toString()
-        .padStart(2, "0")}s`;
-    }
-    return `${minutes}min ${secs.toString().padStart(2, "0")}s`;
-  };
+  const hLabel = isRTL ? "س" : "h";
+  const mLabel = isRTL ? "د" : "min";
+  const sLabel = isRTL ? "ث" : "s";
+
+  if (hours > 0) {
+    return `${hours}${hLabel} ${minutes.toString().padStart(2, "0")}${mLabel} ${secs
+      .toString()
+      .padStart(2, "0")}${sLabel}`;
+  }
+
+  return `${minutes}${mLabel} ${secs.toString().padStart(2, "0")}${sLabel}`;
+};
+
 
   const iconMargin = (pos = "left") => {
     if (isRTL) return pos === "left" ? "ml-2" : "mr-2";
@@ -165,7 +171,9 @@ const ExamView = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {currentExam.exercises?.length || 0}
                 </p>
-                <p className="text-sm text-gray-600">{t("Exercices", "تمارين")}</p>
+                <p className="text-sm text-gray-600">
+                  {t("Exercices", "تمارين")}
+                </p>
               </div>
             </div>
           </div>
@@ -177,7 +185,7 @@ const ExamView = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {timeRemaining ? formatTime(timeRemaining) : "∞"}
+                  {timeRemaining ? formatTime(timeRemaining, isRTL) : "∞"}
                 </p>
                 <p className="text-sm text-gray-600">{t("Durée", "المدة")}</p>
               </div>
@@ -191,44 +199,77 @@ const ExamView = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">1</p>
-                <p className="text-sm text-gray-600">{t("Tentative", "محاولة")}</p>
+                <p className="text-sm text-gray-600">
+                  {t("Tentative", "محاولة")}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8">
-          <div className={`flex items-start gap-4 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}>
-            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <div
+          className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8"
+          dir={isRTL ? "rtl" : "ltr"}
+        >
+             <div className="flex items-center gap-3 mb-6">
+             <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
               <AlertCircle className="h-5 w-5 text-amber-600" />
             </div>
-            <div className={isRTL ? "text-right" : ""}>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t("Consignes importantes", "تعليمات مهمة")}
-              </h3>
-              <div className="space-y-2 text-gray-600">
-                <p>• {t("Vous n'avez qu'une seule tentative pour cet examen", "لديك محاولة واحدة فقط لاجتياز هذا الامتحان")}</p>
-                <p>• {t("Assurez-vous d'une connexion Internet stable", "تأكد من أن لديك اتصالًا ثابتًا بالإنترنت")}</p>
-                <p>• {t("Le chronomètre démarre dès que vous commencez l'examen", "سيبدأ المؤقت بمجرد بدء الامتحان")}</p>
-                <p>• {t("Vous pouvez naviguer librement entre les questions", "يمكنك التنقل بين الأسئلة بحرية")}</p>
-                <p>• {t("Vos réponses sont enregistrées automatiquement", "يتم حفظ إجاباتك تلقائيًا أثناء التقدم")}</p>
-              </div>
+            <h3 className="text-xl font-semibold text-gray-900">
+              {t("Consignes importantes", "تعليمات مهمة")}
+            </h3>
+          </div>
+          <div className="flex items-start gap-4 mb-6">
+            <div className={`${isRTL ? "text-start" : ""}`}>
+              <ul className="list-disc pl-5 rtl:pl-0 rtl:pr-5 space-y-2 text-gray-600">
+                <li>
+                  {t(
+                    "Vous n'avez qu'une seule tentative pour cet examen",
+                    "لديك محاولة واحدة فقط لاجتياز هذا الامتحان"
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "Assurez-vous d'une connexion Internet stable",
+                    "تأكد من أن لديك اتصالًا ثابتًا بالإنترنت"
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "Le chronomètre démarre dès que vous commencez l'examen",
+                    "سيبدأ المؤقت بمجرد بدء الامتحان"
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "Vous pouvez naviguer librement entre les questions",
+                    "يمكنك التنقل بين الأسئلة بحرية"
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "Vos réponses sont enregistrées automatiquement",
+                    "يتم حفظ إجاباتك تلقائيًا أثناء التقدم"
+                  )}
+                </li>
+              </ul>
             </div>
           </div>
         </div>
 
         {/* Exercise List */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8">
-          <div
-            className={`flex items-center gap-3 mb-6 ${
-              isRTL ? "flex-row-reverse text-right" : ""
-            }`}
-          >
+        <div
+          className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8"
+          dir={isRTL ? "rtl" : "ltr"}
+        >
+          <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
               <BookOpen className="h-4 w-4 text-blue-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900">{t("Contenu de l'examen", "محتوى الامتحان")}</h3>
+            <h3 className="text-xl font-semibold text-gray-900">
+              {t("Contenu de l'examen", "محتوى الامتحان")}
+            </h3>
           </div>
 
           <div className="space-y-4">
@@ -241,51 +282,39 @@ const ExamView = () => {
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                    <span className="text-sm font-bold text-gray-700">{index + 1}</span>
+                    <span className="text-sm font-bold text-gray-700">
+                      {index + 1}
+                    </span>
                   </div>
-                  <div className={isRTL ? "text-right" : ""}>
-                    <h4 className="font-medium text-gray-900">{exercise.exercise?.title}</h4>
+                  <div className={isRTL ? "text-end" : "text-start"}>
+                    <h4 className="font-medium text-gray-900">
+                      {exercise.exercise?.title}
+                    </h4>
                     <p className="text-sm text-gray-600">
                       {t("De la leçon", "من الدرس")}: {exercise.lesson?.title}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div
+                  className={`flex items-center gap-3 ${
+                    isRTL ? "flex-row-reverse" : ""
+                  }`}
+                >
                   {exercise.exercise?.timeLimit && (
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <Timer className="h-3 w-3" />
-                      {formatTime(exercise.exercise.timeLimit)}
+                     {formatTime(exercise.exercise.timeLimit, isRTL)}
                     </div>
                   )}
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700 w-24"
+                  >
                     {t(`Exercice ${index + 1}`, `تمرين ${index + 1}`)}
                   </Badge>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Progress Indicator */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white mb-8">
-          <div
-            className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${
-              isRTL ? "flex-row-reverse" : ""
-            }`}
-          >
-            <div className={isRTL ? "text-right" : ""}>
-              <h3 className="text-xl font-semibold mb-2">{t("Prêt à commencer ?", "هل أنت مستعد للبدء؟")}</h3>
-              <p className="text-blue-100">
-                {t(
-                  `Complétez tous les ${currentExam.exercises?.length} exercices pour terminer votre examen`,
-                  `أكمل جميع التمارين الـ${currentExam.exercises?.length} لإنهاء الامتحان`
-                )}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-300" />
-              <span className="text-sm">{t("Tous les systèmes sont prêts", "جميع الأنظمة جاهزة")}</span>
-            </div>
           </div>
         </div>
 
@@ -316,7 +345,9 @@ const ExamView = () => {
           >
             {isStarting ? (
               <>
-                <Loader2 className={`h-4 w-4 animate-spin ${iconMargin("left")}`} />
+                <Loader2
+                  className={`h-4 w-4 animate-spin ${iconMargin("left")}`}
+                />
                 {t("Démarrage...", "جاري البدء...")}
               </>
             ) : (
@@ -338,11 +369,18 @@ const ExamView = () => {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Award className="h-4 w-4" />
-                <span>{t("Contribue à la note finale", "يساهم في الدرجة النهائية")}</span>
+                <span>
+                  {t("Contribue à la note finale", "يساهم في الدرجة النهائية")}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <Zap className="h-4 w-4" />
-                <span>{t("Sauvegarde automatique activée", "تم تفعيل الحفظ التلقائي")}</span>
+                <span>
+                  {t(
+                    "Sauvegarde automatique activée",
+                    "تم تفعيل الحفظ التلقائي"
+                  )}
+                </span>
               </div>
             </div>
           </div>

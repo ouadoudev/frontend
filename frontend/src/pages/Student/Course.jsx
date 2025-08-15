@@ -563,7 +563,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import UserProfileActions from "@/components/profile/userActions";
+
 
 const Course = () => {
   const { id } = useParams();
@@ -596,7 +596,11 @@ const Course = () => {
       })
     ).then((action) => {
       if (action.meta.requestStatus === "fulfilled") {
-        navigate("/messages");
+            if (user.role === "admin" || user.role === "teacher") {
+          navigate("/dashboard/messages");
+        } else {
+          navigate("/messages");
+        }
       }
     });
   };
@@ -839,7 +843,7 @@ const Course = () => {
                   <div className="text-sm sm:text-base">Error: {error}</div>
                 ) : lessons && lessons.length > 0 ? (
                   lessons.map((lesson) => {
-                    const isCompleted = progress?.completedLessons.some(
+                    const isCompleted = progress?.completedLessons?.some(
                       (cl) => cl.lesson._id === lesson._id
                     );
                     const isPublished = lesson.published;
@@ -1024,19 +1028,19 @@ const Course = () => {
                     ? "جاري تحميل الامتحانات..."
                     : "Chargement des examens..."}
                 </div>
-              ) : exams?.length > 0 ? (
+              ) : exams && exams.length > 0 ? (
                 exams.map((exam, index) => {
-                  const userSubmission = exam.submissions?.find((sub) => {
+                  const userSubmission = exam?.submissions?.find((sub) => {
                     const subUserId = sub.user?._id || sub.user?.id || sub.user;
                     const currentUserId = user._id || user.id;
                     return subUserId?.toString() === currentUserId?.toString();
                   });
 
                   const isSubmitted = !!userSubmission;
-                  const canTakeExam = exam.lessonsCompleted !== false;
+                  const canTakeExam = exam?.lessonsCompleted !== false;
 
                   return (
-                    <div key={exam._id}>
+                    <div key={exam?._id}>
                       <div
                         className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors ${
                           getDirection(course?.title) === "rtl"
@@ -1055,7 +1059,7 @@ const Course = () => {
                           >
                             <div>
                               <h3 className="font-semibold text-sm sm:text-base leading-tight">
-                                {exam.title}
+                                {exam?.title}
                               </h3>
                               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                                 {course?.title}
@@ -1068,7 +1072,7 @@ const Course = () => {
                                   : ""
                               }`}
                             >
-                              {!exam.published && (
+                              {!exam?.published && (
                                 <Badge
                                   variant="secondary"
                                   className="bg-gray-100 text-gray-600 text-xs sm:text-sm"
@@ -1164,8 +1168,8 @@ const Course = () => {
                             </Button>
                           ) : (
                             <Button
-                              variant={exam.published ? "default" : "secondary"}
-                              disabled={!exam.published}
+                              variant={exam?.published ? "default" : "secondary"}
+                              disabled={!exam?.published}
                               onClick={() => handleExamNavigation(exam)}
                               className={`w-full sm:w-auto text-xs sm:text-sm ${
                                 getDirection(course?.title) === "rtl"
@@ -1419,7 +1423,7 @@ const Course = () => {
               >
                 {lessons?.every(
                   (lesson) =>
-                    !progress?.completedLessons.some(
+                    !progress?.completedLessons?.some(
                       (cl) => cl.lesson._id === lesson._id
                     )
                 )

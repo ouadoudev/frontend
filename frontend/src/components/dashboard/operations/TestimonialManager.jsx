@@ -11,7 +11,7 @@ const TestimonialManager = ({ children }) => {
   const timeSpent = useTimeTracker()
 
   // Minimum time required to show testimonial popup (5 minutes in seconds)
-  const MIN_TIME_REQUIRED = 300
+  const MIN_TIME_REQUIRED = 1800
 
   useEffect(() => {
     // Only proceed if we have a valid non-admin user

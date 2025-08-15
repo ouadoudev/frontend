@@ -81,7 +81,7 @@ const TestimonialPopup = ({ open, onClose, timeSpent }) => {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mx-4">
           <div className="space-y-2">
             <Label>Note *</Label>
             <div className="flex space-x-1">

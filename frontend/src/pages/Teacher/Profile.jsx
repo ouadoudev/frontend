@@ -10,8 +10,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Mail,
-  Phone,
-  User,
   BookOpen,
   Users,
   GraduationCap,
@@ -28,7 +26,6 @@ import { fetchCourses } from "@/store/courseSlice";
 import { fetchSubjectById } from "@/store/subjectSlice";
 import { fetchReviews } from "@/store/reviewSlice";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GrUpdate } from "react-icons/gr";
 import { fetchUserById } from "@/store/userSlice";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { fetchUserNotifications } from "@/store/notificationSlice";
@@ -135,8 +132,12 @@ const TeacherProfile = () => {
     }
   };
 
-  const totalStudents =
-    teacherCourses?.reduce((sum, course) => sum + (course.enrolls || 0), 0) || 0;
+    const getDirection = (text) => {
+    const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
+    return rtlChars.test(text) ? "rtl" : "ltr";
+  };
+
+const totalStudents = teacher?.students?.length || 0;
 
   const totalCourses = teacherCourses?.length || 0;
 
@@ -226,7 +227,8 @@ const TeacherProfile = () => {
                   {teacher.educationalCycles[0] || "No discipline specified"}
                 </div>
               </div>
-              <p className="text-muted-foreground leading-relaxed pb-5 m-4">
+              <p className="text-muted-foreground leading-relaxed pb-5 m-4 w-[620px]"
+              dir={getDirection(teacher.bio )}>
                 {teacher.bio || "No bio available"}
               </p>
             </div>

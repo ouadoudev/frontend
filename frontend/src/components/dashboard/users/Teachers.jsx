@@ -441,13 +441,13 @@ const Teachers = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-6 m-10">
             {/* Educational Cycles Section */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Educational Cycles</Label>
               <div className="flex gap-2">
                 <Select value={currentCycle} onValueChange={setCurrentCycle}>
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger  className="bg-white border-gray-300 focus:ring-2 focus:ring-blue-500">
                     <SelectValue placeholder="Select a cycle" />
                   </SelectTrigger>
                   <SelectContent>
@@ -495,7 +495,7 @@ const Teachers = () => {
                   onValueChange={setCurrentLevel}
                   disabled={selectedCycles.length === 0}
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger  className="bg-white border-gray-300 focus:ring-2 focus:ring-blue-500">
                     <SelectValue placeholder="Select a level" />
                   </SelectTrigger>
                   <SelectContent>
@@ -536,10 +536,10 @@ const Teachers = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={closeAssignDialog}>
+            <Button variant="outline" onClick={closeAssignDialog}  className="border-gray-300 text-gray-700 hover:bg-gray-100">
               Cancel
             </Button>
-            <Button onClick={handleAssignEducation}>
+            <Button onClick={handleAssignEducation}  className="bg-blue-600 text-white hover:bg-blue-700">
               Assign Educational Details
             </Button>
           </DialogFooter>

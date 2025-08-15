@@ -1,5 +1,3 @@
-
-
 import React, { useRef } from "react"
 
 import { useState } from "react"
@@ -60,7 +58,7 @@ const faqData = [
   {
     question: "Quels niveaux sont disponibles sur votre plateforme LMS ?",
     answer:
-      "PrimeAcademy couvre l'ensemble du parcours scolaire au Maroc, du primaire au baccalauréat. Les cours incluent toutes les matières principales telles que les mathématiques, les sciences, les langues (français, arabe, anglais), ainsi que des matières spécialisées selon les options du bac.",
+      "Tamadrus couvre l'ensemble du parcours scolaire au Maroc, du primaire au baccalauréat. Les cours incluent toutes les matières principales telles que les mathématiques, les sciences, les langues (français, arabe, anglais), ainsi que des matières spécialisées selon les options du bac.",
     category: "Général",
   },
   {
@@ -84,13 +82,13 @@ const faqData = [
   {
     question: "Est-ce que les cours sont accessibles sur mobile ?",
     answer:
-      "Oui, PrimeAcademy est entièrement responsive et accessible sur les appareils mobiles. Les étudiants peuvent suivre leurs cours via l'application mobile disponible sur iOS et Android, ce qui leur permet d'apprendre à tout moment et en tout lieu.",
+      "Oui, Tamadrus est entièrement responsive et accessible sur les appareils mobiles. Les étudiants peuvent suivre leurs cours via l'application mobile disponible sur iOS et Android, ce qui leur permet d'apprendre à tout moment et en tout lieu.",
     category: "Technique",
   },
   {
     question: "Puis-je utiliser la plateforme pour me préparer aux examens de fin d'année ?",
     answer:
-      "Oui, PrimeAcademy propose des parcours de révision spécialement conçus pour préparer les examens de fin d'année. Les étudiants peuvent accéder à des simulations d'examen, des exercices de révision et des sessions de préparation intensives pour le Bac.",
+      "Oui, Tamadrus propose des parcours de révision spécialement conçus pour préparer les examens de fin d'année. Les étudiants peuvent accéder à des simulations d'examen, des exercices de révision et des sessions de préparation intensives pour le Bac.",
     category: "Examens",
   },
 ]

@@ -9,9 +9,11 @@ export function OngoingCoursesCard({ user, ongoingCourses, handleViewCourse }) {
   return (
     <Card className="flex-1">
       <CardHeader>
-        <CardTitle>Ongoing Courses</CardTitle>
+        <CardTitle>Cours en cours</CardTitle>
       </CardHeader>
       <CardContent>
+         {ongoingCourses.length > 0 ? (
+
         <ScrollArea className="h-56 px-1">
           <div className="space-y-4">
             {ongoingCourses?.map((ongoing, index) => {
@@ -60,6 +62,11 @@ export function OngoingCoursesCard({ user, ongoingCourses, handleViewCourse }) {
             })}
           </div>
         </ScrollArea>
+         ):(
+          <div className="h-56 px-1">
+            <p className="text-muted-foreground text-center pt-14">Vous n'avez pas encore de cours en cours. C'est le moment idéal pour commencer !</p>
+          </div>
+         )}
       </CardContent>
     </Card>
   );

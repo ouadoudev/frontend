@@ -67,7 +67,7 @@ const Exercises = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-center">
-              Exercises for {lesson?.title}
+              Exercices pour {lesson?.title}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -75,15 +75,15 @@ const Exercises = () => {
               <TableHeader>
                 <TableRow className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
                   <TableHead className="text-center px-4 py-2">
-                    Exercise Title
+                    Titre de l'exercice
                   </TableHead>
                   <TableHead className="text-center px-4 py-2">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              {loading && <div>Loading...</div>}
-              {error && <div>Error: {error}</div>}
+              {loading && <div>Chargement...</div>}
+              {error && <div>Erreur : {error}</div>}
               <TableBody>
                 {exercises && exercises.length > 0 ? (
                   exercises.map((exercise) => (
@@ -96,13 +96,6 @@ const Exercises = () => {
                       </TableCell>
                       <TableCell className="text-center px-4 py-2">
                         <div className="flex justify-center gap-2">
-                          <Button
-                            variant="outline"
-                            className="h-8"
-                            onClick={() => handlePlayLesson(lesson._id)}
-                          >
-                            <PlayIcon className="w-4 h-4" />
-                          </Button>
                           <Button
                             variant="outline"
                             className="h-8"

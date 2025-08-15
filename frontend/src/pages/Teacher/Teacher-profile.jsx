@@ -131,7 +131,11 @@ const TeacherProfile = () => {
       })
     ).then((action) => {
       if (action.meta.requestStatus === "fulfilled") {
-        navigate("/messages");
+        if (visitor.role === "admin" || visitor.role === "teacher") {
+          navigate("/dashboard/messages");
+        } else {
+          navigate("/messages");
+        }
       }
     });
   };
@@ -223,6 +227,11 @@ const TeacherProfile = () => {
     }).format(new Date(date));
   };
 
+    const getDirection = (text) => {
+    const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
+    return rtlChars.test(text) ? "rtl" : "ltr";
+  };
+
   // Calculate totals with null checks
   const totalStudents =
     teacherData.courses?.reduce(
@@ -294,7 +303,8 @@ const TeacherProfile = () => {
                 </div>
               </div>
 
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed w-96"
+               dir={getDirection(teacherData.bio )}>
                 {teacherData.bio || "No bio available"}
               </p>
 
@@ -432,128 +442,128 @@ const TeacherProfile = () => {
             </ScrollArea>
           </CardContent>
         </Card>
-       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Student Testimonials
-          </CardTitle>
-          <CardDescription>
-            What students say about this teacher
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {reviewsStatus === "loading" && (
-              <p className="text-muted-foreground text-center py-4">
-                Loading reviews...
-              </p>
-            )}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Student Testimonials
+            </CardTitle>
+            <CardDescription>
+              What students say about this teacher
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {reviewsStatus === "loading" && (
+                <p className="text-muted-foreground text-center py-4">
+                  Loading reviews...
+                </p>
+              )}
 
-            {reviewsStatus === "failed" && (
-              <p className="text-red-600 text-center py-4">
-                {reviewsError || "Failed to load reviews"}
-              </p>
-            )}
+              {reviewsStatus === "failed" && (
+                <p className="text-red-600 text-center py-4">
+                  {reviewsError || "Failed to load reviews"}
+                </p>
+              )}
 
-            {reviewsStatus === "succeeded" && allReviews.length > 0 ? (
-              allReviews.slice(0, 6).map((testimonial, index) => {
-                const course = teacherData.courses.find(
-                  (c) => c._id === testimonial.courseId
-                );
+              {reviewsStatus === "succeeded" && allReviews.length > 0 ? (
+                allReviews.slice(0, 6).map((testimonial, index) => {
+                  const course = teacherData.courses.find(
+                    (c) => c._id === testimonial.courseId
+                  );
 
-                return (
-                  <div
-                    key={testimonial._id || index}
-                    className="p-4 border rounded-lg bg-gray-50"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage
-                          src={
-                            testimonial.user?.user_image?.url ||
-                            "/placeholder.svg?height=40&width=40"
-                          }
-                          alt={testimonial.user?.username || "Student"}
-                        />
-                        <AvatarFallback>
-                          {(testimonial.user?.username || "S")
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
+                  return (
+                    <div
+                      key={testimonial._id || index}
+                      className="p-4 border rounded-lg bg-gray-50"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage
+                            src={
+                              testimonial.user?.user_image?.url ||
+                              "/placeholder.svg?height=40&width=40"
+                            }
+                            alt={testimonial.user?.username || "Student"}
+                          />
+                          <AvatarFallback>
+                            {(testimonial.user?.username || "S")
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <p className="font-medium text-sm">
-                            {testimonial.user?.username || "Anonymous Student"}
-                          </p>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                              <svg
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < (testimonial.rating || 0)
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-gray-300"
-                                }`}
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="font-medium text-sm">
+                              {testimonial.user?.username ||
+                                "Anonymous Student"}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <svg
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < (testimonial.rating || 0)
+                                      ? "text-yellow-400 fill-current"
+                                      : "text-gray-300"
+                                  }`}
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {testimonial.createdAt
+                                ? new Date(
+                                    testimonial.createdAt
+                                  ).toLocaleDateString("fr-FR", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : ""}
+                            </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {testimonial.createdAt
-                              ? new Date(
-                                  testimonial.createdAt
-                                ).toLocaleDateString("fr-FR", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : ""}
-                          </span>
-                        </div>
 
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          "{testimonial.comment || "Great teacher!"}"
-                        </p>
-
-                        {course && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Course: {course.title}
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            "{testimonial.comment || "Great teacher!"}"
                           </p>
-                        )}
+
+                          {course && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Course: {course.title}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-center mt-2"
-              >
-                <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-2xl font-semibold mb-2">
-                  Aucun avis trouvé
-                </h3>
-                <p className="text-muted-foreground">
-                  Aucun avis n’a encore été publié pour le moment.
-                </p>
-              </motion.div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                  );
+                })
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-center mt-2"
+                >
+                  <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-2xl font-semibold mb-2">
+                    Aucun avis trouvé
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Aucun avis n’a encore été publié pour le moment.
+                  </p>
+                </motion.div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Testimonials Section */}
-
     </div>
   );
 };

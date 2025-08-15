@@ -91,7 +91,7 @@ const PopularCourses = () => {
         }
         return new Date(b.updatedAt) - new Date(a.updatedAt);
       })
-        .slice(0, 6);
+        .slice(0, 3);
       setFilteredSubjects(sortedSubjects);
     }
   }, [subjects, educationalCycle, educationalLevel, stream]);

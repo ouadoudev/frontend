@@ -28,16 +28,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-toastify";
 import {
@@ -47,17 +37,13 @@ import {
   Plus,
   Search,
   MoreHorizontal,
-  FileText,
-  Target,
-  Users,
-  Calendar,
-  Filter,
-  SortAsc,
-  SortDesc,
-  AlertCircle,
   BookOpen,
   Eye,
-  Copy,
+  Filter,
+  SortAsc,
+  Calendar,
+  SortDesc,
+  Users,
 } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -70,7 +56,7 @@ const ExamList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
-   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [examToDelete, setExamToDelete] = useState(null);
 
   useEffect(() => {
@@ -100,32 +86,30 @@ const ExamList = () => {
       return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
     });
 
+  const handleDeleteClick = (examId) => {
+    setExamToDelete(examId);
+    setShowDeleteConfirm(true);
+  };
 
-
-    const handleDelete = (exam) => {
-      setToDelete(exam);
-      setShowDeleteConfirm(true);
-    };
-  
-    const handleConfirmDelete = async () => {
-      try {
-        if (!examToDelete) return;
-        await dispatch(deleteExercise(examToDelete)).unwrap();
-        dispatch(getAllCourseExams(courseId));
-        toast.success("exercice supprimée avec succès", {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
-      } catch (error) {
-        toast.error("Erreur lors de la suppression", {
-          position: "bottom-right",
-          autoClose: 3000,
-        });
-      } finally {
-        setShowDeleteConfirm(false);
-        setExamToDelete(null);
-      }
-    };
+  const handleConfirmDelete = async () => {
+    try {
+      if (!examToDelete) return;
+      await dispatch(deleteExam(examToDelete)).unwrap();
+      dispatch(getAllCourseExams(courseId));
+      toast.success("Exam deleted successfully", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      toast.error("Error deleting exam", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setShowDeleteConfirm(false);
+      setExamToDelete(null);
+    }
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -201,10 +185,9 @@ const ExamList = () => {
       <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
         <Card>
           <CardHeader>
-            <CardTitle>Gestion des Exams</CardTitle>
+            <CardTitle>Exam Management</CardTitle>
             <CardDescription>
-              Créez, consultez et gérez les Exams ainsi que leurs quiz et
-              exercices.
+              Create, view, and manage exams along with their quizzes and exercises.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -356,9 +339,7 @@ const ExamList = () => {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => {
-                                  setExamToDelete(exam);
-                                }}
+                                onClick={() => handleDeleteClick(exam._id)}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -378,38 +359,17 @@ const ExamList = () => {
       </div>
       <ConfirmDialog
         show={showDeleteConfirm}
-        title="Confirmer la suppression"
-        message="Êtes-vous sûr de vouloir supprimer cette exam ? Cette action est irréversible."
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this exam? This action cannot be undone."
         onCancel={() => {
           setShowDeleteConfirm(false);
           setExamToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        confirmText="Supprimer"
-        cancelText="Annuler"
+        confirmText="Delete"
+        cancelText="Cancel"
         destructive
       />
-      {/* <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the exam "{examToDelete?.title}"?
-              This action cannot be undone and will also delete all associated
-              results.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog> */}
     </div>
   );
 };

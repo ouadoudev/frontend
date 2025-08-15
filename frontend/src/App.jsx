@@ -81,10 +81,11 @@ import Procedure from "./components/Procedure";
 import EditExercise from "./components/dashboard/exercise/EditExercise";
 import TeacherRevenueHistory from "./pages/Teacher/TeacherRevenueHistory";
 import PendingRevenuesAdmin from "./components/dashboard/revenue/PendingRevenuesAdmin";
+import AdminRegister from "./pages/AdminRegister";
 
 
 
-axios.defaults.baseURL = "http://najihoun-api.onrender.com/";
+axios.defaults.baseURL = "https://tamadrus-api.onrender.com";
 axios.defaults.withCredentials = true;
 
 const App = () => {
@@ -103,6 +104,7 @@ const App = () => {
             <Route path="/educational-cycle" element={<EducationalCycle />} />
           </Route>
           <Route path="/login" element={<Login />} />
+          <Route path="/register/admin" element={<AdminRegister/>} />
           <Route path="/register" element={<Register />} />
           <Route path="/register/teacher" element={<TeacherRegister />} />
           <Route path="/" element={<Layout />}>

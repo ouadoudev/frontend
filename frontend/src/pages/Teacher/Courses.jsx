@@ -302,7 +302,7 @@ const Courses = () => {
                             onClick={() =>
                               navigate(`/course/${course._id}/exams`)
                             }
-                            title="Create Quiz"
+                            title=" Gestion des Exams"
                             className="text-green-600 hover:text-green-700"
                           >
                             <PlusCircleIcon className="w-4 h-4 " />

@@ -355,6 +355,8 @@ import {
   LogOut,
   Handshake,
   Landmark,
+  ChevronsRight,
+  ChevronsLeft,
 } from "lucide-react";
 import { FiX } from "react-icons/fi";
 import { useState, useEffect } from "react";
@@ -503,19 +505,20 @@ const Sidebar = ({ open, setOpen }) => {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="sticky top-0 z-10 flex items-center justify-between flex-shrink-0 p-4 bg-white">
+             <img src="/tamadrus_logo.png" className="h-10 mb-3" alt="tamadrus logo" />
             <span
-              className={`font-semibold text-xl overflow-hidden transition-all text-blue-600 ${
-                expanded ? "w-36" : "w-0"
+              className={`font-semibold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent ${
+                expanded ? "w-36 ml-2" : "w-0"
               }`}
             >
-              Prime<span className="text-purple-600">Academy</span>
+             Tamadrus
             </span>
             <button
               onClick={() => setExpanded((curr) => !curr)}
-              className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 lg:block hidden"
+              className="p-1.5 rounded-lg lg:block hidden"
               aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
             >
-              {expanded ? <ChevronFirst /> : <ChevronLast />}
+              {expanded ? <ChevronsLeft /> : <ChevronsRight />}
             </button>
             <button
               onClick={() => setOpen(false)}

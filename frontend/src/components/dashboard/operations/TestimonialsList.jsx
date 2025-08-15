@@ -51,6 +51,7 @@ const TestimonialsList = () => {
           position: "bottom-right",
           autoClose: 3000,
         });
+        dispatch(fetchTestimonials());
       } else {
         toast.error(result.payload || "Action failed", {
           position: "bottom-right",

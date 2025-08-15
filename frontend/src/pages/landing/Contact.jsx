@@ -418,7 +418,7 @@ const Contact = () => {
                 <ContactInfo
                   icon={Mail}
                   title="Email"
-                  content="support@primeacademy.ma"
+                  content="support@Tamadrus.ma"
                   delay={0.1}
                 />
                 <ContactInfo

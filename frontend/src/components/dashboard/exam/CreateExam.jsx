@@ -1,5 +1,3 @@
-// 
-
 // import { useState, useEffect } from "react"
 // import { useDispatch, useSelector } from "react-redux"
 // import { createExam } from "@/store/examSlice"
@@ -496,7 +494,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createExam } from "@/store/examSlice";
-import { fetchLessons } from "@/store/lessonSlice";
+import { fetchLessonsByCourse } from "@/store/lessonSlice";
 import { fetchExercisesByLesson } from "@/store/exerciseSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -759,9 +757,11 @@ const CreateExamForm = () => {
   // Track which exercise previews are open
   const [openPreviews, setOpenPreviews] = useState({});
 
-  useEffect(() => {
-    dispatch(fetchLessons());
-  }, [dispatch]);
+useEffect(() => {
+  if (courseId) {
+    dispatch(fetchLessonsByCourse(courseId));
+  }
+}, [dispatch, courseId]);
 
   const handleLessonChange = async (index, lessonId) => {
     // Update selected lesson

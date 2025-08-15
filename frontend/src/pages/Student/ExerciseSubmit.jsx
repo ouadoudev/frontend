@@ -351,7 +351,7 @@
 //         exerciseId: exercise._id,
 //       })
 //     ).unwrap();
-    
+
 //     if (
 //       userScoreResult.score &&
 //       userScoreResult.score.attempts >= exercise.maxAttempts
@@ -371,7 +371,7 @@
 //     // Format the answers properly before submission
 //     const formattedAnswers = exercise.questions.map((question, qIndex) => {
 //       const answer = userAnswers[question._id];
-      
+
 //       if (question.type === "table-completion") {
 //         // For table completion, we need to map the answers to the expected format
 //         const tableAnswers = [];
@@ -387,7 +387,7 @@
 //         });
 //         return tableAnswers;
 //       }
-      
+
 //       return answer;
 //     });
 
@@ -756,7 +756,8 @@ const translations = {
     selectMatch: "Sélectionner une correspondance",
     error: "Erreur",
     maxAttemptsReached: "Nombre maximum de tentatives atteint",
-    maxAttemptsDesc: "Vous avez atteint le nombre maximum de tentatives (%d) pour cet exercice.",
+    maxAttemptsDesc:
+      "Vous avez atteint le nombre maximum de tentatives (%d) pour cet exercice.",
     question: "Question %d sur %d",
     previous: "Précédent",
     next: "Suivant",
@@ -901,7 +902,6 @@ const ExerciseSubmit = () => {
         );
 
       case "short-answer":
-      case "fill-in-the-blank":
         return (
           <Textarea
             value={userAnswers[question._id] || ""}
@@ -912,30 +912,66 @@ const ExerciseSubmit = () => {
           />
         );
 
+      case "fill-in-the-blank":
+        return (
+          <div className="space-y-2">
+            {(question.correctAnswers || []).map((_, index) => (
+              <Input
+                key={index}
+                value={
+                  userAnswers[question._id]?.[index] !== undefined
+                    ? userAnswers[question._id][index]
+                    : ""
+                }
+                onChange={(e) => {
+                  const updatedAnswers = userAnswers[question._id]
+                    ? [...userAnswers[question._id]]
+                    : [];
+                  updatedAnswers[index] = e.target.value;
+                  handleAnswerChange(question._id, updatedAnswers);
+                }}
+                placeholder={`${t.enterAnswer} ${index + 1}`}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-500"
+                dir={questionDir}
+              />
+            ))}
+          </div>
+        );
+
       case "matching":
+        // Defensive fallback for empty arrays
+        const leftItems = question.matching.leftItems || [];
+        const rightItems = question.matching.rightItems || [];
+
         return (
           <div className="space-y-4" dir={questionDir}>
-            {question.matching.pairs.map((pair, index) => (
-              <div key={index} className={`flex items-center space-x-4 ${flexDir}`}>
-                <Label className="w-1/3 text-right font-medium" dir={getDirection(pair.term)}>
-                  {pair.term}
+            {leftItems.map((term, index) => (
+              <div
+                key={index}
+                className={`flex items-center space-x-4 ${flexDir}`}
+              >
+                <Label
+                  className="w-1/3 text-right font-medium"
+                  dir={getDirection(term)}
+                >
+                  {term}
                 </Label>
                 <Select
                   value={userAnswers[question._id]?.[index]?.definition || ""}
-                  onValueChange={(value) =>
-                    handleAnswerChange(question._id, [
-                      ...(userAnswers[question._id] || []),
-                      { term: pair.term, definition: value },
-                    ])
-                  }
+                  onValueChange={(value) => {
+                    const currentAnswers = userAnswers[question._id] || [];
+                    const newAnswers = [...currentAnswers];
+                    newAnswers[index] = { term, definition: value };
+                    handleAnswerChange(question._id, newAnswers);
+                  }}
                 >
                   <SelectTrigger className="w-2/3" dir={questionDir}>
                     <SelectValue placeholder={t.selectMatch} />
                   </SelectTrigger>
                   <SelectContent>
-                    {question.matching.pairs.map((p) => (
-                      <SelectItem key={p.definition} value={p.definition}>
-                        {p.definition}
+                    {rightItems.map((definition) => (
+                      <SelectItem key={definition} value={definition}>
+                        {definition}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1003,13 +1039,19 @@ const ExerciseSubmit = () => {
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className={`border border-gray-300 p-2 ${questionDir === "rtl" ? "text-right" : "text-left"}`}>
+                  <th
+                    className={`border border-gray-300 p-2 ${
+                      questionDir === "rtl" ? "text-right" : "text-left"
+                    }`}
+                  >
                     {t.element}
                   </th>
                   {columns.map((header, index) => (
                     <th
                       key={index}
-                      className={`border border-gray-300 p-2 ${questionDir === "rtl" ? "text-right" : "text-left"}`}
+                      className={`border border-gray-300 p-2 ${
+                        questionDir === "rtl" ? "text-right" : "text-left"
+                      }`}
                       dir={getDirection(header)}
                     >
                       {header}
@@ -1023,7 +1065,12 @@ const ExerciseSubmit = () => {
                     key={rowIndex}
                     className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                   >
-                    <td className={`border border-gray-300 p-2 font-medium ${questionDir === "rtl" ? "text-right" : "text-left"}`} dir={getDirection(rowLabel)}>
+                    <td
+                      className={`border border-gray-300 p-2 font-medium ${
+                        questionDir === "rtl" ? "text-right" : "text-left"
+                      }`}
+                      dir={getDirection(rowLabel)}
+                    >
                       {rowLabel}
                     </td>
                     {columns.map((_, colIndex) => {
@@ -1035,10 +1082,14 @@ const ExerciseSubmit = () => {
                       const isCellTextNonEmpty = cellText.trim() !== "";
                       const inputValue = isCellTextNonEmpty
                         ? cellText
-                        : userAnswers[question._id]?.[rowIndex]?.[colIndex] || "";
+                        : userAnswers[question._id]?.[rowIndex]?.[colIndex] ||
+                          "";
 
                       return (
-                        <td key={colIndex} className="border border-gray-300 p-2">
+                        <td
+                          key={colIndex}
+                          className="border border-gray-300 p-2"
+                        >
                           <Input
                             type="text"
                             value={inputValue}
@@ -1173,7 +1224,10 @@ const ExerciseSubmit = () => {
             <CardTitle className="text-2xl" dir={getDirection(exercise?.title)}>
               {exercise?.title}
             </CardTitle>
-            <CardDescription className="text-gray-100" dir={getDirection(exercise?.description)}>
+            <CardDescription
+              className="text-gray-100"
+              dir={getDirection(exercise?.description)}
+            >
               {exercise?.description}
             </CardDescription>
           </CardHeader>
@@ -1189,7 +1243,9 @@ const ExerciseSubmit = () => {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle dir={isRTL ? "rtl" : "ltr"}>{t.error}</AlertTitle>
-                <AlertDescription dir={isRTL ? "rtl" : "ltr"}>{error}</AlertDescription>
+                <AlertDescription dir={isRTL ? "rtl" : "ltr"}>
+                  {error}
+                </AlertDescription>
               </Alert>
             </CardContent>
           )}
@@ -1197,12 +1253,17 @@ const ExerciseSubmit = () => {
             <CardContent>
               <Alert variant="warning">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle dir={isRTL ? "rtl" : "ltr"}>{t.maxAttemptsReached}</AlertTitle>
+                <AlertTitle dir={isRTL ? "rtl" : "ltr"}>
+                  {t.maxAttemptsReached}
+                </AlertTitle>
                 <AlertDescription dir={isRTL ? "rtl" : "ltr"}>
                   {t.maxAttemptsDesc.replace("%d", exercise.maxAttempts)}
                 </AlertDescription>
                 {score && score.points !== undefined && (
-                  <div className="mt-2 text-sm text-gray-600" dir={isRTL ? "rtl" : "ltr"}>
+                  <div
+                    className="mt-2 text-sm text-gray-600"
+                    dir={isRTL ? "rtl" : "ltr"}
+                  >
                     {t.yourScore}: <strong>{score.points}</strong>
                   </div>
                 )}
@@ -1212,11 +1273,22 @@ const ExerciseSubmit = () => {
           {currentQuestion && !maxAttemptsReached && (
             <>
               <CardContent className="p-6">
-                <div className={`flex items-center justify-between mb-4 ${flexDir}`}>
-                  <h2 className="text-xl font-semibold" dir={isRTL ? "rtl" : "ltr"}>
-                    {t.question.replace("%d", currentQuestionIndex + 1).replace("%d", questions.length)}
+                <div
+                  className={`flex items-center justify-between mb-4 ${flexDir}`}
+                >
+                  <h2
+                    className="text-xl font-semibold"
+                    dir={isRTL ? "rtl" : "ltr"}
+                  >
+                    {t.question
+                      .replace("%d", currentQuestionIndex + 1)
+                      .replace("%d", questions.length)}
                   </h2>
-                  <div className={`flex items-center ${flexDir} space-x-2 ${isRTL ? "space-x-reverse" : ""}`}>
+                  <div
+                    className={`flex items-center ${flexDir} space-x-2 ${
+                      isRTL ? "space-x-reverse" : ""
+                    }`}
+                  >
                     <Clock className={`h-5 w-5 ${timerColor}`} />
                     <span className={timerColor} dir="ltr">
                       {Math.floor(timeRemaining / 60)}:
@@ -1228,7 +1300,10 @@ const ExerciseSubmit = () => {
                   value={((currentQuestionIndex + 1) / questions.length) * 100}
                   className="mb-6"
                 />
-                <div className="bg-gray-100 p-4 rounded-md mb-6" dir={getDirection(currentQuestion.questionText)}>
+                <div
+                  className="bg-gray-100 p-4 rounded-md mb-6"
+                  dir={getDirection(currentQuestion.questionText)}
+                >
                   <h3 className="text-lg font-medium mb-2">
                     {currentQuestion.questionText}
                   </h3>
@@ -1287,9 +1362,7 @@ const ExerciseSubmit = () => {
                           )}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        {t.submitForGrading}
-                      </TooltipContent>
+                      <TooltipContent>{t.submitForGrading}</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 ) : (
@@ -1306,13 +1379,13 @@ const ExerciseSubmit = () => {
                         >
                           {isRTL ? (
                             <>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            {t.previous}
+                              <ArrowLeft className="mr-2 h-4 w-4" />
+                              {t.previous}
                             </>
                           ) : (
                             <>
-                            {t.next}
-                            <ArrowRight className="ml-2 h-4 w-4" />
+                              {t.next}
+                              <ArrowRight className="ml-2 h-4 w-4" />
                             </>
                           )}
                         </Button>
@@ -1350,11 +1423,16 @@ const ExerciseSubmit = () => {
                     {submissionResult?.pointsAwarded || 0} points
                   </p>
                   <p className="text-sm text-gray-500">
-                    {t.pointsOutOf.replace("%d", submissionResult?.highestPoints || 0)}
+                    {t.pointsOutOf.replace(
+                      "%d",
+                      submissionResult?.highestPoints || 0
+                    )}
                   </p>
                 </div>
                 <Separator />
-                <div className={`flex justify-between text-sm text-gray-600 ${flexDir}`}>
+                <div
+                  className={`flex justify-between text-sm text-gray-600 ${flexDir}`}
+                >
                   <span>{t.attempts}</span>
                   <span>
                     {submissionResult?.attempts || 1} /{" "}
@@ -1367,7 +1445,10 @@ const ExerciseSubmit = () => {
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>{t.maxAttemptsReached}</AlertTitle>
                       <AlertDescription>
-                        {t.maxAttemptsDesc.replace("%d", submissionResult.maxAttempts)}
+                        {t.maxAttemptsDesc.replace(
+                          "%d",
+                          submissionResult.maxAttempts
+                        )}
                       </AlertDescription>
                       {score && score.points !== undefined && (
                         <div className="mt-2 text-sm text-gray-600">
@@ -1413,8 +1494,8 @@ const ExerciseSubmit = () => {
                       <Home className="mr-2 h-4 w-4" />
                       {t.goBack}
                     </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t.returnToPreviousPage}</TooltipContent>
+                  </TooltipTrigger>
+                  <TooltipContent>{t.returnToPreviousPage}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </DialogFooter>

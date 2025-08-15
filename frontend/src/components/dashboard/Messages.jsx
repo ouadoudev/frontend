@@ -11,7 +11,7 @@
 // import io from "socket.io-client";
 
 // // Create a single socket instance
-// const socket = io("http://najihoun-api.onrender.com/", {
+// const socket = io("https://tamadrus-api.onrender.com", {
 //   transports: ["websocket"],
 //   withCredentials: true,
 // });
@@ -132,7 +132,7 @@
 //                     <div key={media._id} className="mt-2">
 //                       {media.type === "image" ? (
 //                         <img
-//                           src={`http://najihoun-api.onrender.com//${media.url}`}
+//                           src={`https://tamadrus-api.onrender.com/${media.url}`}
 //                           alt="media"
 //                           className="max-w-full h-auto rounded"
 //                         />
@@ -142,7 +142,7 @@
 //                           className="max-w-full h-auto rounded"
 //                         >
 //                           <source
-//                             src={`http://najihoun-api.onrender.com//${media.url}`}
+//                             src={`https://tamadrus-api.onrender.com/${media.url}`}
 //                             type="video/mp4"
 //                           />
 //                           Your browser does not support the video tag.
@@ -208,8 +208,6 @@
 
 // export default Messages;
 
-
-
 import { useEffect, useRef, useState, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { createMessage, fetchMessages } from "@/store/messageSlice"
@@ -241,7 +239,7 @@ import io from "socket.io-client"
 
 // Enhanced socket configuration with reconnection logic
 const createSocket = () => {
-  return io("http://najihoun-api.onrender.com/", {
+  return io("https://tamadrus-api.onrender.com", {
     transports: ["websocket"],
     withCredentials: true,
     reconnection: true,
@@ -542,14 +540,14 @@ const Messages = ({ currentConversation }) => {
                     <div key={media._id} className="mt-2">
                       {media.type === "image" ? (
                         <img
-                          src={`http://najihoun-api.onrender.com//${media.url}`}
+                          src={`https://tamadrus-api.onrender.com/${media.url}`}
                           alt="Shared image"
                           className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => window.open(`http://najihoun-api.onrender.com//${media.url}`, "_blank")}
+                          onClick={() => window.open(`https://tamadrus-api.onrender.com/${media.url}`, "_blank")}
                         />
                       ) : media.type === "video" ? (
                         <video controls className="max-w-full h-auto rounded-lg" preload="metadata">
-                          <source src={`http://najihoun-api.onrender.com//${media.url}`} type="video/mp4" />
+                          <source src={`https://tamadrus-api.onrender.com/${media.url}`} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
                       ) : (

@@ -16,7 +16,7 @@ export const fetchCourseProgress = createAsyncThunk(
 
       const response = await axios.get(`/courses/progress/${courseId}`, {
         headers: {
-          Authorization: `Bearer ${user.token}`, 
+          Authorization: `Bearer ${user.token}`,
           "Content-Type": "application/json"
         }
       });
@@ -31,7 +31,7 @@ export const fetchCourseProgress = createAsyncThunk(
 // Update progress
 export const updateProgress = createAsyncThunk(
   'courses/updateProgress',
-  async ({ courseId, lessonId }, { getState,dispatch, rejectWithValue }) => {
+  async ({ courseId, lessonId }, { getState, dispatch, rejectWithValue }) => {
     try {
       const state = getState();
       const user = loggedUser(state);
@@ -40,7 +40,7 @@ export const updateProgress = createAsyncThunk(
         throw new Error('User not authenticated');
       }
 
-      const response = await axios.post(
+      const response = await axios.put(
         '/courses/progress',
         { courseId, lessonId },
         {
@@ -50,8 +50,12 @@ export const updateProgress = createAsyncThunk(
           }
         }
       );
-dispatch(updateUserSuccess(response.data.data));
-      return response.data.data;
+
+      // Update just the user's progress in the auth slice
+      dispatch(updateUserSuccess({ progress: response.data.progress,ongoingCourses: response.data.ongoingCourses }));
+
+      // Return progress to the courseProgressSlice too
+      return response.data.progress;
     } catch (error) {
       return rejectWithValue(error.response ? error.response.data : { error: 'An error occurred' });
     }
@@ -84,8 +88,7 @@ const courseProgressSlice = createSlice({
       })
       .addCase(updateProgress.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        // Optionally update progress here if needed
-        state.progress = action.payload.data;
+        state.progress = action.payload;
       })
       .addCase(updateProgress.rejected, (state, action) => {
         state.status = 'failed';

@@ -187,7 +187,7 @@
 //             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
 //               Ils Ont{" "}
 //               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-//                 Choisi PrimeAcademy
+//                 Choisi Tamadrus
 //               </span>
 //             </h2>
 //             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -276,7 +276,7 @@
 //             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
 //               Ils Ont{" "}
 //               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-//                 Choisi PrimeAcademy
+//                 Choisi Tamadrus
 //               </span>
 //             </h2>
 //           </motion.div>
@@ -305,7 +305,7 @@
 //                 Aucun témoignage disponible
 //               </h3>
 //               <p className="text-gray-600">
-//                 Soyez le premier à partager votre expérience avec PrimeAcademy !
+//                 Soyez le premier à partager votre expérience avec Tamadrus !
 //               </p>
 //             </div>
 //           </motion.div>
@@ -338,7 +338,7 @@
 //           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
 //             Ils Ont{" "}
 //             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-//               Choisi PrimeAcademy
+//               Choisi Tamadrus
 //             </span>
 //           </h2>
 //           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -553,7 +553,6 @@
 // export default Testimonials;
 
 
-
 import {
   Card,
   CardContent,
@@ -752,6 +751,11 @@ const Testimonials = () => {
       ).toFixed(0) + "%"
     : "0%";
 
+      const getDirection = (text) => {
+  const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
+  return rtlChars.test(text) ? "rtl" : "ltr";
+};
+
   // Enhanced loading state
   if (status === "loading") {
     return (
@@ -767,7 +771,7 @@ const Testimonials = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Ils Ont{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Choisi PrimeAcademy
+                Choisi Tamadrus
               </span>
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -871,7 +875,7 @@ const Testimonials = () => {
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Ils Ont{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Choisi PrimeAcademy
+                Choisi Tamadrus
               </span>
             </h2>
           </motion.div>
@@ -894,7 +898,7 @@ const Testimonials = () => {
                 Aucun témoignage disponible
               </h3>
               <p className="text-gray-600">
-                Soyez le premier à partager votre expérience avec PrimeAcademy !
+                Soyez le premier à partager votre expérience avec Tamadrus !
               </p>
             </div>
           </motion.div>
@@ -902,10 +906,6 @@ const Testimonials = () => {
       </section>
     );
   }
-
-  // Debug info (remove in production)
-  console.log("Current testimonial index:", currentTestimonial);
-  console.log("Total visible testimonials:", visibleTestimonials.length);
 
   const current =
     visibleTestimonials[currentTestimonial] || visibleTestimonials[0];
@@ -929,7 +929,7 @@ const Testimonials = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Ils Ont{" "}
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Choisi PrimeAcademy
+              Choisi Tamadrus
             </span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -977,6 +977,7 @@ const Testimonials = () => {
                       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                       transition={{ duration: 0.6, delay: 0.3 }}
                       className="text-gray-700 text-lg leading-relaxed mb-6 italic lg:h-32 mt-2 h-[280px]"
+                      dir={getDirection(current.testimonial)}
                     >
                       "{current.testimonial}"
                     </motion.blockquote>

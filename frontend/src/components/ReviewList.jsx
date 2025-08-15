@@ -78,8 +78,6 @@
 
 // export default ReviewList;
 
-
-
 import { useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { fetchReviews } from "@/store/reviewSlice"
