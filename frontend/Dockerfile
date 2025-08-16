@@ -1,5 +1,5 @@
 # Use the latest Node.js base image
-FROM node:latest AS build
+FROM node:alpine
 
 # Set working directory
 WORKDIR /app
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5173
 
 # Start the server
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
