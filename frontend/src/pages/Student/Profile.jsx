@@ -143,6 +143,7 @@ import { AlertCircle } from "lucide-react";
 import { UserProfileCard } from "@/components/profile/ProfileCard";
 import QuickStats from "@/components/profile/QuickStats";
 import TodoCard from "@/components/profile/TodoCard";
+import StudentResourcesList from "@/components/profile/StudentResourcesList";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -242,7 +243,7 @@ const Profile = () => {
 
   return (
     <div className="w-full min-h-screen">
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-6 max-w-8xl">
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <UserProfileCard
             user={user}
@@ -262,7 +263,7 @@ const Profile = () => {
               ongoingCourses={user.ongoingCourses || []}
               handleViewCourse={handleViewCourse}
             />
-            {/* <AchievementsCard user={user} /> */}
+              <StudentResourcesList  user={user}/>
           </div>
           <div className="space-y-6">
             <EnrolledSubjectsCard

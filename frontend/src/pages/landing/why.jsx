@@ -165,7 +165,7 @@ export default function Why() {
           transition={{ duration: 0.5 }}
           className="text-center mb-2"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 relative z-50">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 relative z-10">
             Pourquoi{" "}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Choisir Tamadrus ?

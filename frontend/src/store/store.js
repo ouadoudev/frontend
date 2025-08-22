@@ -23,6 +23,7 @@ import partenaireReducer from "./partenaireSlice"
 import bankAccountReducer from "./bankSlice"
 import examReducer from "./examSlice"
 import revenueReducer from "./revenueSlice"
+import  resourcesSlice  from "./resourcesSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -49,6 +50,7 @@ const store = configureStore({
     bankAccounts :bankAccountReducer,
     exam: examReducer,
     revenue: revenueReducer,
+    resources: resourcesSlice,
   },
 });
 

@@ -54,6 +54,9 @@ import Testimonial from "./components/dashboard/operations/TestimonialsList";
 import Partenaires from "./components/dashboard/operations/Partenaires";
 import CreatePartenaire from "./components/dashboard/operations/CreatePartenaire";
 import UpdatePartenaire from "./components/dashboard/operations/UpdatePartenaire";
+import Resources from "./components/dashboard/resource/Resources";
+import SubjectResources from "./components/dashboard/resource/SubjectResources";
+import CreateResource from "./components/dashboard/resource/CreateResource";
 
 // Components: Profile
 import PLayout from "./components/profile/Layout/PLayout";
@@ -82,6 +85,7 @@ import EditExercise from "./components/dashboard/exercise/EditExercise";
 import TeacherRevenueHistory from "./pages/Teacher/TeacherRevenueHistory";
 import PendingRevenuesAdmin from "./components/dashboard/revenue/PendingRevenuesAdmin";
 import AdminRegister from "./pages/AdminRegister";
+import UpdateResource from "./components/dashboard/resource/updateResource";
 
 
 
@@ -128,6 +132,10 @@ const App = () => {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/students" element={<Students />} />
             <Route path="/subjects" element={<Subjects />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/resource/:subject" element={<SubjectResources />} />
+            <Route path="/CreateResource" element={<CreateResource />} />
+            <Route path="/update/resource/:resourceId" element={<UpdateResource />} />
             <Route path="/partenaires" element={<Partenaires />} />
             <Route path="/CreatePartenaire" element={<CreatePartenaire />} />
             <Route

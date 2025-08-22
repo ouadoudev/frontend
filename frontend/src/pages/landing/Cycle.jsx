@@ -84,7 +84,7 @@ const EducationalCycle = () => {
       return <Calculator className="mr-2" />;
     if (title.startsWith("Physique et Chimie"))
       return <Atom className="mr-2" />;
-    if (title.startsWith("Sciences de la vie et de la terre"))
+    if (title.startsWith("Sciences de la Vie et de la Terre"))
       return <Sun className="mr-2" />;
     if (title.startsWith("الفلسفة")) return <PenTool className="ml-2" />;
     if (title.startsWith("Informatique")) return <Code className="mr-2" />;

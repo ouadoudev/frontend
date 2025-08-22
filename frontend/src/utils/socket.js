@@ -18,14 +18,14 @@ class SocketManager {
 
     try {
       this.socket = io("https://tamadrus-api.onrender.com", {
-        transports: ["websocket", "polling"], // Add polling as fallback
+        transports: ["websocket", "polling"], 
         withCredentials: true,
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: this.reconnectDelay,
         reconnectionDelayMax: 5000,
-        timeout: 10000, // 10 second timeout
-        forceNew: false, // Reuse existing connection if available
+        timeout: 10000, 
+        forceNew: false, 
       })
 
       // Connection event handlers

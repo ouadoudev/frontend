@@ -351,12 +351,13 @@ import {
   User,
   Settings,
   Mail,
-  PlusCircle,
+
   LogOut,
   Handshake,
   Landmark,
   ChevronsRight,
   ChevronsLeft,
+  SquareGanttChart,
 } from "lucide-react";
 import { FiX } from "react-icons/fi";
 import { useState, useEffect } from "react";
@@ -394,6 +395,7 @@ const navigationItems = [
       { title: "Matières", url: "/subjects", icon: BookMarked, roles: ["admin"] },
       { title: "Cours", url: "/courses", icon: BookOpen, roles: ["admin", "teacher"] },
       { title: "Leçons", url: "/lessons", icon: PlayCircle, roles: ["admin", "teacher"] },
+      { title: "Ressources", url: "/resources", icon: SquareGanttChart , roles: ["admin", "teacher"] },
     ],
   },
   {

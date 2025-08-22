@@ -452,11 +452,17 @@ const Students = () => {
                       <SelectItem value="Sciences et Technologies Mécaniques">
                         Sciences et Technologies Mécaniques
                       </SelectItem>
-                      <SelectItem value="Sciences Économiques et Gestion">
-                        Sciences Économiques et Gestion
+                      <SelectItem value="Lettres">
+                        Lettres
                       </SelectItem>
-                      <SelectItem value="Lettres et Sciences Humaines">
-                        Lettres et Sciences Humaines
+                      <SelectItem value="Sciences Humaines">
+                        Sciences Humaines
+                      </SelectItem>
+                      <SelectItem value="Sciences Économiques">
+                        Sciences Économiques
+                      </SelectItem>
+                      <SelectItem value="Techniques de Gestion et Comptabilité">
+                        Techniques de Gestion et Comptabilité
                       </SelectItem>
                     </>
                   )}

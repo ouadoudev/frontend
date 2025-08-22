@@ -14,7 +14,7 @@ import { Upload, X } from 'lucide-react';
 const validSubjects = [
   "Mathématiques",
   "Physique et Chimie",
-  "Sciences de la vie et de la terre",
+  "Sciences de la Vie et de la Terre",
   "الفلسفة",
   "Informatique",
   "التاريخ والجغرافيا",

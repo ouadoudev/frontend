@@ -1096,10 +1096,6 @@ const Overview = () => {
                   <Mail className="w-4 h-4" />
                   {authUser.email}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  {authUser.phone || "Aucun numéro de téléphone"}
-                </div>
               </div>
 
               <p className="text-muted-foreground leading-relaxed pb-5 mx-4 sm:mx-0">

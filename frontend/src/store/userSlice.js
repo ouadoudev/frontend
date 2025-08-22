@@ -76,7 +76,7 @@ export const assignEducationToTeacher = createAsyncThunk(
   "user/assignEducationToTeacher",
   async (
     { userId, educationalCycles, educationalLevels },
-    { dispatch, rejectWithValue }
+    { rejectWithValue }
   ) => {
     try {
       const response = await axios.post("/users/assign-educational-details", {
@@ -84,8 +84,6 @@ export const assignEducationToTeacher = createAsyncThunk(
         educationalCycles,
         educationalLevels,
       });
-
-      dispatch(updateUserSuccess(response.data));
       return response.data;
     } catch (error) {
       if (error.response) {
