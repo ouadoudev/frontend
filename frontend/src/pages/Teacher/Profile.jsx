@@ -227,7 +227,7 @@ const totalStudents = teacher?.students?.length || 0;
                   {teacher.educationalCycles[0] || "No discipline specified"}
                 </div>
               </div>
-              <p className="text-muted-foreground leading-relaxed pb-5 m-4 w-[620px]"
+              <p className="text-muted-foreground leading-relaxed pb-5 m-4 max-w-[620px]"
               dir={getDirection(teacher.bio )}>
                 {teacher.bio || "No bio available"}
               </p>
