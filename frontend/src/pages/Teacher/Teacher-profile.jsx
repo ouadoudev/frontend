@@ -303,7 +303,7 @@ const TeacherProfile = () => {
                 </div>
               </div>
 
-              <p className="text-muted-foreground leading-relaxed w-96"
+              <p className="text-muted-foreground leading-relaxed max-w-[620px]"
                dir={getDirection(teacherData.bio )}>
                 {teacherData.bio || "No bio available"}
               </p>
@@ -394,7 +394,7 @@ const TeacherProfile = () => {
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium">
+                            <p className="font-medium text-sm lg:text-lg">
                               {course.title || "Untitled Course"}
                             </p>
                           </div>
@@ -412,7 +412,7 @@ const TeacherProfile = () => {
                           </div>
                         </div>
                         <div className="text-right ml-4">
-                          <p className="font-medium text-lg text-center">
+                          <p className="font-medium text-sm text-center">
                             {course.enrolls || 0}
                           </p>
                           <p className="text-sm text-muted-foreground">
