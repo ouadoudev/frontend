@@ -331,7 +331,7 @@ const TeacherProfile = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-center">{totalCourses}</p>
-                <p className="text-sm text-muted-foreground">Active Courses</p>
+                <p className="text-sm text-muted-foreground">Cours actifs</p>
               </div>
             </div>
           </CardContent>
@@ -347,7 +347,7 @@ const TeacherProfile = () => {
                 <p className="text-2xl font-bold text-center">
                   {totalStudents}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Students</p>
+                <p className="text-sm text-muted-foreground">Total d'étudiants</p>
               </div>
             </div>
           </CardContent>
@@ -362,7 +362,7 @@ const TeacherProfile = () => {
                 <p className="text-2xl font-bold text-center">
                   {averageRating}
                 </p>
-                <p className="text-sm text-muted-foreground ">Average Rating</p>
+                <p className="text-sm text-muted-foreground ">Note moyenne</p>
               </div>
             </div>
           </CardContent>
@@ -375,12 +375,12 @@ const TeacherProfile = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
-              Current Courses
+              Cours actuels
             </CardTitle>
-            <CardDescription>Active courses this semester</CardDescription>
+            <CardDescription>Cours actifs ce semestre</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-80 px-4 ">
+            <ScrollArea className="h-80 px-1 ">
               <div className="space-y-3">
                 {teacherData.courses && teacherData.courses.length > 0 ? (
                   teacherData.courses.map((course, index) => {
@@ -394,7 +394,7 @@ const TeacherProfile = () => {
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium text-sm lg:text-lg">
+                            <p className="font-medium">
                               {course.title || "Untitled Course"}
                             </p>
                           </div>
@@ -407,7 +407,7 @@ const TeacherProfile = () => {
                             )}
                             <span className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
-                              {courseReviewCount} reviews
+                              {courseReviewCount} avis
                             </span>
                           </div>
                         </div>
@@ -416,7 +416,7 @@ const TeacherProfile = () => {
                             {course.enrolls || 0}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            students
+                            étudiants
                           </p>
                         </div>
                       </div>
@@ -446,10 +446,10 @@ const TeacherProfile = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Student Testimonials
+             Témoignages des étudiants
             </CardTitle>
             <CardDescription>
-              What students say about this teacher
+           Ce que les étudiants disent de cet enseignant
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -529,7 +529,7 @@ const TeacherProfile = () => {
                           </div>
 
                           <p className="text-sm text-gray-700 leading-relaxed">
-                            "{testimonial.comment || "Great teacher!"}"
+                            "{testimonial.comment || "Excellent enseignant !"}"
                           </p>
 
                           {course && (
