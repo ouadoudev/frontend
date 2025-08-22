@@ -149,7 +149,7 @@ const TeacherProfile = () => {
               <div className="text-center space-y-2">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="text-muted-foreground">
-                  Loading teacher profile...
+                 Chargement du profil de l'enseignant...
                 </p>
               </div>
             </div>
@@ -167,16 +167,16 @@ const TeacherProfile = () => {
             <div className="flex items-center justify-center h-64">
               <div className="text-center space-y-2">
                 <p className="text-red-600 font-medium">
-                  Error loading teacher profile
+                 Erreur lors du chargement du profil de l'enseignant
                 </p>
                 <p className="text-muted-foreground">
-                  {error.message || error.error || "Something went wrong"}
+                  {error.message || error.error || "Une erreur s'est produite"}
                 </p>
                 <Button
                   onClick={() => dispatch(fetchUserById(id))}
                   variant="outline"
                 >
-                  Try Again
+                  Réessayer
                 </Button>
               </div>
             </div>
@@ -192,9 +192,9 @@ const TeacherProfile = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-center h-64">
               <div className="text-center space-y-2">
-                <p className="text-muted-foreground">Teacher not found</p>
+                <p className="text-muted-foreground">Enseignant non trouvé</p>
                 <Button onClick={() => window.history.back()} variant="outline">
-                  Go Back
+                 Retourner
                 </Button>
               </div>
             </div>
@@ -285,7 +285,7 @@ const TeacherProfile = () => {
                   {teacherData.isOnline && (
                     <Badge className="bg-green-100 text-green-800">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                      Online
+                      En ligne
                     </Badge>
                   )}
                 </div>
@@ -456,13 +456,13 @@ const TeacherProfile = () => {
             <div className="space-y-4">
               {reviewsStatus === "loading" && (
                 <p className="text-muted-foreground text-center py-4">
-                  Loading reviews...
+                  Chargement des avis...
                 </p>
               )}
 
               {reviewsStatus === "failed" && (
                 <p className="text-red-600 text-center py-4">
-                  {reviewsError || "Failed to load reviews"}
+                  {reviewsError || "Échec du chargement des avis"}
                 </p>
               )}
 
