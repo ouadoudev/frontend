@@ -119,7 +119,7 @@ export default function Hero() {
       >
         <div className="flex-1 text-center lg:text-left lg:mr-8">
           <motion.h1
-            className="text-4xl lg:text-5xl h-28 md:h-28 md:text-5xl font-bold my-4 bg-clip-text text-transparent text-center bg-gradient-to-r from-blue-600 to-purple-600"
+            className="text-4xl lg:text-5xl h-32 md:h-32 md:text-5xl font-bold my-4 bg-clip-text text-transparent text-center bg-gradient-to-r from-blue-600 to-purple-600"
             variants={itemVariants}
           >
             <TypewriterText text="Chaque cours, un pas vers l’excellence académique" />
