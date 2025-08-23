@@ -1,17 +1,30 @@
-import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import socket from "@/utils/socket"
-import { loggedUser } from "@/store/authSlice"
-import moment from "moment"
-import { fetchTeacherConversations, setCurrentConversation, updateLastMessageRedux } from "@/store/conversationSlice"
-import { addMessage, fetchMessages, replaceOptimisticMessage, updateMessageStatus } from "@/store/messageSlice"
 import {
-  MoveHorizontalIcon,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from "react";
+import { useDispatch, useSelector } from "react-redux";
+import socket from "@/utils/socket";
+import { loggedUser } from "@/store/authSlice";
+import moment from "moment";
+import {
+  fetchTeacherConversations,
+  setCurrentConversation,
+  updateLastMessageRedux,
+} from "@/store/conversationSlice";
+import {
+  addMessage,
+  fetchMessages,
+  replaceOptimisticMessage,
+  updateMessageStatus,
+} from "@/store/messageSlice";
+import {
   PhoneIcon,
   SearchIcon,
   VideoIcon,
   Send,
-  Upload,
   ImageIcon,
   Video,
   File,
@@ -24,258 +37,297 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import axios from "axios"
+  Menu,
+  Plus,
+  Smile,
+  Paperclip,
+  MoreVertical,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import axios from "axios";
 
 const Conversation = () => {
-  const dispatch = useDispatch()
-  const { conversations = [], loading, error } = useSelector((state) => state.conversations)
-  const currentConversation = useSelector((state) => state.conversations.currentConversation)
-  const messages = useSelector((state) => state.messages.messages)
-  const messagesLoading = useSelector((state) => state.messages.status === "loading")
-  const teacher = useSelector((state) => loggedUser(state))
+  const dispatch = useDispatch();
+  const {
+    conversations = [],
+    loading,
+    error,
+  } = useSelector((state) => state.conversations);
+  const currentConversation = useSelector(
+    (state) => state.conversations.currentConversation
+  );
+  const messages = useSelector((state) => state.messages.messages);
+  const messagesLoading = useSelector(
+    (state) => state.messages.status === "loading"
+  );
+  const teacher = useSelector((state) => loggedUser(state));
 
-  const [newMessage, setNewMessage] = useState("")
-  const [onlineUsers, setOnlineUsers] = useState({})
-  const [typingUsers, setTypingUsers] = useState([])
-  const [isTyping, setIsTyping] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState([])
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [isUploading, setIsUploading] = useState(false)
-  const [connectionError, setConnectionError] = useState(null)
-  const [isConnected, setIsConnected] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [showSearch, setShowSearch] = useState(false)
+  const [newMessage, setNewMessage] = useState("");
+  const [onlineUsers, setOnlineUsers] = useState({});
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState(null); 
+  
 
-  const teacherId = teacher?.id
-  const endOfMessagesRef = useRef(null)
-  const fileInputRef = useRef(null)
-  const messageInputRef = useRef(null)
-  const typingTimeoutRef = useRef(null)
-  const connectionCheckInterval = useRef(null)
+  const teacherId = teacher?.id;
+  const endOfMessagesRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const messageInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const connectionCheckInterval = useRef(null);
 
   useEffect(() => {
     const checkConnection = () => {
-      const connected = socket.connected
-      setIsConnected(connected)
+      const connected = socket.connected;
+      setIsConnected(connected);
       if (!connected && !isConnecting) {
-        setConnectionError("Connection lost. Attempting to reconnect...")
+        setConnectionError("Connection lost. Attempting to reconnect...");
       } else if (connected && connectionError) {
-        setConnectionError(null)
+        setConnectionError(null);
       }
-    }
+    };
 
-    checkConnection()
-    connectionCheckInterval.current = setInterval(checkConnection, 2000)
+    checkConnection();
+    connectionCheckInterval.current = setInterval(checkConnection, 2000);
 
     return () => {
       if (connectionCheckInterval.current) {
-        clearInterval(connectionCheckInterval.current)
+        clearInterval(connectionCheckInterval.current);
       }
-    }
-  }, [isConnecting, connectionError])
+    };
+  }, [isConnecting, connectionError]);
 
   const handleForceReconnect = useCallback(() => {
-    setIsConnecting(true)
-    setConnectionError("Reconnecting...")
+    setIsConnecting(true);
+    setConnectionError("Reconnecting...");
     if (socket.connected) {
-      socket.disconnect()
+      socket.disconnect();
     }
     setTimeout(() => {
-      socket.connect()
-      setIsConnecting(false)
-    }, 1000)
-  }, [])
+      socket.connect();
+      setIsConnecting(false);
+    }, 1000);
+  }, []);
 
   useEffect(() => {
     if (teacherId) {
-      dispatch(fetchTeacherConversations(teacherId))
-      socket.emit("join", teacherId)
+      dispatch(fetchTeacherConversations(teacherId));
+      socket.emit("join", teacherId);
     }
 
     const handleConnect = () => {
-      setIsConnected(true)
-      setIsConnecting(false)
-      setConnectionError(null)
-    }
+      setIsConnected(true);
+      setIsConnecting(false);
+      setConnectionError(null);
+    };
 
     const handleDisconnect = () => {
-      setIsConnected(false)
-      setIsConnecting(false)
-      setConnectionError("Connection lost. Trying to reconnect...")
-    }
+      setIsConnected(false);
+      setIsConnecting(false);
+      setConnectionError("Connection lost. Trying to reconnect...");
+    };
 
     const handleConnectError = () => {
-      setIsConnected(false)
-      setIsConnecting(false)
-      setConnectionError("Failed to connect to server")
-    }
+      setIsConnected(false);
+      setIsConnecting(false);
+      setConnectionError("Failed to connect to server");
+    };
 
     const handleMessageError = ({ error }) => {
-      setConnectionError(error)
-      setIsUploading(false)
-      setTimeout(() => setConnectionError(null), 5000)
-    }
+      setConnectionError(error);
+      setIsUploading(false);
+      setTimeout(() => setConnectionError(null), 5000);
+    };
 
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-    socket.on("connect_error", handleConnectError)
-    socket.on("messageError", handleMessageError)
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
+    socket.on("messageError", handleMessageError);
 
     return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-      socket.off("connect_error", handleConnectError)
-      socket.off("messageError", handleMessageError)
-    }
-  }, [dispatch, teacherId])
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
+      socket.off("messageError", handleMessageError);
+    };
+  }, [dispatch, teacherId]);
 
   useEffect(() => {
     if (currentConversation?._id) {
-      socket.emit("joinConversation", currentConversation._id)
-      dispatch(fetchMessages(currentConversation._id))
+      socket.emit("joinConversation", currentConversation._id);
+      dispatch(fetchMessages(currentConversation._id));
 
       const handleNewMessage = (message) => {
-        if (currentConversation._id && message.conversationId === currentConversation._id) {
-          dispatch(addMessage({ ...message, status: "sent" }))
+        if (
+          currentConversation._id &&
+          message.conversationId === currentConversation._id
+        ) {
+          dispatch(addMessage({ ...message, status: "sent" }));
         }
-      }
+      };
 
-      const handleUpdateLastMessage = ({ conversationId, lastMessage, lastMessageId }) => {
-        dispatch(updateLastMessageRedux({ conversationId, lastMessage, lastMessageId }))
-      }
+      const handleUpdateLastMessage = ({
+        conversationId,
+        lastMessage,
+        lastMessageId,
+      }) => {
+        dispatch(
+          updateLastMessageRedux({ conversationId, lastMessage, lastMessageId })
+        );
+      };
 
       const handleTyping = ({ userId, username }) => {
         if (userId !== teacherId) {
           setTypingUsers((prev) => {
             if (!prev.includes(username)) {
-              return [...prev, username]
+              return [...prev, username];
             }
-            return prev
-          })
+            return prev;
+          });
         }
-      }
+      };
 
       const handleStopTyping = ({ userId, username }) => {
-        setTypingUsers((prev) => prev.filter((user) => user !== username))
-      }
+        setTypingUsers((prev) => prev.filter((user) => user !== username));
+      };
 
-      socket.on("newMessage", handleNewMessage)
-      socket.on("updateLastMessage", handleUpdateLastMessage)
-      socket.on("userTyping", handleTyping)
-      socket.on("userStoppedTyping", handleStopTyping)
+      socket.on("newMessage", handleNewMessage);
+      socket.on("updateLastMessage", handleUpdateLastMessage);
+      socket.on("userTyping", handleTyping);
+      socket.on("userStoppedTyping", handleStopTyping);
 
       return () => {
-        socket.off("newMessage", handleNewMessage)
-        socket.off("updateLastMessage", handleUpdateLastMessage)
-        socket.off("userTyping", handleTyping)
-        socket.off("userStoppedTyping", handleStopTyping)
-        socket.emit("leaveConversation", currentConversation._id)
-      }
+        socket.off("newMessage", handleNewMessage);
+        socket.off("updateLastMessage", handleUpdateLastMessage);
+        socket.off("userTyping", handleTyping);
+        socket.off("userStoppedTyping", handleStopTyping);
+        socket.emit("leaveConversation", currentConversation._id);
+      };
     }
-  }, [currentConversation?._id, dispatch, teacherId])
+  }, [currentConversation?._id, dispatch, teacherId]);
 
   // Use useLayoutEffect for smooth scrolling
   useLayoutEffect(() => {
     if (endOfMessagesRef.current) {
-      endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" })
+      endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages])
+  }, [messages]);
 
   useEffect(() => {
     const handleUpdateOnlineStatus = (onlineUsers) => {
-      setOnlineUsers(onlineUsers)
-    }
+      setOnlineUsers(onlineUsers);
+    };
 
-    socket.on("updateOnlineStatus", handleUpdateOnlineStatus)
+    socket.on("updateOnlineStatus", handleUpdateOnlineStatus);
 
     return () => {
-      socket.off("updateOnlineStatus", handleUpdateOnlineStatus)
-    }
-  }, [])
+      socket.off("updateOnlineStatus", handleUpdateOnlineStatus);
+    };
+  }, []);
 
   const handleTyping = useCallback(() => {
     if (currentConversation && !isTyping) {
-      setIsTyping(true)
+      setIsTyping(true);
       socket.emit("typing", {
         conversationId: currentConversation._id,
         userId: teacherId,
         username: teacher?.username,
-      })
+      });
     }
 
     if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
+      clearTimeout(typingTimeoutRef.current);
     }
 
     typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false)
+      setIsTyping(false);
       socket.emit("stopTyping", {
         conversationId: currentConversation._id,
         userId: teacherId,
         username: teacher?.username,
-      })
-    }, 2000)
-  }, [currentConversation, teacherId, teacher?.username, isTyping])
+      });
+    }, 2000);
+  }, [currentConversation, teacherId, teacher?.username, isTyping]);
 
   const handleConversationClick = (conversation) => {
-    dispatch(setCurrentConversation(conversation))
-    setSearchQuery("")
-    setShowSearch(false)
-  }
+    dispatch(setCurrentConversation(conversation));
+    setSearchQuery("");
+    setShowSearch(false);
+    setSidebarOpen(false);
+  };
 
   const handleFileSelect = (event) => {
-    const files = Array.from(event.target.files || [])
+    const files = Array.from(event.target.files || []);
     const validFiles = files.filter((file) => {
       const isValidType =
-        file.type.startsWith("image/") || file.type.startsWith("video/") || file.type === "application/pdf"
-      const isValidSize = file.size <= 20 * 1024 * 1024 
-      return isValidType && isValidSize
-    })
+        file.type.startsWith("image/") ||
+        file.type.startsWith("video/") ||
+        file.type === "application/pdf";
+      const isValidSize = file.size <= 20 * 1024 * 1024;
+      return isValidType && isValidSize;
+    });
 
     if (validFiles.length !== files.length) {
-      setConnectionError("Some files were rejected. Only images, videos, and PDFs under 20MB are allowed.")
-      setTimeout(() => setConnectionError(null), 5000)
+      setConnectionError(
+        "Some files were rejected. Only images, videos, and PDFs under 20MB are allowed."
+      );
+      setTimeout(() => setConnectionError(null), 5000);
     }
 
-    setSelectedFiles((prev) => [...prev, ...validFiles])
-  }
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
+  };
 
   const removeSelectedFile = (index) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSendMessage = useCallback(async () => {
-    if (!newMessage.trim() && selectedFiles.length === 0) return
+    if (!newMessage.trim() && selectedFiles.length === 0) return;
 
     if (!currentConversation?._id) {
-      setConnectionError("No conversation selected")
-      return
+      setConnectionError("No conversation selected");
+      return;
     }
 
     if (!isConnected) {
-      setConnectionError("Not connected to server. Please wait for reconnection.")
-      return
+      setConnectionError(
+        "Not connected to server. Please wait for reconnection."
+      );
+      return;
     }
 
     // Generate unique temp ID
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const messageContent = newMessage.trim()
-    const filesToSend = [...selectedFiles]
+    const tempId = `temp-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    const messageContent = newMessage.trim();
+    const filesToSend = [...selectedFiles];
 
     // Clear input immediately for better UX
-    setNewMessage("")
-    setSelectedFiles([])
-    setUploadProgress(0)
+    setNewMessage("");
+    setSelectedFiles([]);
+    setUploadProgress(0);
 
     // Create optimistic message
     const optimisticMessage = {
@@ -291,50 +343,52 @@ const Conversation = () => {
       timestamp: new Date().toISOString(),
       status: "sending",
       isOptimistic: true,
-    }
+    };
 
     // Add optimistic message immediately
-    dispatch(addMessage(optimisticMessage))
+    dispatch(addMessage(optimisticMessage));
 
     try {
-      setIsUploading(filesToSend.length > 0)
+      setIsUploading(filesToSend.length > 0);
 
-      let mediaFiles = []
-      let response
+      let mediaFiles = [];
+      let response;
 
       if (filesToSend.length > 0) {
-        const formData = new FormData()
-        formData.append("conversationId", currentConversation._id)
-        formData.append("senderId", teacherId)
-        formData.append("content", messageContent)
+        const formData = new FormData();
+        formData.append("conversationId", currentConversation._id);
+        formData.append("senderId", teacherId);
+        formData.append("content", messageContent);
 
         filesToSend.forEach((file) => {
           if (file.type.startsWith("image/")) {
-            formData.append("images", file)
+            formData.append("images", file);
           } else if (file.type.startsWith("video/")) {
-            formData.append("videos", file)
+            formData.append("videos", file);
           } else if (file.type === "application/pdf") {
-            formData.append("pdfs", file)
+            formData.append("pdfs", file);
           }
-        })
+        });
 
         response = await axios.post("/messages", formData, {
           headers: { "Content-Type": "multipart/form-data" },
           onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            setUploadProgress(percentCompleted)
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
           },
-        })
+        });
       } else {
         response = await axios.post("/messages", {
           conversationId: currentConversation._id,
           senderId: teacherId,
           content: messageContent,
-        })
+        });
       }
 
-      const serverMessage = response.data.data
-      mediaFiles = serverMessage.media || []
+      const serverMessage = response.data.data;
+      mediaFiles = serverMessage.media || [];
 
       // Replace optimistic message with server response
       dispatch(
@@ -344,8 +398,8 @@ const Conversation = () => {
             ...serverMessage,
             status: "sent",
           },
-        }),
-      )
+        })
+      );
 
       // Emit socket event for real-time updates to other users
       socket.emit("sendMessage", {
@@ -354,201 +408,314 @@ const Conversation = () => {
         content: messageContent,
         mediaFiles,
         messageId: serverMessage._id,
-      })
+      });
 
-      setIsUploading(false)
-      setConnectionError(null)
-      messageInputRef.current?.focus()
+      setIsUploading(false);
+      setConnectionError(null);
+      messageInputRef.current?.focus();
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("Error sending message:", error);
 
       // Update optimistic message to show failed status
       dispatch(
         updateMessageStatus({
           messageId: tempId,
           status: "failed",
-        }),
-      )
+        })
+      );
 
-      setConnectionError(error.response?.data?.message || "Failed to send message. Please try again.")
-      setIsUploading(false)
+      setConnectionError(
+        error.response?.data?.message ||
+          "Failed to send message. Please try again."
+      );
+      setIsUploading(false);
 
       // Restore message content for retry
-      setNewMessage(messageContent)
-      setSelectedFiles(filesToSend)
+      setNewMessage(messageContent);
+      setSelectedFiles(filesToSend);
     }
-  }, [newMessage, selectedFiles, currentConversation, teacherId, teacher, isConnected, dispatch])
+  }, [
+    newMessage,
+    selectedFiles,
+    currentConversation,
+    teacherId,
+    teacher,
+    isConnected,
+    dispatch,
+  ]);
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault()
-      handleSendMessage()
+      event.preventDefault();
+      handleSendMessage();
     }
-  }
+  };
 
   const handleMessageChange = (e) => {
-    setNewMessage(e.target.value)
-    handleTyping()
-  }
+    setNewMessage(e.target.value);
+    handleTyping();
+  };
 
   const filteredConversations = conversations.filter((conversation) =>
-    conversation.participants?.[0]?.username?.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+    conversation.participants?.[0]?.username
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
 
   const getMessageStatusIcon = (status) => {
     switch (status) {
       case "sending":
-        return <Clock className="w-3 h-3 text-gray-400" />
+        return <Clock className="w-3 h-3 text-muted-foreground" />;
       case "sent":
-        return <Check className="w-3 h-3 text-gray-400" />
+        return <Check className="w-3 h-3 text-muted-foreground" />;
       case "delivered":
-        return <CheckCheck className="w-3 h-3 text-gray-400" />
+        return <CheckCheck className="w-3 h-3 text-muted-foreground" />;
       case "read":
-        return <CheckCheck className="w-3 h-3 text-blue-500" />
+        return <CheckCheck className="w-3 h-3 text-blue-500" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="flex items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin" />
-          <span>Loading conversations...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <span className="text-foreground">Loading conversations...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <Alert className="max-w-md">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Error loading conversations: {error.message}</AlertDescription>
+          <AlertDescription>
+            Error loading conversations: {error.message}
+          </AlertDescription>
         </Alert>
       </div>
-    )
+    );
   }
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] min-h-screen p-8 w-full">
-        <div className="bg-background border-r flex flex-col">
-          <div className="border-b p-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Messages</h3>
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    {isConnecting ? (
-                      <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />
-                    ) : isConnected ? (
-                      <Wifi className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <WifiOff className="w-5 h-5 text-red-500" />
-                    )}
+      <div className="flex h-screen bg-background">
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <div
+          className={`
+            fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-300 ease-in-out
+            lg:relative lg:translate-x-0 lg:z-0
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          `}
+        >
+          <div className="h-screen bg-sidebar border-r border-sidebar-border flex flex-col">
+            <div className="p-4 border-b border-sidebar-border">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-bold text-xl text-sidebar-foreground">
+                  Messages
+                </h2>
+                <div className="flex items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        {isConnecting ? (
+                          <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />
+                        ) : isConnected ? (
+                          <Wifi className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <WifiOff className="w-5 h-5 text-red-500" />
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isConnecting
+                        ? "Connecting..."
+                        : isConnected
+                        ? "Connected"
+                        : "Disconnected"}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {!isConnected && !isConnecting && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleForceReconnect}
+                          className="text-sidebar-foreground hover:bg-sidebar-accent"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Reconnect</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-sidebar-foreground hover:bg-sidebar-accent"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="lg:hidden text-sidebar-foreground hover:bg-sidebar-accent"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-2">
+                {filteredConversations.map((conversation) => {
+                  const participant = conversation.participants?.[1];
+                  const isOnline = onlineUsers[participant?._id];
+                  const isActive =
+                    currentConversation?._id === conversation._id;
+
+                  return (
+                    <div
+                      key={conversation._id}
+                      className={`
+                        p-4 border-b border-sidebar-border cursor-pointer transition-colors rounded-lg mb-1
+                        hover:bg-sidebar-accent
+                        ${isActive ? "bg-sidebar-accent" : ""}
+                      `}
+                      onClick={() => handleConversationClick(conversation)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="relative">
+                          <Avatar className="h-12 w-12 flex-shrink-0">
+                            <AvatarImage
+                              src={
+                                participant?.user_image?.url ||
+                                "/placeholder.svg"
+                              }
+                              alt={participant?.username || "User"}
+                            />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {participant?.username?.[0]?.toUpperCase() || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          {isOnline && (
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-sidebar rounded-full"></div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="font-medium text-sidebar-foreground truncate">
+                              {participant?.username || "Unknown User"}
+                            </h3>
+                            <span className="text-xs text-muted-foreground flex-shrink-0">
+                              {moment(conversation.updatedAt).format("HH:mm")}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground truncate">
+                              {conversation.lastMessage || "No messages yet"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filteredConversations.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    {searchQuery
+                      ? "No conversations found"
+                      : "No conversations yet"}
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isConnecting ? "Connecting..." : isConnected ? "Connected" : "Disconnected"}
-                </TooltipContent>
-              </Tooltip>
+                )}
+              </div>
+            </ScrollArea>
 
-              {!isConnected && !isConnecting && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={handleForceReconnect}>
-                      <RefreshCw className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Reconnect</TooltipContent>
-                </Tooltip>
-              )}
-
-              <Button variant="ghost" size="icon" onClick={() => setShowSearch(!showSearch)}>
-                <SearchIcon className="w-5 h-5" />
-              </Button>
+            <div className="p-4 border-t border-sidebar-border">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={teacher?.user_image?.url || "/placeholder.svg"}
+                      alt="You"
+                    />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {teacher?.username?.[0]?.toUpperCase() || "Y"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-sidebar rounded-full"></div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sidebar-foreground">
+                    {teacher?.username || "You"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Online</p>
+                </div>
+              </div>
             </div>
           </div>
-
-          {showSearch && (
-            <div className="p-4 border-b">
-              <Input
-                placeholder="Search conversations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-              />
-            </div>
-          )}
-
-          <ScrollArea className="flex-1 max-h-screen overflow-hidden">
-            <div className="p-4 space-y-2">
-              {filteredConversations.map((conversation) => {
-                const participant = conversation.participants?.[1]
-                const isOnline = onlineUsers[participant?._id]
-                const isActive = currentConversation?._id === conversation._id
-
-                return (
-                  <div
-                    key={conversation._id}
-                    className={`flex items-center cursor-pointer hover:bg-muted p-3 rounded-lg transition-colors ${
-                      isActive ? "bg-muted" : ""
-                    }`}
-                    onClick={() => handleConversationClick(conversation)}
-                  >
-                    <div className="relative">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={participant?.user_image?.url || "/placeholder-user.jpg"}
-                          alt={participant?.username || "User"}
-                        />
-                        <AvatarFallback>{participant?.username?.[1]?.toUpperCase() || "?"}</AvatarFallback>
-                      </Avatar>
-                      <div
-                        className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                          isOnline ? "bg-green-500" : "bg-gray-400"
-                        }`}
-                      />
-                    </div>
-
-                    <div className="flex-1 min-w-0 ml-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-sm truncate">{participant?.username || "Unknown User"}</h4>
-                        <span className="text-xs text-muted-foreground">
-                          {moment(conversation.updatedAt).format("HH:mm")}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {conversation.lastMessage || "No messages yet"}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })}
-
-              {filteredConversations.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  {searchQuery ? "No conversations found" : "No conversations yet"}
-                </div>
-              )}
-            </div>
-          </ScrollArea>
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-card">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(true)}
+              className="text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="font-heading font-bold text-lg text-foreground">
+              ChatApp
+            </h1>
+            <div className="w-10" />
+          </div>
+
           {currentConversation ? (
             <>
               {connectionError && (
-                <Alert className="m-4 border-red-200 bg-red-50">
+                <Alert className="m-4 border-destructive/50 bg-destructive/10">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-red-800 flex items-center justify-between">
+                  <AlertDescription className="text-destructive flex items-center justify-between">
                     <span>{connectionError}</span>
                     <div className="flex items-center gap-2">
                       {!isConnected && !isConnecting && (
-                        <Button variant="ghost" size="sm" onClick={handleForceReconnect} className="text-red-800">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleForceReconnect}
+                          className="text-destructive"
+                        >
                           <RefreshCw className="w-4 h-4 mr-1" />
                           Retry
                         </Button>
@@ -556,7 +723,7 @@ const Conversation = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-auto p-0 text-red-800"
+                        className="h-auto p-0 text-destructive"
                         onClick={() => setConnectionError(null)}
                       >
                         <X className="w-4 h-4" />
@@ -566,188 +733,295 @@ const Conversation = () => {
                 </Alert>
               )}
 
-              <div className="border-b p-4 flex items-center justify-between bg-white">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage
-                        src={
-                          currentConversation.participants?.[1]?.user_image?.url ||
-                          "/placeholder-user.jpg" ||
-                          "/placeholder.svg"
-                        }
-                        alt={currentConversation.participants?.[1]?.username || "User"}
-                      />
-                      <AvatarFallback>
-                        {currentConversation.participants?.[1]?.username?.[1]?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div
-                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                        onlineUsers[currentConversation.participants?.[1]?._id] ? "bg-green-500" : "bg-gray-400"
-                      }`}
-                    />
+              <div className="p-4 border-b border-border bg-card">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src={
+                            currentConversation.participants?.[1]?.user_image
+                              ?.url ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg" ||
+                            "/placeholder.svg"
+                          }
+                          alt={
+                            currentConversation.participants?.[1]?.username ||
+                            "User"
+                          }
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {currentConversation.participants?.[1]?.username?.[0]?.toUpperCase() ||
+                            "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      {onlineUsers[
+                        currentConversation.participants?.[1]?._id
+                      ] && (
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-card rounded-full"></div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-heading font-semibold text-card-foreground">
+                        {currentConversation.participants?.[1]?.username ||
+                          "Unknown User"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {typingUsers.length > 0
+                          ? "typing..."
+                          : onlineUsers[
+                              currentConversation.participants?.[1]?._id
+                            ]
+                          ? "Online"
+                          : "Offline"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold">
-                      {currentConversation.participants?.[1]?.username || "Unknown User"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {onlineUsers[currentConversation.participants?.[1]?._id] ? "Online" : "Offline"}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" disabled={!isConnected}>
-                        <PhoneIcon className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Voice call</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" disabled={!isConnected}>
-                        <VideoIcon className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Video call</TooltipContent>
-                  </Tooltip>
-                  <Button variant="ghost" size="icon">
-                    <MoveHorizontalIcon className="w-5 h-5" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={!isConnected}
+                          className="text-card-foreground"
+                        >
+                          <PhoneIcon className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Voice call</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={!isConnected}
+                          className="text-card-foreground"
+                        >
+                          <VideoIcon className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Video call</TooltipContent>
+                    </Tooltip>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-card-foreground"
+                    >
+                      <MoreVertical className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 p-4 bg-gray-50">
-                {messagesLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span className="ml-2">Loading messages...</span>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {messages?.map((message) => (
-                      <div
-                        key={message._id}
-                        className={`flex items-end gap-2 ${
-                          message.senderId._id === teacherId ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        {message.senderId._id !== teacherId && (
-                          <Avatar className="h-8 w-8 mb-1">
+              <div className="flex-1 flex flex-col min-h-0">
+                <ScrollArea className="flex-1 p-4">
+                  {messagesLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      <span className="ml-2 text-foreground">
+                        Loading messages...
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {messages?.map((message) => (
+                        <div
+                          key={message._id}
+                          className={`flex gap-3 ${
+                            message.senderId._id === teacherId
+                              ? "flex-row-reverse"
+                              : "flex-row"
+                          }`}
+                        >
+                          <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarImage
                               src={
-                                currentConversation.participants?.find((p) => p._id === message.senderId._id)
-                                  ?.user_image?.url || "/placeholder-user.jpg"
+                                message.senderId._id === teacherId
+                                  ? teacher?.user_image?.url ||
+                                    "/placeholder.svg"
+                                  : currentConversation.participants?.find(
+                                      (p) => p._id === message.senderId._id
+                                    )?.user_image?.url || "/placeholder.svg"
                               }
                               alt="Avatar"
                             />
-                            <AvatarFallback>
-                              {currentConversation.participants
-                                ?.find((p) => p._id === message.senderId._id)
-                                ?.username?.[0]?.toUpperCase() || "U"}
+                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                              {message.senderId?.username?.[0]?.toUpperCase() ||
+                                "U"}
                             </AvatarFallback>
                           </Avatar>
-                        )}
 
-                        <div
-                          className={`max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${
-                            message.senderId._id === teacherId
-                              ? "bg-blue-500 text-white rounded-br-md"
-                              : "bg-white text-gray-900 rounded-bl-md border"
-                          }`}
-                        >
-                          {message.content && <p className="text-sm leading-relaxed">{message.content}</p>}
+                          <div
+                            className={`flex flex-col max-w-xs sm:max-w-md ${
+                              message.senderId._id === teacherId
+                                ? "items-end"
+                                : "items-start"
+                            }`}
+                          >
+                            <div
+                              className={`
+                                px-4 py-2 rounded-lg text-sm leading-relaxed
+                                ${
+                                  message.senderId._id === teacherId
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-card text-card-foreground border border-border"
+                                }
+                              `}
+                            >
+                              {message.content && <p>{message.content}</p>}
 
-                          {message.media?.map((media) => (
-                            <div key={media._id || media.url} className="mt-2">
-                              {media.type === "image" ? (
-                                <img
-                                  src={media.url || "/placeholder.svg"}
-                                  alt="Shared image"
-                                  className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => window.open(media.url, "_blank")}
-                                />
-                              ) : media.type === "video" ? (
-                                <video controls className="max-w-full h-auto rounded-lg" preload="metadata">
-                                  <source src={media.url} type="video/mp4" />
-                                  Your browser does not support the video tag.
-                                </video>
-                              ) : (
-                                <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
-                                  <File className="w-4 h-4" />
-                                  <a href={media.url} target="_blank" rel="noopener noreferrer" className="text-sm">
-                                    {media.type === "pdf" ? "PDF Document" : media.type}
-                                  </a>
+                              {message.media?.map((media) => (
+                                <div
+                                  key={media._id || media.url}
+                                  className="mt-2"
+                                >
+                                  {media.type === "image" ? (
+                                    <div
+                                      className="relative cursor-pointer group"
+                                      onClick={() =>
+                                        setSelectedMedia({
+                                          url: media.url || "/placeholder.svg",
+                                          type: "image",
+                                        })
+                                      }
+                                    >
+                                      <img
+                                        src={media.url || "/placeholder.svg"}
+                                        alt="Shared image"
+                                        className="max-w-full h-auto rounded-lg transition-all duration-200 group-hover:opacity-90 group-hover:scale-[1.02]"
+                                        style={{ maxHeight: "200px" }}
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                        <div className="bg-black/50 rounded-full p-2">
+                                          <ImageIcon className="w-4 h-4 text-white" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : media.type === "video" ? (
+                                    <div
+                                      className="relative cursor-pointer group"
+                                      onClick={() =>
+                                        setSelectedMedia({
+                                          url: media.url || "",
+                                          type: "video",
+                                          thumbnail: media.thumbnail,
+                                        })
+                                      }
+                                    >
+                                      <video
+                                        className="max-w-full h-auto rounded-lg transition-all duration-200 group-hover:scale-[1.02]"
+                                        style={{ maxHeight: "200px" }}
+                                        preload="metadata"
+                                        poster={media.thumbnail}
+                                      >
+                                        <source
+                                          src={media.url}
+                                          type="video/mp4"
+                                        />
+                                      </video>
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors rounded-lg">
+                                        <div className="bg-black/70 rounded-full p-3">
+                                          <Video className="w-6 h-6 text-white" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                                      <File className="w-4 h-4" />
+                                      <a
+                                        href={media.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm"
+                                      >
+                                        {media.type === "pdf"
+                                          ? "PDF Document"
+                                          : media.type}
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-muted-foreground">
+                                {moment(message.timestamp).format("HH:mm")}
+                              </span>
+                              {message.senderId._id === teacherId && (
+                                <div>
+                                  {getMessageStatusIcon(message.status)}
                                 </div>
                               )}
                             </div>
-                          ))}
-
-                          <div
-                            className={`flex items-center justify-between mt-1 text-xs ${
-                              message.senderId._id === teacherId ? "text-blue-100" : "text-gray-500"
-                            }`}
-                          >
-                            <span>{moment(message.timestamp).format("HH:mm")}</span>
-                            {message.senderId._id === teacherId && (
-                              <div className="ml-2">{getMessageStatusIcon(message.status)}</div>
-                            )}
                           </div>
                         </div>
+                      ))}
 
-                        {message.senderId._id === teacherId && (
-                          <Avatar className="h-8 w-8 mb-1">
-                            <AvatarImage src={message.senderId?.user_image?.url || "/placeholder-user.jpg"} alt="You" />
-                            <AvatarFallback>{message.senderId?.username?.[0]?.toUpperCase() || "Y"}</AvatarFallback>
+                      {typingUsers.length > 0 && (
+                        <div className="flex gap-3">
+                          <Avatar className="h-8 w-8 flex-shrink-0">
+                            <AvatarImage
+                              src={
+                                currentConversation.participants?.[1]
+                                  ?.user_image?.url || "/placeholder.svg"
+                              }
+                              alt="Avatar"
+                            />
+                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                              {currentConversation.participants?.[1]?.username?.[0]?.toUpperCase() ||
+                                "U"}
+                            </AvatarFallback>
                           </Avatar>
-                        )}
-                      </div>
-                    ))}
-
-                    {typingUsers.length > 0 && (
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                          <div
-                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style={{ animationDelay: "0.1s" }}
-                          />
-                          <div
-                            className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                            style={{ animationDelay: "0.2s" }}
-                          />
+                          <div className="flex items-center bg-card border border-border rounded-lg px-4 py-2">
+                            <div className="flex space-x-1">
+                              <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                              <div
+                                className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                                style={{ animationDelay: "0.1s" }}
+                              ></div>
+                              <div
+                                className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                                style={{ animationDelay: "0.2s" }}
+                              ></div>
+                            </div>
+                          </div>
                         </div>
-                        <span>
-                          {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <div ref={endOfMessagesRef} />
-              </ScrollArea>
+                      )}
+                    </div>
+                  )}
+                  <div ref={endOfMessagesRef} />
+                </ScrollArea>
+              </div>
 
               {selectedFiles.length > 0 && (
-                <div className="border-t p-3 bg-gray-50">
+                <div className="border-t border-border p-3 bg-card">
                   <div className="flex flex-wrap gap-2">
                     {selectedFiles.map((file, index) => (
                       <div key={index} className="relative">
                         <Badge variant="secondary" className="pr-6">
-                          {file.type.startsWith("image/") && <ImageIcon className="w-3 h-3 mr-1" />}
-                          {file.type.startsWith("video/") && <Video className="w-3 h-3 mr-1" />}
-                          {!file.type.startsWith("image/") && !file.type.startsWith("video/") && (
-                            <File className="w-3 h-3 mr-1" />
+                          {file.type.startsWith("image/") && (
+                            <ImageIcon className="w-3 h-3 mr-1" />
                           )}
+                          {file.type.startsWith("video/") && (
+                            <Video className="w-3 h-3 mr-1" />
+                          )}
+                          {!file.type.startsWith("image/") &&
+                            !file.type.startsWith("video/") && (
+                              <File className="w-3 h-3 mr-1" />
+                            )}
                           {file.name}
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="absolute -top-1 -right-1 h-4 w-4 p-0 rounded-full bg-red-500 hover:bg-red-600 text-white"
+                          className="absolute -top-1 -right-1 h-4 w-4 p-0 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                           onClick={() => removeSelectedFile(index)}
                         >
                           <X className="w-3 h-3" />
@@ -759,16 +1033,20 @@ const Conversation = () => {
               )}
 
               {isUploading && (
-                <div className="border-t p-3 bg-gray-50">
+                <div className="border-t border-border p-3 bg-card">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Uploading...</span>
+                    <span className="text-sm text-muted-foreground">
+                      Uploading...
+                    </span>
                     <Progress value={uploadProgress} className="flex-1" />
-                    <span className="text-sm text-gray-600">{uploadProgress}%</span>
+                    <span className="text-sm text-muted-foreground">
+                      {uploadProgress}%
+                    </span>
                   </div>
                 </div>
               )}
 
-              <div className="border-t p-4 bg-white">
+              <div className="p-4 border-t border-border bg-card">
                 <div className="flex items-end gap-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -777,32 +1055,50 @@ const Conversation = () => {
                         size="icon"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploading || !isConnected}
+                        className="text-muted-foreground hover:text-foreground"
                       >
-                        <Upload className="w-5 h-5" />
+                        <Paperclip className="w-5 h-5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Upload file</TooltipContent>
                   </Tooltip>
 
-                  <div className="flex-1">
+                  <div className="flex-1 relative">
                     <Input
                       ref={messageInputRef}
                       type="text"
-                      placeholder={isConnected ? "Type a message..." : "Connecting..."}
+                      placeholder={
+                        isConnected ? "Type a message..." : "Connecting..."
+                      }
                       value={newMessage}
                       onChange={handleMessageChange}
                       onKeyPress={handleKeyPress}
                       disabled={!isConnected || isUploading}
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="pr-12 bg-input border-border text-foreground placeholder:text-muted-foreground"
                     />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <Smile className="h-4 w-4" />
+                    </Button>
                   </div>
 
                   <Button
                     onClick={handleSendMessage}
-                    disabled={(!newMessage.trim() && selectedFiles.length === 0) || !isConnected || isUploading}
-                    className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+                    disabled={
+                      (!newMessage.trim() && selectedFiles.length === 0) ||
+                      !isConnected ||
+                      isUploading
+                    }
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
-                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    {isUploading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
 
@@ -817,13 +1113,21 @@ const Conversation = () => {
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
+            <div className="flex-1 flex items-center justify-center bg-background">
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Welcome to Messages</h3>
-                <p>Select a conversation to start chatting</p>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">
+                  Welcome to Messages
+                </h3>
+                <p className="text-muted-foreground">
+                  Select a conversation to start chatting
+                </p>
                 {!isConnected && (
                   <div className="mt-4">
-                    <Button onClick={handleForceReconnect} variant="outline" className="gap-2 bg-transparent">
+                    <Button
+                      onClick={handleForceReconnect}
+                      variant="outline"
+                      className="gap-2 bg-transparent"
+                    >
                       <RefreshCw className="w-4 h-4" />
                       Connect to Server
                     </Button>
@@ -833,809 +1137,51 @@ const Conversation = () => {
             </div>
           )}
         </div>
+
+        {selectedMedia && (
+          <div
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+            onClick={() => setSelectedMedia(null)}
+          >
+
+            <button
+              onClick={() => setSelectedMedia(null)}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+
+            <div
+              className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {selectedMedia.type === "image" ? (
+                <img
+                  src={selectedMedia.url || "/placeholder.svg"}
+                  alt="Full size image"
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                />
+              ) : (
+                <video
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                  poster={selectedMedia.thumbnail}
+                >
+                  <source src={selectedMedia.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              )}
+            </div>
+
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/70 text-sm">
+              Click outside to close
+            </div>
+          </div>
+        )}
       </div>
     </TooltipProvider>
-  )
-}
+  );
+};
 
-export default Conversation
-
-
-// import { useEffect, useRef, useState, useCallback } from "react"
-// import { useDispatch, useSelector } from "react-redux"
-// import socket from "@/utils/socket"
-// import { loggedUser } from "@/store/authSlice"
-// import moment from "moment"
-// import { fetchTeacherConversations, setCurrentConversation } from "@/store/conversationSlice"
-// import { createMessage, fetchMessages } from "@/store/messageSlice"
-// import { MoveHorizontalIcon, PhoneIcon, SearchIcon, VideoIcon, Send, Upload, ImageIcon, Video, File, X, Check, CheckCheck, Clock, Wifi, WifiOff, AlertCircle, Loader2, RefreshCw } from 'lucide-react'
-// import { Button } from "@/components/ui/button"
-// import { Input } from "@/components/ui/input"
-// import { ScrollArea } from "@/components/ui/scroll-area"
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-// import { Badge } from "@/components/ui/badge"
-// import { Alert, AlertDescription } from "@/components/ui/alert"
-// import { Progress } from "@/components/ui/progress"
-// import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-
-// const Conversation = () => {
-//   const dispatch = useDispatch()
-//   const { conversations = [], loading, error } = useSelector((state) => state.conversations)
-//   const currentConversation = useSelector((state) => state.conversations.currentConversation)
-//   const messages = useSelector((state) => state.messages.messages)
-//   const messagesLoading = useSelector((state) => state.messages.loading)
-//   const teacher = useSelector((state) => loggedUser(state))
-
-//   // State
-//   const [newMessage, setNewMessage] = useState("")
-//   const [onlineUsers, setOnlineUsers] = useState({})
-//   const [typingUsers, setTypingUsers] = useState([])
-//   const [isTyping, setIsTyping] = useState(false)
-//   const [selectedFiles, setSelectedFiles] = useState([])
-//   const [uploadProgress, setUploadProgress] = useState(0)
-//   const [isUploading, setIsUploading] = useState(false)
-//   const [connectionError, setConnectionError] = useState(null)
-//   const [isConnected, setIsConnected] = useState(false)
-//   const [isConnecting, setIsConnecting] = useState(false) 
-//   const [searchQuery, setSearchQuery] = useState("")
-//   const [showSearch, setShowSearch] = useState(false)
-
-//   // Refs
-//   const teacherId = teacher?.id
-//   const endOfMessagesRef = useRef(null)
-//   const fileInputRef = useRef(null)
-//   const messageInputRef = useRef(null)
-//   const typingTimeoutRef = useRef(null)
-//   const connectionCheckInterval = useRef(null) 
-
-//   // Check connection status periodically
-//   useEffect(() => {
-//     const checkConnection = () => {
-//       const connected = socket.connected
-//       setIsConnected(connected)
-
-//       if (!connected && !isConnecting) {
-//         setConnectionError("Connection lost. Attempting to reconnect...")
-//       } else if (connected && connectionError) {
-//         setConnectionError(null)
-//       }
-//     }
-
-//     // Initial check
-//     checkConnection()
-
-//     // Check every 2 seconds
-//     connectionCheckInterval.current = setInterval(checkConnection, 2000)
-
-//     return () => {
-//       if (connectionCheckInterval.current) {
-//         clearInterval(connectionCheckInterval.current)
-//       }
-//     }
-//   }, [isConnecting, connectionError])
-
-//   // Force reconnect function
-//   const handleForceReconnect = useCallback(() => {
-//     setIsConnecting(true)
-//     setConnectionError("Reconnecting...")
-    
-//     // Disconnect and reconnect
-//     if (socket.connected) {
-//       socket.disconnect()
-//     }
-    
-//     setTimeout(() => {
-//       socket.connect()
-//       setIsConnecting(false)
-//     }, 1000)
-//   }, [])
-
-//   // Initialize and fetch conversations
-//   useEffect(() => {
-//     if (teacherId) {
-//       dispatch(fetchTeacherConversations(teacherId))
-//       socket.emit("join", teacherId)
-//     }
-
-//     // Socket connection handlers
-//     const handleConnect = () => {
-//       setIsConnected(true)
-//       setIsConnecting(false)
-//       setConnectionError(null)
-//     }
-
-//     const handleDisconnect = () => {
-//       setIsConnected(false)
-//       setIsConnecting(false)
-//       setConnectionError("Connection lost. Trying to reconnect...")
-//     }
-
-//     const handleConnectError = () => {
-//       setIsConnected(false)
-//       setIsConnecting(false)
-//       setConnectionError("Failed to connect to server")
-//     }
-
-//     socket.on("connect", handleConnect)
-//     socket.on("disconnect", handleDisconnect)
-//     socket.on("connect_error", handleConnectError)
-
-//     return () => {
-//       socket.off("connect", handleConnect)
-//       socket.off("disconnect", handleDisconnect)
-//       socket.off("connect_error", handleConnectError)
-//       socket.off("updateOnlineStatus")
-//     }
-//   }, [dispatch, teacherId])
-
-//   // Handle current conversation changes
-//   useEffect(() => {
-//     if (currentConversation) {
-//       console.log("Joining conversation:", currentConversation._id)
-//       socket.emit("joinConversation", currentConversation._id)
-//       dispatch(fetchMessages(currentConversation._id))
-
-//       const handleNewMessage = (message) => {
-//         if (currentConversation && message.conversationId === currentConversation._id) {
-//           console.log("New message received:", message)
-//           dispatch(createMessage(message))
-//         }
-//       }
-
-//       const handleGetMessages = (messages) => {
-//         console.log("Received messages:", messages)
-//         dispatch(fetchMessages(currentConversation._id))
-//       }
-
-//       const handleUpdateLastMessage = ({ conversationId, lastMessage, lastMessageId }) => {
-//         if (currentConversation && conversationId === currentConversation._id) {
-//           console.log("Update last message:", lastMessage)
-//           dispatch(
-//             setCurrentConversation({
-//               ...currentConversation,
-//               lastMessage,
-//               lastMessageId,
-//             }),
-//           )
-//         }
-//       }
-
-//       const handleTyping = ({ userId, username }) => {
-//         if (userId !== teacherId) {
-//           setTypingUsers((prev) => {
-//             if (!prev.includes(username)) {
-//               return [...prev, username]
-//             }
-//             return prev
-//           })
-//         }
-//       }
-
-//       const handleStopTyping = ({ userId, username }) => {
-//         setTypingUsers((prev) => prev.filter((user) => user !== username))
-//       }
-
-//       socket.on("newMessage", handleNewMessage)
-//       socket.on("getMessages", handleGetMessages)
-//       socket.on("updateLastMessage", handleUpdateLastMessage)
-//       socket.on("userTyping", handleTyping)
-//       socket.on("userStoppedTyping", handleStopTyping)
-
-//       return () => {
-//         socket.off("newMessage", handleNewMessage)
-//         socket.off("getMessages", handleGetMessages)
-//         socket.off("updateLastMessage", handleUpdateLastMessage)
-//         socket.off("userTyping", handleTyping)
-//         socket.off("userStoppedTyping", handleStopTyping)
-//         socket.emit("leaveConversation", currentConversation._id)
-//       }
-//     }
-//   }, [currentConversation, dispatch, teacherId])
-
-//   // Auto-scroll to bottom
-//   useEffect(() => {
-//     if (endOfMessagesRef.current) {
-//       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" })
-//     }
-//   }, [messages])
-
-//   // Handle online status updates
-//   useEffect(() => {
-//     const handleUpdateOnlineStatus = (onlineUsers) => {
-//       console.log("Online users updated:", onlineUsers)
-//       setOnlineUsers(onlineUsers)
-//     }
-
-//     socket.on("updateOnlineStatus", (data) => {
-//       console.log("Received updateOnlineStatus event:", data)
-//       handleUpdateOnlineStatus(data)
-//     })
-
-//     return () => {
-//       socket.off("updateOnlineStatus")
-//     }
-//   }, [])
-
-//   // Typing indicator logic
-//   const handleTyping = useCallback(() => {
-//     if (currentConversation && !isTyping) {
-//       setIsTyping(true)
-//       socket.emit("typing", {
-//         conversationId: currentConversation._id,
-//         userId: teacherId,
-//         username: teacher?.username,
-//       })
-//     }
-
-//     // Clear existing timeout
-//     if (typingTimeoutRef.current) {
-//       clearTimeout(typingTimeoutRef.current)
-//     }
-
-//     // Set new timeout
-//     typingTimeoutRef.current = setTimeout(() => {
-//       setIsTyping(false)
-//       socket.emit("stopTyping", {
-//         conversationId: currentConversation._id,
-//         userId: teacherId,
-//         username: teacher?.username,
-//       })
-//     }, 2000)
-//   }, [currentConversation, teacherId, teacher?.username, isTyping])
-
-//   // Handle conversation selection
-//   const handleConversationClick = (conversation) => {
-//     console.log("Conversation clicked:", conversation)
-//     dispatch(setCurrentConversation(conversation))
-//     setSearchQuery("")
-//     setShowSearch(false)
-//   }
-
-//   // Handle file selection
-//   const handleFileSelect = (event) => {
-//     const files = Array.from(event.target.files || [])
-//     const validFiles = files.filter((file) => {
-//       const isValidType =
-//         file.type.startsWith("image/") || file.type.startsWith("video/") || file.type === "application/pdf"
-//       const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB limit
-//       return isValidType && isValidSize
-//     })
-
-//     if (validFiles.length !== files.length) {
-//       setConnectionError("Some files were rejected. Only images, videos, and PDFs under 10MB are allowed.")
-//       setTimeout(() => setConnectionError(null), 5000)
-//     }
-
-//     setSelectedFiles((prev) => [...prev, ...validFiles])
-//   }
-
-//   // Remove selected file
-//   const removeSelectedFile = (index) => {
-//     setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
-//   }
-
-//   // Send message
-//   const handleSendMessage = useCallback(async () => {
-//     if (!newMessage.trim() && selectedFiles.length === 0) return
-
-//     if (!currentConversation?._id) {
-//       setConnectionError("No conversation selected")
-//       return
-//     }
-
-//     if (!isConnected) {
-//       setConnectionError("Not connected to server. Please wait for reconnection.")
-//       return
-//     }
-
-//     try {
-//       setIsUploading(selectedFiles.length > 0)
-
-//       // Simulate upload progress for files
-//       if (selectedFiles.length > 0) {
-//         for (let i = 0; i <= 100; i += 10) {
-//           setUploadProgress(i)
-//           await new Promise((resolve) => setTimeout(resolve, 50))
-//         }
-//       }
-
-//       const messageData = {
-//         conversationId: currentConversation._id,
-//         senderId: teacherId,
-//         content: newMessage.trim(),
-//         mediaFiles: selectedFiles,
-//       }
-
-//       console.log("Sending message:", messageData)
-//       socket.emit("sendMessage", messageData)
-
-//       setNewMessage("")
-//       setSelectedFiles([])
-//       setUploadProgress(0)
-//       setIsUploading(false)
-//       setConnectionError(null)
-
-//       // Focus back to input
-//       messageInputRef.current?.focus()
-//     } catch (error) {
-//       setConnectionError("Failed to send message. Please try again.")
-//       setIsUploading(false)
-//       console.error("Error sending message:", error)
-//     }
-//   }, [newMessage, selectedFiles, currentConversation, teacherId, isConnected])
-
-//   // Handle keyboard shortcuts
-//   const handleKeyPress = (event) => {
-//     if (event.key === "Enter" && !event.shiftKey) {
-//       event.preventDefault()
-//       handleSendMessage()
-//     }
-//   }
-
-//   // Handle message input change
-//   const handleMessageChange = (e) => {
-//     setNewMessage(e.target.value)
-//     handleTyping()
-//   }
-
-//   // Filter conversations based on search
-//   const filteredConversations = conversations.filter((conversation) =>
-//     conversation.participants?.[0]?.username?.toLowerCase().includes(searchQuery.toLowerCase()),
-//   )
-
-//   // Get message status icon
-//   const getMessageStatusIcon = (status) => {
-//     switch (status) {
-//       case "sending":
-//         return <Clock className="w-3 h-3 text-gray-400" />
-//       case "sent":
-//         return <Check className="w-3 h-3 text-gray-400" />
-//       case "delivered":
-//         return <CheckCheck className="w-3 h-3 text-gray-400" />
-//       case "read":
-//         return <CheckCheck className="w-3 h-3 text-blue-500" />
-//       default:
-//         return null
-//     }
-//   }
-
-//   if (loading) {
-//     return (
-//       <div className="flex items-center justify-center h-screen">
-//         <div className="flex items-center gap-2">
-//           <Loader2 className="w-6 h-6 animate-spin" />
-//           <span>Loading conversations...</span>
-//         </div>
-//       </div>
-//     )
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="flex items-center justify-center h-screen">
-//         <Alert className="max-w-md">
-//           <AlertCircle className="h-4 w-4" />
-//           <AlertDescription>Error loading conversations: {error.message}</AlertDescription>
-//         </Alert>
-//       </div>
-//     )
-//   }
-
-//   return (
-//     <TooltipProvider>
-//       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr]  min-h-screen p-8 w-full">
-//         {/* Conversations List */}
-//         <div className="bg-background border-r flex flex-col ">
-//           <div className="border-b p-4 flex items-center justify-between">
-//             <h3 className="text-lg font-semibold">Messages</h3>
-//             <div className="flex items-center gap-2">
-//               <Tooltip>
-//                 <TooltipTrigger asChild>
-//                   <div className="flex items-center gap-1">
-//                     {isConnecting ? (
-//                       <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />
-//                     ) : isConnected ? (
-//                       <Wifi className="w-5 h-5 text-green-500" />
-//                     ) : (
-//                       <WifiOff className="w-5 h-5 text-red-500" />
-//                     )}
-//                   </div>
-//                 </TooltipTrigger>
-//                 <TooltipContent>
-//                   {isConnecting ? "Connecting..." : isConnected ? "Connected" : "Disconnected"}
-//                 </TooltipContent>
-//               </Tooltip>
-
-//               {!isConnected && !isConnecting && (
-//                 <Tooltip>
-//                   <TooltipTrigger asChild>
-//                     <Button variant="ghost" size="icon" onClick={handleForceReconnect}>
-//                       <RefreshCw className="w-4 h-4" />
-//                     </Button>
-//                   </TooltipTrigger>
-//                   <TooltipContent>Reconnect</TooltipContent>
-//                 </Tooltip>
-//               )}
-
-//               <Button variant="ghost" size="icon" onClick={() => setShowSearch(!showSearch)}>
-//                 <SearchIcon className="w-5 h-5" />
-//               </Button>
-//             </div>
-//           </div>
-
-//           {/* Search Input */}
-//           {showSearch && (
-//             <div className="p-4 border-b">
-//               <Input
-//                 placeholder="Search conversations..."
-//                 value={searchQuery}
-//                 onChange={(e) => setSearchQuery(e.target.value)}
-//                 className="w-full"
-//               />
-//             </div>
-//           )}
-
-//           <ScrollArea className="flex-1 max-h-screen overflow-hidden">
-//             <div className="p-4 space-y-2">
-//               {filteredConversations.map((conversation) => {
-//                 const participant = conversation.participants?.[1]
-//                 const isOnline = onlineUsers[participant?._id]
-//                 const isActive = currentConversation?._id === conversation._id
-
-//                 return (
-//                   <div
-//                     key={conversation._id}
-//                     className={`flex items-center cursor-pointer hover:bg-muted p-3 rounded-lg transition-colors ${
-//                       isActive ? "bg-muted" : ""
-//                     }`}
-//                     onClick={() => handleConversationClick(conversation)}
-//                   >
-//                     <div className="relative">
-//                       <Avatar className="h-12 w-12">
-//                         <AvatarImage
-//                           src={participant?.user_image?.url || "/placeholder-user.jpg"}
-//                           alt={participant?.username || "User"}
-//                         />
-//                         <AvatarFallback>{participant?.username?.[1]?.toUpperCase() || "?"}</AvatarFallback>
-//                       </Avatar>
-//                       <div
-//                         className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-//                           isOnline ? "bg-green-500" : "bg-gray-400"
-//                         }`}
-//                       />
-//                     </div>
-
-//                     <div className="flex-1 min-w-0 ml-3">
-//                       <div className="flex items-center justify-between">
-//                         <h4 className="font-medium text-sm truncate">{participant?.username || "Unknown User"}</h4>
-//                         <span className="text-xs text-muted-foreground">
-//                           {moment(conversation.updatedAt).format("HH:mm")}
-//                         </span>
-//                       </div>
-//                       <p className="text-sm text-muted-foreground truncate">
-//                         {conversation.lastMessage || "No messages yet"}
-//                       </p>
-//                     </div>
-//                   </div>
-//                 )
-//               })}
-
-//               {filteredConversations.length === 0 && (
-//                 <div className="text-center text-muted-foreground py-8">
-//                   {searchQuery ? "No conversations found" : "No conversations yet"}
-//                 </div>
-//               )}
-//             </div>
-//           </ScrollArea>
-//         </div>
-
-//         {/* Messages Area */}
-//         <div className="flex flex-col">
-//           {currentConversation ? (
-//             <>
-//               {/* Connection Error Alert */}
-//               {connectionError && (
-//                 <Alert className="m-4 border-red-200 bg-red-50">
-//                   <AlertCircle className="h-4 w-4" />
-//                   <AlertDescription className="text-red-800 flex items-center justify-between">
-//                     <span>{connectionError}</span>
-//                     <div className="flex items-center gap-2">
-//                       {!isConnected && !isConnecting && (
-//                         <Button variant="ghost" size="sm" onClick={handleForceReconnect} className="text-red-800">
-//                           <RefreshCw className="w-4 h-4 mr-1" />
-//                           Retry
-//                         </Button>
-//                       )}
-//                       <Button
-//                         variant="ghost"
-//                         size="sm"
-//                         className="h-auto p-0 text-red-800"
-//                         onClick={() => setConnectionError(null)}
-//                       >
-//                         <X className="w-4 h-4" />
-//                       </Button>
-//                     </div>
-//                   </AlertDescription>
-//                 </Alert>
-//               )}
-
-//               {/* Header */}
-//               <div className="border-b p-4 flex items-center justify-between bg-white">
-//                 <div className="flex items-center gap-3">
-//                   <div className="relative">
-//                     <Avatar className="h-10 w-10">
-//                       <AvatarImage
-//                         src={
-//                           currentConversation.participants?.[1]?.user_image?.url ||
-//                           "/placeholder-user.jpg" ||
-//                           "/placeholder.svg"
-//                          || "/placeholder.svg"}
-//                         alt={currentConversation.participants?.[1]?.username || "User"}
-//                       />
-//                       <AvatarFallback>
-//                         {currentConversation.participants?.[1]?.username?.[1]?.toUpperCase() || "U"}
-//                       </AvatarFallback>
-//                     </Avatar>
-//                     <div
-//                       className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-//                         onlineUsers[currentConversation.participants?.[1]?._id] ? "bg-green-500" : "bg-gray-400"
-//                       }`}
-//                     />
-//                   </div>
-//                   <div>
-//                     <h3 className="font-semibold">
-//                       {currentConversation.participants?.[1]?.username || "Unknown User"}
-//                     </h3>
-//                     <p className="text-sm text-muted-foreground">
-//                       {onlineUsers[currentConversation.participants?.[1]?._id] ? "Online" : "Offline"}
-//                     </p>
-//                   </div>
-//                 </div>
-
-//                 <div className="flex items-center gap-2">
-//                   <Tooltip>
-//                     <TooltipTrigger asChild>
-//                       <Button variant="ghost" size="icon" disabled={!isConnected}>
-//                         <PhoneIcon className="w-5 h-5" />
-//                       </Button>
-//                     </TooltipTrigger>
-//                     <TooltipContent>Voice call</TooltipContent>
-//                   </Tooltip>
-//                   <Tooltip>
-//                     <TooltipTrigger asChild>
-//                       <Button variant="ghost" size="icon" disabled={!isConnected}>
-//                         <VideoIcon className="w-5 h-5" />
-//                       </Button>
-//                     </TooltipTrigger>
-//                     <TooltipContent>Video call</TooltipContent>
-//                   </Tooltip>
-//                   <Button variant="ghost" size="icon">
-//                     <MoveHorizontalIcon className="w-5 h-5" />
-//                   </Button>
-//                 </div>
-//               </div>
-
-//               {/* Messages */}
-//               <ScrollArea className="flex-1 p-4 bg-gray-50">
-//                 {messagesLoading ? (
-//                   <div className="flex items-center justify-center py-8">
-//                     <Loader2 className="w-6 h-6 animate-spin" />
-//                     <span className="ml-2">Loading messages...</span>
-//                   </div>
-//                 ) : (
-//                   <div className="space-y-4">
-//                     {messages?.map((message) => (
-//                       <div
-//                         key={message._id}
-//                         className={`flex items-end gap-2 ${
-//                           message.senderId._id === teacherId ? "justify-end" : "justify-start"
-//                         }`}
-//                       >
-//                         {message.senderId._id !== teacherId && (
-//                           <Avatar className="h-8 w-8 mb-1">
-//                             <AvatarImage
-//                               src={
-//                                 currentConversation.participants?.find((p) => p._id === message.senderId._id)
-//                                   ?.user_image?.url || "/placeholder-user.jpg"
-//                               }
-//                               alt="Avatar"
-//                             />
-//                             <AvatarFallback>
-//                               {currentConversation.participants
-//                                 ?.find((p) => p._id === message.senderId._id)
-//                                 ?.username?.[0]?.toUpperCase() || "U"}
-//                             </AvatarFallback>
-//                           </Avatar>
-//                         )}
-
-//                         <div
-//                           className={`max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${
-//                             message.senderId._id === teacherId
-//                               ? "bg-blue-500 text-white rounded-br-md"
-//                               : "bg-white text-gray-900 rounded-bl-md border"
-//                           }`}
-//                         >
-//                           {message.content && <p className="text-sm leading-relaxed">{message.content}</p>}
-
-//                           {/* Media attachments */}
-//                           {message.media?.map((media) => (
-//                             <div key={media._id} className="mt-2">
-//                               {media.type === "image" ? (
-//                                 <img
-//                                   src={`https://tamadrus-api.onrender.com/${media.url}`}
-//                                   alt="Shared image"
-//                                   className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-//                                   onClick={() => window.open(`https://tamadrus-api.onrender.com/${media.url}`, "_blank")}
-//                                 />
-//                               ) : media.type === "video" ? (
-//                                 <video controls className="max-w-full h-auto rounded-lg" preload="metadata">
-//                                   <source src={`https://tamadrus-api.onrender.com/${media.url}`} type="video/mp4" />
-//                                   Your browser does not support the video tag.
-//                                 </video>
-//                               ) : (
-//                                 <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
-//                                   <File className="w-4 h-4" />
-//                                   <span className="text-sm">{media.name || "File"}</span>
-//                                 </div>
-//                               )}
-//                             </div>
-//                           ))}
-
-//                           <div
-//                             className={`flex items-center justify-between mt-1 text-xs ${
-//                               message.senderId._id === teacherId ? "text-blue-100" : "text-gray-500"
-//                             }`}
-//                           >
-//                             <span>{moment(message.timestamp).format("HH:mm")}</span>
-//                             {message.senderId._id === teacherId && (
-//                               <div className="ml-2">{getMessageStatusIcon(message.status)}</div>
-//                             )}
-//                           </div>
-//                         </div>
-
-//                         {message.senderId._id === teacherId && (
-//                           <Avatar className="h-8 w-8 mb-1">
-//                             <AvatarImage src={message.senderId?.user_image?.url || "/placeholder-user.jpg"} alt="You" />
-//                             <AvatarFallback>{message.senderId?.username?.[0]?.toUpperCase() || "Y"}</AvatarFallback>
-//                           </Avatar>
-//                         )}
-//                       </div>
-//                     ))}
-
-//                     {/* Typing indicator */}
-//                     {typingUsers.length > 0 && (
-//                       <div className="flex items-center gap-2 text-sm text-gray-500">
-//                         <div className="flex space-x-1">
-//                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-//                           <div
-//                             className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-//                             style={{ animationDelay: "0.1s" }}
-//                           />
-//                           <div
-//                             className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-//                             style={{ animationDelay: "0.2s" }}
-//                           />
-//                         </div>
-//                         <span>
-//                           {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
-//                         </span>
-//                       </div>
-//                     )}
-//                   </div>
-//                 )}
-
-//                 <div ref={endOfMessagesRef} />
-//               </ScrollArea>
-
-//               {/* Selected Files Preview */}
-//               {selectedFiles.length > 0 && (
-//                 <div className="border-t p-3 bg-gray-50">
-//                   <div className="flex flex-wrap gap-2">
-//                     {selectedFiles.map((file, index) => (
-//                       <div key={index} className="relative">
-//                         <Badge variant="secondary" className="pr-6">
-//                           {file.type.startsWith("image/") && <ImageIcon className="w-3 h-3 mr-1" />}
-//                           {file.type.startsWith("video/") && <Video className="w-3 h-3 mr-1" />}
-//                           {!file.type.startsWith("image/") && !file.type.startsWith("video/") && (
-//                             <File className="w-3 h-3 mr-1" />
-//                           )}
-//                           {file.name}
-//                         </Badge>
-//                         <Button
-//                           variant="ghost"
-//                           size="sm"
-//                           className="absolute -top-1 -right-1 h-4 w-4 p-0 rounded-full bg-red-500 hover:bg-red-600 text-white"
-//                           onClick={() => removeSelectedFile(index)}
-//                         >
-//                           <X className="w-3 h-3" />
-//                         </Button>
-//                       </div>
-//                     ))}
-//                   </div>
-//                 </div>
-//               )}
-
-//               {/* Upload Progress */}
-//               {isUploading && (
-//                 <div className="border-t p-3 bg-gray-50">
-//                   <div className="flex items-center gap-2">
-//                     <span className="text-sm text-gray-600">Uploading...</span>
-//                     <Progress value={uploadProgress} className="flex-1" />
-//                     <span className="text-sm text-gray-600">{uploadProgress}%</span>
-//                   </div>
-//                 </div>
-//               )}
-
-//               {/* Input Area */}
-//               <div className="border-t p-4 bg-white">
-//                 <div className="flex items-end gap-2">
-//                   <Tooltip>
-//                     <TooltipTrigger asChild>
-//                       <Button
-//                         variant="ghost"
-//                         size="icon"
-//                         onClick={() => fileInputRef.current?.click()}
-//                         disabled={isUploading || !isConnected}
-//                       >
-//                         <Upload className="w-5 h-5" />
-//                       </Button>
-//                     </TooltipTrigger>
-//                     <TooltipContent>Upload file</TooltipContent>
-//                   </Tooltip>
-
-//                   <div className="flex-1">
-//                     <Input
-//                       ref={messageInputRef}
-//                       type="text"
-//                       placeholder={isConnected ? "Type a message..." : "Connecting..."}
-//                       value={newMessage}
-//                       onChange={handleMessageChange}
-//                       onKeyPress={handleKeyPress}
-//                       disabled={!isConnected || isUploading}
-//                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-//                     />
-//                   </div>
-
-//                   <Button
-//                     onClick={handleSendMessage}
-//                     disabled={(!newMessage.trim() && selectedFiles.length === 0) || !isConnected || isUploading}
-//                     className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
-//                   >
-//                     {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-//                   </Button>
-//                 </div>
-
-//                 <input
-//                   ref={fileInputRef}
-//                   type="file"
-//                   multiple
-//                   accept="image/*,video/*,.pdf"
-//                   onChange={handleFileSelect}
-//                   className="hidden"
-//                 />
-//               </div>
-//             </>
-//           ) : (
-//             <div className="flex items-center justify-center h-full text-muted-foreground">
-//               <div className="text-center">
-//                 <h3 className="text-lg font-semibold mb-2">Welcome to Messages</h3>
-//                 <p>Select a conversation to start chatting</p>
-//                 {!isConnected && (
-//                   <div className="mt-4">
-//                     <Button onClick={handleForceReconnect} variant="outline" className="gap-2 bg-transparent">
-//                       <RefreshCw className="w-4 h-4" />
-//                       Connect to Server
-//                     </Button>
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </TooltipProvider>
-//   )
-// }
-
-// export default Conversation
-
+export default Conversation;
