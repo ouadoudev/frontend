@@ -932,7 +932,7 @@ const Conversation = () => {
                                       </div>
                                     </div>
                                   ) : (
-                                    <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                                    <div className="flex items-center gap-2 p-2  rounded-lg">
                                       <File className="w-4 h-4" />
                                       <a
                                         href={media.url}
