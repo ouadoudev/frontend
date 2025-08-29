@@ -87,9 +87,9 @@ import PendingRevenuesAdmin from "./components/dashboard/revenue/PendingRevenues
 import AdminRegister from "./pages/AdminRegister";
 import UpdateResource from "./components/dashboard/resource/updateResource";
 import AdminConversation from "./components/dashboard/operations/AdminConversation";
-// import BadgesDashboard from "./components/dashboard/badges/BadgesDashboard";
-// import CreateBadge from "./components/dashboard/badges/CreateBadge";
-// import UpdateBadge from "./components/dashboard/badges/updateBadge";
+import BadgesDashboard from "./components/dashboard/badges/BadgesDashboard";
+import CreateBadge from "./components/dashboard/badges/CreateBadge";
+import UpdateBadge from "./components/dashboard/badges/updateBadge";
 
 
 
@@ -138,9 +138,9 @@ const App = () => {
             <Route path="/students" element={<Students />} />
             <Route path="/subjects" element={<Subjects />} />
             <Route path="/resources" element={<Resources />} />
-            {/* <Route path="/badges" element={<BadgesDashboard />} /> */}
-            {/* <Route path="/badges/create" element={<CreateBadge />} /> */}
-            {/* <Route path="/badges/update/:id" element={<UpdateBadge />} /> */}
+            <Route path="/badges" element={<BadgesDashboard />} /> 
+            <Route path="/badges/create" element={<CreateBadge />} />
+             <Route path="/badges/update/:id" element={<UpdateBadge />} />
             <Route path="/resource/:subject" element={<SubjectResources />} />
             <Route path="/CreateResource" element={<CreateResource />} />
             <Route path="/update/resource/:resourceId" element={<UpdateResource />} />
