@@ -1,0 +1,61 @@
+import {
+  Trophy,
+  Medal,
+  Award,
+  Star,
+  Crown,
+  Target,
+  Zap,
+  Shield,
+  Heart,
+  Flame,
+  Gem,
+  Rocket,
+  Lightbulb,
+  Users,
+  Calendar,
+  Clock,
+  CheckCircle,
+  Gift,
+  Bookmark,
+  Flag,
+  Sword,
+  Leaf,
+  Mountain,
+  Sun,
+  Moon,
+} from "lucide-react";
+
+const iconMap = {
+  trophy: Trophy,
+  medal: Medal,
+  award: Award,
+  star: Star,
+  crown: Crown,
+  target: Target,
+  zap: Zap,
+  shield: Shield,
+  heart: Heart,
+  flame: Flame,
+  gem: Gem,
+  rocket: Rocket,
+  lightbulb: Lightbulb,
+  users: Users,
+  calendar: Calendar,
+  clock: Clock,
+  "check-circle": CheckCircle,
+  gift: Gift,
+  bookmark: Bookmark,
+  flag: Flag,
+  sword: Sword,
+  leaf: Leaf,
+  mountain: Mountain,
+  sun: Sun,
+  moon: Moon,
+};
+
+export function BadgeIcon({ iconName, className = "w-6 h-6", ...props }) {
+  const IconComponent = iconMap[iconName] || Trophy
+
+  return <IconComponent className={className} {...props} />
+}
