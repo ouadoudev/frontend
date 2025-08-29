@@ -17,7 +17,7 @@ class SocketManager {
     this.isConnecting = true
 
     try {
-      this.socket = io("http://tamadrus-api.onrender.com", {
+      this.socket = io("https://tamadrus-api.onrender.com", {
         transports: ["websocket", "polling"], // Add polling as fallback
         withCredentials: true,
         reconnection: true,

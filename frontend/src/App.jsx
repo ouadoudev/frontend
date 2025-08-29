@@ -93,7 +93,7 @@ import AdminConversation from "./components/dashboard/operations/AdminConversati
 
 
 
-axios.defaults.baseURL = "http://tamadrus-api.onrender.com";
+axios.defaults.baseURL = "https://tamadrus-api.onrender.com";
 axios.defaults.withCredentials = true;
 
 const App = () => {
