@@ -6,7 +6,7 @@ export const sendEmail = createAsyncThunk(
   'contactForm/sendEmail',
   async (formData, thunkAPI) => {
     try {
-      const response = await axios.post('http://tamadrus-api.onrender.com/send-email', formData);
+      const response = await axios.post('https://tamadrus-api.onrender.com/send-email', formData);
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);

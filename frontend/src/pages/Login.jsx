@@ -52,7 +52,7 @@
 //   };
 
 //   const handleGoogleLogin = () => {
-//     window.location.href = "http://tamadrus-api.onrender.com/auth/google";
+//     window.location.href = "https://tamadrus-api.onrender.com/auth/google";
 //   };
 
 //   const role = useSelector((state) => state.auth.user);
@@ -373,7 +373,7 @@ const Login = () => {
               <Button
                 className="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-lg border border-gray-300 flex items-center justify-center transition duration-200"
                 type="button"
-                onClick={() => window.location.href = "http://tamadrus-api.onrender.com/auth/google"}
+                onClick={() => window.location.href = "https://tamadrus-api.onrender.com/auth/google"}
               >
                 <FaGoogle className="mr-3 text-red-500" />
                 Sign in with Google
