@@ -286,9 +286,9 @@ const Profile = () => {
             />
             <TodoCard todos={todos} status={todosStatus} />
           </div>
-          {/* <div className="lg:col-span-3"> */}
-            {/* <AchievementsCard user={user} /> */}
-          {/* </div> */}
+           <div className="lg:col-span-3">
+             <AchievementsCard user={user} /> 
+          </div> 
         </div>
       </div>
     </div>
