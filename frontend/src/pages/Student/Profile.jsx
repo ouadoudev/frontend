@@ -277,6 +277,7 @@ const Profile = () => {
               handleViewCourse={handleViewCourse}
             />
             <StudentResourcesList user={user} />
+             <AchievementsCard user={user} />
           </div>
           <div className="space-y-6">
             <EnrolledSubjectsCard
@@ -286,9 +287,6 @@ const Profile = () => {
             />
             <TodoCard todos={todos} status={todosStatus} />
           </div>
-           <div className="lg:col-span-3">
-             <AchievementsCard user={user} /> 
-          </div> 
         </div>
       </div>
     </div>
