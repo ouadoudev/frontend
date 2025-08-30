@@ -556,6 +556,7 @@ import {
   Users,
   GraduationCap,
   School2,
+  Star
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
