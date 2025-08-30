@@ -289,12 +289,12 @@ export function AchievementsCard({ user }) {
   const [level, setLevel] = useState(3);
 
 
-  const motivationalQuotes = [
-    "The beautiful thing about learning is that no one can take it away from you.",
-    "Education is not the filling of a pail, but the lighting of a fire.",
-    "The more that you read, the more things you will know.",
-    "Learning is a treasure that will follow its owner everywhere."
-  ];
+  // const motivationalQuotes = [
+  //   "The beautiful thing about learning is that no one can take it away from you.",
+  //   "Education is not the filling of a pail, but the lighting of a fire.",
+  //   "The more that you read, the more things you will know.",
+  //   "Learning is a treasure that will follow its owner everywhere."
+  // ];
 
   useEffect(() => {
     if (user?.id) {
@@ -303,9 +303,9 @@ export function AchievementsCard({ user }) {
     }
 
     // Rotate quotes every 10 seconds
-    const quoteInterval = setInterval(() => {
-      setCurrentQuote((prev) => (prev + 1) % motivationalQuotes.length);
-    }, 10000);
+    // const quoteInterval = setInterval(() => {
+    //   setCurrentQuote((prev) => (prev + 1) % motivationalQuotes.length);
+    // }, 10000);
 
     return () => clearInterval(quoteInterval);
   }, [dispatch, user?.id]);
@@ -506,11 +506,11 @@ export function AchievementsCard({ user }) {
           </div>
 
           {/* Motivational Quote */}
-          <div className="text-center p-4 bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg">
+{/*           <div className="text-center p-4 bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg">
             <div className="text-lg font-medium text-purple-800 transition-all duration-500">
               {motivationalQuotes[currentQuote]}
             </div>
-          </div>
+          </div> */}
         </div>
       </Card>
     </div>
