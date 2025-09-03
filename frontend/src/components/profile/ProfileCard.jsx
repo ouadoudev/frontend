@@ -113,7 +113,7 @@ export function UserProfileCard({
     }
   };
   return (
-    <Card className="flex-1 relative overflow-hidden">
+    <Card className="flex-1 relative overflow-hidden bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100 shadow-xl">
       <CardHeader className="pb-4">
         <div className="absolute top-4 right-4">
           <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -286,7 +286,7 @@ export function UserProfileCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap items-center  justify-center gap-4 text-sm sm:justify-start">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
           {user?.stream && (
             <div className="flex items-center space-x-1">
               <GraduationCap className="h-4 w-4" />
@@ -304,7 +304,7 @@ export function UserProfileCard({
             <span> {user?.email}</span>
           </div>
         </div>
-        <div className="text-center m-4">
+        <div className="text-center m-4 w-full">
           <p className="text-sm leading-relaxed">{user?.bio}</p>
         </div>
       </CardContent>
