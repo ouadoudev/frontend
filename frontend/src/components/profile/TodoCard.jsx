@@ -92,17 +92,14 @@ const TodoCard = () => {
   const completedTodos = todos.filter((todo) => todo.completed);
 
   return (
-    <Card className="border-0 shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <CheckCircle2 className="h-5 w-5 text-blue-600" />
-            <span>Mes tâches</span>
-          </div>
+      <Card className="flex-1 bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100 shadow-xl">
+         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+         Mes tâches
+        </CardTitle>
           <Badge variant="secondary" className="text-xs">
             {activeTodos.length} restantes
           </Badge>
-        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && <div className="text-red-500 text-sm">{error}</div>}
