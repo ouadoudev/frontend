@@ -24,6 +24,20 @@ import {
   Mountain,
   Sun,
   Moon,
+  Wifi,
+  Timer,
+  Book,
+  MessageCircle,
+  Compass,
+  HelpCircle,
+  MessageSquare,
+  List,
+  User,
+  Sparkles,
+  BookOpen,
+  Edit,
+  Handshake,
+  TrendingUp,
 } from "lucide-react";
 
 const iconMap = {
@@ -52,10 +66,24 @@ const iconMap = {
   mountain: Mountain,
   sun: Sun,
   moon: Moon,
+  wifi: Wifi,
+  timer: Timer,
+  book: Book,
+  "message-circle": MessageCircle,
+  compass: Compass,
+  "help-circle": HelpCircle,
+  "message-square": MessageSquare,
+  list: List,
+  user: User,
+  sparkles: Sparkles,
+  "book-open": BookOpen,
+  edit: Edit,
+  handshake: Handshake,
+  "trending-up": TrendingUp,
 };
 
 export function BadgeIcon({ iconName, className = "w-6 h-6", ...props }) {
-  const IconComponent = iconMap[iconName] || Trophy
+  const IconComponent = iconMap[iconName] || Trophy;
 
-  return <IconComponent className={className} {...props} />
+  return <IconComponent className={className} {...props} />;
 }
