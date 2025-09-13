@@ -80,7 +80,7 @@ const UpdateResource = () => {
     type: "",
     educationalCycle: "",
     educationalLevel: "",
-    stream: "",
+    stream: [],
     subject: "",
     pdf: null,
   });
@@ -97,7 +97,7 @@ const UpdateResource = () => {
         type: singleResource.type || "",
         educationalCycle: singleResource.educationalCycle || "",
         educationalLevel: singleResource.educationalLevel || "",
-        stream: singleResource.stream || "",
+        stream: singleResource.stream || [],
         subject: singleResource.subject || "",
         pdf: null,
       });
@@ -105,17 +105,27 @@ const UpdateResource = () => {
   }, [singleResource]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-      ...(name === "educationalCycle"
-        ? { educationalLevel: "", stream: "" }
-        : {}),
-      ...(name === "educationalLevel" ? { stream: "" } : {}),
-    }));
-  };
+    const { name, value, options, type } = e.target;
 
+    if (name === "stream" && type === "select-multiple") {
+      const selectedValues = Array.from(options)
+        .filter((option) => option.selected)
+        .map((option) => option.value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: selectedValues,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        ...(name === "educationalCycle"
+          ? { educationalLevel: "", stream: [] }
+          : {}),
+        ...(name === "educationalLevel" ? { stream: [] } : {}),
+      }));
+    }
+  };
   const handleFileChange = (e) => {
     setFormData((prev) => ({ ...prev, pdf: e.target.files[0] }));
   };
@@ -128,7 +138,9 @@ const UpdateResource = () => {
     formDataToSend.append("type", formData.type);
     formDataToSend.append("educationalCycle", formData.educationalCycle);
     formDataToSend.append("educationalLevel", formData.educationalLevel);
-    formDataToSend.append("stream", formData.stream);
+    formData.stream.forEach((s) => {
+      formDataToSend.append("stream", s);
+    });
     formDataToSend.append("subject", formData.subject);
     if (formData.pdf) {
       formDataToSend.append("pdf", formData.pdf);
@@ -342,31 +354,41 @@ const UpdateResource = () => {
                   </select>
                 </div>
 
-                <div>
-                  <Label
-                    htmlFor="stream"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Filière
-                  </Label>
-                  <select
-                    id="stream"
-                    name="stream"
-                    value={formData.stream}
-                    onChange={handleInputChange}
-                    required
-                    disabled={!formData.educationalLevel}
-                    className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Sélectionnez une filière</option>
-                    {formData.educationalLevel &&
-                      streams[formData.educationalLevel]?.map((stream) => (
-                        <option key={stream} value={stream}>
-                          {stream}
+                {formData.educationalCycle === "Lycée" &&
+                  formData.educationalLevel && (
+                    <div>
+                      <Label
+                        htmlFor="stream"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Filière
+                      </Label>
+                      <select
+                        id="stream"
+                        name="stream"
+                        multiple // Allow multiple selections
+                        value={formData.stream} // value expects an array now
+                        onChange={handleInputChange}
+                        required
+                        disabled={!formData.educationalLevel}
+                        className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">
+                          Sélectionnez une ou plusieurs filières
                         </option>
-                      ))}
-                  </select>
-                </div>
+                        {formData.educationalLevel &&
+                          streams[formData.educationalLevel]?.map((stream) => (
+                            <option key={stream} value={stream}>
+                              {stream}
+                            </option>
+                          ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maintenez Ctrl (Windows) ou Cmd (Mac) enfoncé pour
+                        sélectionner plusieurs filières.
+                      </p>
+                    </div>
+                  )}
 
                 <div>
                   <Label
