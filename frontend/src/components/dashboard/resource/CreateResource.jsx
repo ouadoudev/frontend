@@ -78,22 +78,32 @@ const CreateResource = () => {
     type: "",
     educationalCycle: "",
     educationalLevel: "",
-    stream: "",
+    stream: [],
     subject: "",
     pdf: null,
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-      // Reset dependent fields when parent field changes
-      ...(name === "educationalCycle"
-        ? { educationalLevel: "", stream: "" }
-        : {}),
-      ...(name === "educationalLevel" ? { stream: "" } : {}),
-    }));
+    const { name, value, options, type } = e.target;
+    if (name === "stream" && type === "select-multiple") {
+      const selectedValues = Array.from(options)
+        .filter((option) => option.selected)
+        .map((option) => option.value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: selectedValues,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        // Reset dependent fields when parent field changes
+        ...(name === "educationalCycle"
+          ? { educationalLevel: "", stream: "" }
+          : {}),
+        ...(name === "educationalLevel" ? { stream: "" } : {}),
+      }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -108,7 +118,9 @@ const CreateResource = () => {
     formDataToSend.append("type", formData.type);
     formDataToSend.append("educationalCycle", formData.educationalCycle);
     formDataToSend.append("educationalLevel", formData.educationalLevel);
-    formDataToSend.append("stream", formData.stream);
+    formData.stream.forEach((s) => {
+      formDataToSend.append("stream", s);
+    });
     formDataToSend.append("subject", formData.subject);
     if (formData.pdf) {
       formDataToSend.append("pdf", formData.pdf);
@@ -328,23 +340,25 @@ const CreateResource = () => {
                       <select
                         id="stream"
                         name="stream"
+                        multiple // Allow multiple selections
                         value={formData.stream}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            stream: e.target.value,
-                          })
-                        }
+                        onChange={handleInputChange} // Use the updated handleInputChange
                         className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
+                        // `required` can be tricky with multiple selects; consider client-side validation for at least one selection
                       >
-                        <option value="">Sélectionnez une filière</option>
+                        <option value="">
+                          Sélectionnez une ou plusieurs filières
+                        </option>
                         {streams[formData.educationalLevel]?.map((stream) => (
                           <option key={stream} value={stream}>
                             {stream}
                           </option>
                         ))}
                       </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maintenez Ctrl (Windows) ou Cmd (Mac) enfoncé pour
+                        sélectionner plusieurs filières.
+                      </p>
                     </div>
                   )}
               </div>
