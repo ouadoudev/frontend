@@ -9,6 +9,14 @@ import Features from "./landing/why";
 import Partenaires from "./landing/Partenaires";
 import Testimonials from "./landing/Testimonials";
 
+
+// // Loading component
+// const LoadingPlaceholder = () => (
+//   <div className="min-h-[50vh] flex items-center justify-center">
+//     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+//   </div>
+// );
+
 const Home = () => {
   return (
     <div className="min-h-screen bg-background">
