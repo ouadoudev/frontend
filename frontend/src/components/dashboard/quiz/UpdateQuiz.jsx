@@ -1230,6 +1230,62 @@ import {
   clearQuizState,
 } from "@/store/quizSlice";
 
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
+
 const STEPS = [
   {
     id: 1,
@@ -1334,7 +1390,9 @@ const UpdateQuiz = () => {
             attachment: null,
           },
         ],
-        timeLimit: quizData.timeLimit ? Math.round(quizData.timeLimit / 60) : 10,
+        timeLimit: quizData.timeLimit
+          ? Math.round(quizData.timeLimit / 60)
+          : 10,
         passingScore: quizData.passingScore || 75,
       });
       // Mark steps as completed if data exists
@@ -1363,7 +1421,8 @@ const UpdateQuiz = () => {
           errors.timeLimit = "La limite de temps doit être supérieure à 0";
         }
         if (formData.passingScore <= 0 || formData.passingScore > 100) {
-          errors.passingScore = "Le score de passage doit être compris entre 1 et 100";
+          errors.passingScore =
+            "Le score de passage doit être compris entre 1 et 100";
         }
       }
 
@@ -1373,7 +1432,8 @@ const UpdateQuiz = () => {
         } else {
           formData.questions.forEach((question, index) => {
             if (!question.questionText.trim()) {
-              errors[`question_${index}`] = "Le texte de la question est requis";
+              errors[`question_${index}`] =
+                "Le texte de la question est requis";
             }
             if (!question.correctAnswer.trim()) {
               errors[`correctAnswer_${index}`] = "La bonne réponse est requise";
@@ -1385,7 +1445,8 @@ const UpdateQuiz = () => {
               }
             } else {
               if (question.options.some((opt) => !opt.trim())) {
-                errors[`options_${index}`] = "Toutes les options doivent être remplies";
+                errors[`options_${index}`] =
+                  "Toutes les options doivent être remplies";
               }
               if (question.options.length < 2) {
                 errors[`options_${index}`] = "Au moins 2 options sont requises";
@@ -1470,7 +1531,9 @@ const UpdateQuiz = () => {
       } catch (err) {
         console.error("Erreur lors de la mise à jour du quiz :", err);
         setFormErrors({
-          submit: err.message || "Échec de la mise à jour du quiz. Veuillez réessayer.",
+          submit:
+            err.message ||
+            "Échec de la mise à jour du quiz. Veuillez réessayer.",
         });
       } finally {
         setIsSubmitting(false);
@@ -1488,7 +1551,9 @@ const UpdateQuiz = () => {
       navigate("/lessons");
     } catch (err) {
       console.error("Erreur lors de la suppression du quiz :", err);
-      setFormErrors({ submit: err.message || "Échec de la suppression du quiz" });
+      setFormErrors({
+        submit: err.message || "Échec de la suppression du quiz",
+      });
     } finally {
       setIsSubmitting(false);
       setShowDeleteConfirm(false);
@@ -1628,7 +1693,9 @@ const UpdateQuiz = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <div className="text-lg text-gray-600">Chargement des données du quiz...</div>
+          <div className="text-lg text-gray-600">
+            Chargement des données du quiz...
+          </div>
         </div>
       </div>
     );
@@ -1869,12 +1936,27 @@ const UpdateQuiz = () => {
                                       {formErrors[`question_${qIndex}`]}
                                     </p>
                                   )}
+
+                                  {question.questionText && (
+                                    <div className="mt-2 p-2 bg-gray-50 rounded border">
+                                      <Label className="text-sm text-gray-600">
+                                        Aperçu :
+                                      </Label>
+                                      <div className="mt-1 text-sm">
+                                        <MathText
+                                          text={question.questionText}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                                 {/* Question Attachment */}
                                 <div className="space-y-2">
                                   <Label className="flex items-center space-x-1">
                                     <ImageIcon className="h-4 w-4" />
-                                    <span>Pièce jointe à la question (facultatif)</span>
+                                    <span>
+                                      Pièce jointe à la question (facultatif)
+                                    </span>
                                   </Label>
                                   <div className="flex items-center space-x-2">
                                     <Input
@@ -2038,7 +2120,7 @@ const UpdateQuiz = () => {
                                                 .
                                               </span>
                                             )}
-                                            {option}
+                                           <MathText text={option} />
                                           </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -2111,7 +2193,7 @@ const UpdateQuiz = () => {
                           : question.questionType}
                       </Badge>
                     </div>
-                    <p className="font-medium">{question.questionText}</p>
+                    <p className="font-medium"> <MathText text={question.questionText} /></p>
                     <div className="space-y-1">
                       {question.options.map((option, optIndex) => (
                         <div
@@ -2127,7 +2209,7 @@ const UpdateQuiz = () => {
                               {String.fromCharCode(65 + optIndex)}.
                             </span>
                           )}
-                          {option}
+                          <MathText text={option} />
                           {option === question.correctAnswer && (
                             <CheckCircle className="inline h-4 w-4 ml-2" />
                           )}
@@ -2354,7 +2436,8 @@ const UpdateQuiz = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-gray-600">
-                    Êtes-vous sûr de vouloir supprimer ce quiz ? Cette action est irréversible et supprimera toutes les données associées.
+                    Êtes-vous sûr de vouloir supprimer ce quiz ? Cette action
+                    est irréversible et supprimera toutes les données associées.
                   </p>
                   <div className="flex justify-end space-x-3">
                     <Button
