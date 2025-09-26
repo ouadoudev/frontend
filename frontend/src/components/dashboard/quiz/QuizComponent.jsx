@@ -430,7 +430,6 @@
 
 // export default QuizComponent;
 
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -465,8 +464,68 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
-const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) => {
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
+
+const QuizComponent = ({
+  lessonId,
+  lessonTitle,
+  onClose,
+  isInDialog = false,
+}) => {
   const dispatch = useDispatch();
   const currentQuiz = useSelector((state) => state.quiz.currentQuiz);
   const submission = useSelector((state) => state.quiz.submission);
@@ -618,7 +677,10 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]" dir={isRTL ? "rtl" : "ltr"}>
+      <div
+        className="flex items-center justify-center min-h-[300px]"
+        dir={isRTL ? "rtl" : "ltr"}
+      >
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="text-sm font-medium text-gray-600">
@@ -631,12 +693,20 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
 
   if (error) {
     return (
-      <Alert variant="destructive" className="mx-auto" dir={isRTL ? "rtl" : "ltr"}>
+      <Alert
+        variant="destructive"
+        className="mx-auto"
+        dir={isRTL ? "rtl" : "ltr"}
+      >
         <AlertCircle className="h-4 w-4" />
         <AlertDescription className="text-sm">
           {isRTL
-            ? error?.message || error?.error || "حدث خطأ أثناء تحميل الاختبار. الرجاء المحاولة مرة أخرى."
-            : error?.message || error?.error || "Une erreur est survenue lors du chargement du quiz. Veuillez réessayer."}
+            ? error?.message ||
+              error?.error ||
+              "حدث خطأ أثناء تحميل الاختبار. الرجاء المحاولة مرة أخرى."
+            : error?.message ||
+              error?.error ||
+              "Une erreur est survenue lors du chargement du quiz. Veuillez réessayer."}
         </AlertDescription>
       </Alert>
     );
@@ -647,7 +717,9 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
       <Alert className="mx-auto" dir={isRTL ? "rtl" : "ltr"}>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription className="text-sm">
-          {isRTL ? "لا يوجد اختبار متاح لهذا الدرس." : "Aucun quiz disponible pour cette leçon."}
+          {isRTL
+            ? "لا يوجد اختبار متاح لهذا الدرس."
+            : "Aucun quiz disponible pour cette leçon."}
         </AlertDescription>
       </Alert>
     );
@@ -675,11 +747,21 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
               <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-blue-600" />
               </div>
-              <CardTitle className={cn("lg:text-xl text-lg font-bold text-gray-900 mb-2", isRTL ? "text-right" : "text-left")}>
+              <CardTitle
+                className={cn(
+                  "lg:text-xl text-lg font-bold text-gray-900 mb-2",
+                  isRTL ? "text-right" : "text-left"
+                )}
+              >
                 {currentQuiz?.title}
               </CardTitle>
             </CardHeader>
-            <CardContent className={cn("flex flex-col items-center p-4 sm:p-6", isRTL ? "text-right" : "text-left")}>
+            <CardContent
+              className={cn(
+                "flex flex-col items-center p-4 sm:p-6",
+                isRTL ? "text-right" : "text-left"
+              )}
+            >
               <div className="text-sm sm:text-lg leading-relaxed">
                 {currentQuiz?.description}
               </div>
@@ -725,7 +807,9 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
           </Card>
         </div>
 
-        <div className={cn("flex gap-3", isRTL ? "flex-row-reverse" : "flex-row")}>
+        <div
+          className={cn("flex gap-3", isRTL ? "flex-row-reverse" : "flex-row")}
+        >
           <Button
             onClick={() => setQuizStarted(true)}
             className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold"
@@ -752,8 +836,18 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
   return (
     <div className="space-y-4" dir={isRTL || isQuestionRTL ? "rtl" : "ltr"}>
       {/* Header with progress and timer */}
-      <div className={cn("flex items-center justify-between p-4 bg-gray-50 rounded-lg", isRTL || isQuestionRTL ? "flex-row-reverse" : "flex-row")}>
-        <div className={cn("flex items-center space-x-3", isRTL || isQuestionRTL ? "space-x-reverse" : "")}>
+      <div
+        className={cn(
+          "flex items-center justify-between p-4 bg-gray-50 rounded-lg",
+          isRTL || isQuestionRTL ? "flex-row-reverse" : "flex-row"
+        )}
+      >
+        <div
+          className={cn(
+            "flex items-center space-x-3",
+            isRTL || isQuestionRTL ? "space-x-reverse" : ""
+          )}
+        >
           <Badge variant="outline" className="text-xs">
             {currentQuestionIndex + 1}/{currentQuiz.questions.length}
           </Badge>
@@ -761,7 +855,12 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
             {Math.round(progressPercentage)}%
           </div>
         </div>
-        <div className={cn("flex items-center space-x-2 text-sm font-semibold", isRTL || isQuestionRTL ? "space-x-reverse" : "")}>
+        <div
+          className={cn(
+            "flex items-center space-x-2 text-sm font-semibold",
+            isRTL || isQuestionRTL ? "space-x-reverse" : ""
+          )}
+        >
           <Timer
             className={cn(
               "w-4 h-4",
@@ -781,8 +880,13 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
 
       {/* Question */}
       <div className="space-y-4">
-        <h3 className={cn("text-lg font-semibold leading-relaxed", isRTL || isQuestionRTL ? "text-right" : "text-left")}>
-          {currentQuestion.questionText}
+        <h3
+          className={cn(
+            "text-lg font-semibold leading-relaxed",
+            isRTL || isQuestionRTL ? "text-right" : "text-left"
+          )}
+        >
+          <MathText text={currentQuestion.questionText} />
         </h3>
 
         <div className="space-y-2">
@@ -797,7 +901,9 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
                   isSelected
                     ? "border-blue-500 bg-blue-50 shadow-sm"
                     : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                  isRTL || isQuestionRTL || isOptionRTL ? "flex-row-reverse space-x-reverse text-right" : "flex-row text-left"
+                  isRTL || isQuestionRTL || isOptionRTL
+                    ? "flex-row-reverse space-x-reverse text-right"
+                    : "flex-row text-left"
                 )}
               >
                 <input
@@ -814,7 +920,7 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
                   <span className="inline-block w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-xs font-bold text-center leading-5 mx-4">
                     {String.fromCharCode(65 + index)}
                   </span>
-                  {option}
+                   <MathText text={option} dir={isOptionRTL ? "rtl" : "ltr"} />
                 </span>
                 {isSelected && (
                   <CheckCircle className="w-4 h-4 text-blue-500" />
@@ -828,21 +934,36 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              {isRTL || isQuestionRTL ? "يرجى اختيار إجابة قبل المتابعة." : answerError}
+              {isRTL || isQuestionRTL
+                ? "يرجى اختيار إجابة قبل المتابعة."
+                : answerError}
             </AlertDescription>
           </Alert>
         )}
 
         {/* Navigation buttons */}
-        <div className={cn("flex justify-between pt-4", isRTL || isQuestionRTL ? "flex-row-reverse" : "flex-row")}>
+        <div
+          className={cn(
+            "flex justify-between pt-4",
+            isRTL || isQuestionRTL ? "flex-row-reverse" : "flex-row"
+          )}
+        >
           <Button
             onClick={moveToPreviousQuestion}
             disabled={currentQuestionIndex === 0}
             variant="outline"
             size="sm"
-            className={cn("flex items-center space-x-2 bg-transparent", isRTL || isQuestionRTL ? "space-x-reverse" : "")}
+            className={cn(
+              "flex items-center space-x-2 bg-transparent",
+              isRTL || isQuestionRTL ? "space-x-reverse" : ""
+            )}
           >
-            <ChevronLeft className={cn("w-4 h-4", isRTL || isQuestionRTL ? "transform rotate-180" : "")} />
+            <ChevronLeft
+              className={cn(
+                "w-4 h-4",
+                isRTL || isQuestionRTL ? "transform rotate-180" : ""
+              )}
+            />
             <span>{isRTL || isQuestionRTL ? "السابق" : "Précédent"}</span>
           </Button>
 
@@ -850,16 +971,27 @@ const QuizComponent = ({ lessonId, lessonTitle, onClose, isInDialog = false }) =
             <Button
               onClick={moveToNextQuestion}
               size="sm"
-              className={cn("flex items-center space-x-2 bg-blue-600 hover:bg-blue-700", isRTL || isQuestionRTL ? "space-x-reverse" : "")}
+              className={cn(
+                "flex items-center space-x-2 bg-blue-600 hover:bg-blue-700",
+                isRTL || isQuestionRTL ? "space-x-reverse" : ""
+              )}
             >
               <span>{isRTL || isQuestionRTL ? "التالي" : "Suivant"}</span>
-              <ChevronRight className={cn("w-4 h-4", isRTL || isQuestionRTL ? "transform rotate-180" : "")} />
+              <ChevronRight
+                className={cn(
+                  "w-4 h-4",
+                  isRTL || isQuestionRTL ? "transform rotate-180" : ""
+                )}
+              />
             </Button>
           ) : (
             <Button
               onClick={handleSubmit}
               size="sm"
-              className={cn("flex items-center space-x-2 bg-green-600 hover:bg-green-700", isRTL || isQuestionRTL ? "space-x-reverse" : "")}
+              className={cn(
+                "flex items-center space-x-2 bg-green-600 hover:bg-green-700",
+                isRTL || isQuestionRTL ? "space-x-reverse" : ""
+              )}
             >
               <CheckCircle className="w-4 h-4" />
               <span>{isRTL || isQuestionRTL ? "إرسال" : "Soumettre"}</span>
