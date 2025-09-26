@@ -565,7 +565,6 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "react-toastify";
 
-
 const Course = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -597,7 +596,7 @@ const Course = () => {
       })
     ).then((action) => {
       if (action.meta.requestStatus === "fulfilled") {
-            if (user.role === "admin" || user.role === "teacher") {
+        if (user.role === "admin" || user.role === "teacher") {
           navigate("/dashboard/messages");
         } else {
           navigate("/messages");
@@ -623,34 +622,33 @@ const Course = () => {
   //   }
   // };
 
+  const handleStartNow = async () => {
+    if (!progress) {
+      const firstLesson = lessons[0];
 
-const handleStartNow = async () => {
-  if (!progress) {
-    const firstLesson = lessons[0];
-
-    if (firstLesson?.published) {
-      navigate(`/lessons/${firstLesson._id}`);
-      await dispatch(startCourse(course._id));
-    } else {
-      toast.error("This lesson is not published yet.");
-    }
-  } else {
-    const incompleteLesson = lessons.find(
-      (lesson) =>
-        !progress.completedLessons.some((cl) => cl.lesson._id === lesson._id)
-    );
-
-    if (incompleteLesson) {
-      if (incompleteLesson.published) {
-        navigate(`/lessons/${incompleteLesson._id}`);
+      if (firstLesson?.published) {
+        navigate(`/lessons/${firstLesson._id}`);
+        await dispatch(startCourse(course._id));
       } else {
         toast.error("This lesson is not published yet.");
       }
     } else {
-      navigate(`/certificate`);
+      const incompleteLesson = lessons.find(
+        (lesson) =>
+          !progress.completedLessons.some((cl) => cl.lesson._id === lesson._id)
+      );
+
+      if (incompleteLesson) {
+        if (incompleteLesson.published) {
+          navigate(`/lessons/${incompleteLesson._id}`);
+        } else {
+          toast.error("This lesson is not published yet.");
+        }
+      } else {
+        navigate(`/certificate`);
+      }
     }
-  }
-};
+  };
 
   const handlePlayExercise = (exerciseId) => {
     navigate(`/exercise/${exerciseId}`);
@@ -859,7 +857,7 @@ const handleStartNow = async () => {
                   ? "منهج الدورة"
                   : "Programme du cours"}
               </CardTitle>
-               <CardDescription className="text-sm">
+              <CardDescription className="text-sm">
                 {getDirection(course?.title) === "rtl"
                   ? "قم بتوسيع كل وحدة لرؤية الدروس"
                   : "Développez chaque module pour voir les leçons"}
@@ -1198,7 +1196,9 @@ const handleStartNow = async () => {
                             </Button>
                           ) : (
                             <Button
-                              variant={exam?.published ? "default" : "secondary"}
+                              variant={
+                                exam?.published ? "default" : "secondary"
+                              }
                               disabled={!exam?.published}
                               onClick={() => handleExamNavigation(exam)}
                               className={`w-full sm:w-auto text-xs sm:text-sm ${
@@ -1364,30 +1364,38 @@ const handleStartNow = async () => {
                 <ul className="space-y-2">
                   {course?.prerequisites?.[0] &&
                     JSON.parse(course?.prerequisites[0]).map(
-                      (prerequisite, index) => (
-                        <li
-                          key={index}
-                          className={`flex items-start ${
-                            getDirection(course.title) === "rtl"
-                              ? "flex-row-reverse"
-                              : ""
-                          }`}
-                        >
-                          <Info
-                            className={`${
+                      (prerequisite, index) => {
+                        const [title, ...rest] = prerequisite.split(":");
+                        const description = rest.join(":");
+
+                        return (
+                          <li
+                            key={index}
+                            className={`flex items-start ${
                               getDirection(course.title) === "rtl"
-                                ? "ml-2"
-                                : "mr-2"
-                            } h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0 mt-0.5`}
-                          />
-                          <span
-                            className="text-start text-xs sm:text-sm"
-                            dir={getDirection(prerequisite)}
+                                ? "flex-row-reverse"
+                                : ""
+                            }`}
                           >
-                            {prerequisite}
-                          </span>
-                        </li>
-                      )
+                            <Info
+                              className={`${
+                                getDirection(course.title) === "rtl"
+                                  ? "ml-2"
+                                  : "mr-2"
+                              } h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0 mt-0.5`}
+                            />
+                            <span
+                              className="text-start text-xs sm:text-sm"
+                              dir={getDirection(prerequisite)}
+                            >
+                              <strong>{title.trim()}</strong>
+                              {description && (
+                                <span>: {description.trim()}</span>
+                              )}
+                            </span>
+                          </li>
+                        );
+                      }
                     )}
                 </ul>
               </div>
@@ -1411,30 +1419,38 @@ const handleStartNow = async () => {
                 <ul className="space-y-2">
                   {course?.objectives && course.objectives.length > 0 ? (
                     JSON.parse(course?.objectives[0]).map(
-                      (objective, index) => (
-                        <li
-                          key={index}
-                          className={`flex items-start ${
-                            getDirection(course.title) === "rtl"
-                              ? "flex-row-reverse"
-                              : ""
-                          }`}
-                        >
-                          <CheckCircle
-                            className={`${
+                      (objective, index) => {
+                        const [title, ...rest] = objective.split(":");
+                        const description = rest.join(":");
+
+                        return (
+                          <li
+                            key={index}
+                            className={`flex items-start ${
                               getDirection(course.title) === "rtl"
-                                ? "ml-2"
-                                : "mr-2"
-                            } h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0 mt-0.5`}
-                          />
-                          <span
-                            className="text-start text-xs sm:text-sm"
-                            dir={getDirection(objective)}
+                                ? "flex-row-reverse"
+                                : ""
+                            }`}
                           >
-                            {objective}
-                          </span>
-                        </li>
-                      )
+                            <CheckCircle
+                              className={`${
+                                getDirection(course.title) === "rtl"
+                                  ? "ml-2"
+                                  : "mr-2"
+                              } h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0 mt-0.5`}
+                            />
+                            <span
+                              className="text-start text-xs sm:text-sm"
+                              dir={getDirection(objective)}
+                            >
+                              <strong>{title.trim()}</strong>
+                              {description && (
+                                <span>: {description.trim()}</span>
+                              )}
+                            </span>
+                          </li>
+                        );
+                      }
                     )
                   ) : (
                     <p className="text-xs sm:text-sm">
