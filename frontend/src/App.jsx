@@ -94,7 +94,7 @@ import RenewSubscription from "./components/RenewSubscription";
 
 
 
-axios.defaults.baseURL = "http://localhost:3000";
+axios.defaults.baseURL = "http://tamadrus-api.onrender.com";
 axios.defaults.withCredentials = true;
 
 const App = () => {
