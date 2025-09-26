@@ -90,10 +90,11 @@ import AdminConversation from "./components/dashboard/operations/AdminConversati
 import BadgesDashboard from "./components/dashboard/badges/BadgesDashboard";
 import CreateBadge from "./components/dashboard/badges/CreateBadge";
 import UpdateBadge from "./components/dashboard/badges/updateBadge";
+import RenewSubscription from "./components/RenewSubscription";
 
 
 
-axios.defaults.baseURL = "https://tamadrus-api.onrender.com";
+axios.defaults.baseURL = "http://localhost:3000";
 axios.defaults.withCredentials = true;
 
 const App = () => {
@@ -138,9 +139,9 @@ const App = () => {
             <Route path="/students" element={<Students />} />
             <Route path="/subjects" element={<Subjects />} />
             <Route path="/resources" element={<Resources />} />
-            <Route path="/badges" element={<BadgesDashboard />} /> 
+            <Route path="/badges" element={<BadgesDashboard />} />
             <Route path="/badges/create" element={<CreateBadge />} />
-             <Route path="/badges/update/:id" element={<UpdateBadge />} />
+            <Route path="/badges/update/:id" element={<UpdateBadge />} />
             <Route path="/resource/:subject" element={<SubjectResources />} />
             <Route path="/CreateResource" element={<CreateResource />} />
             <Route path="/update/resource/:resourceId" element={<UpdateResource />} />
@@ -183,6 +184,7 @@ const App = () => {
             <Route path={`/profile`} element={<Profile />} />
             <Route path="/messages" element={<UserConversation />} />
             <Route path={`/update/profile/:id`} element={<UpdateUser />} />
+            <Route path={`/subscription/:invoiceNumber`} element={<RenewSubscription />} />
           </Route>
           <Route path={`/lessons/:id`} element={<Lesson />} />
           <Route path={`/exercise/:id`} element={<ExerciseSubmission />} />
