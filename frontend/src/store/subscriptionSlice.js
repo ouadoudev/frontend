@@ -110,7 +110,7 @@ export const renewSubscription = createAsyncThunk(
       }
 
       const response = await axios.post(
-        "/renew-subscription",
+        `/renew-subscription/${invoiceNumber}`,
         { invoiceNumber, bankAccountNumber },
         {
           headers: {
@@ -122,6 +122,31 @@ export const renewSubscription = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(
         err.response?.data || "Error renewing subscription."
+      );
+    }
+  }
+);
+
+
+export const getSubscription = createAsyncThunk(
+  "subscription/getSubscription",
+  async (invoiceNumber, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const user = loggedUser(state);
+
+      if (!user || !user.id || !user.token) {
+        return rejectWithValue("User not authenticated");
+      }
+      const response = await axios.get(`/subscription/${invoiceNumber}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data || "An unexpected error occurred."
       );
     }
   }
@@ -233,6 +258,19 @@ const subscriptionSlice = createSlice({
         state.activeSubscriptions = action.payload.activeSubscriptions;
       })
       .addCase(checkSubscriptionStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.msg || action.payload || "Une erreur est survenue.";
+      })
+   .addCase(getSubscription.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.subscription = null;
+      })
+      .addCase(getSubscription.fulfilled, (state, action) => {
+        state.loading = false;
+        state.subscription = action.payload.subscription;
+      })
+      .addCase(getSubscription.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.msg || action.payload || "Une erreur est survenue.";
       });
