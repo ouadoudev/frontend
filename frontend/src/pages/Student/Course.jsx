@@ -564,6 +564,61 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "react-toastify";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
 
 const Course = () => {
   const { id } = useParams();
@@ -724,7 +779,7 @@ const Course = () => {
   };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
+    <div className="container mx-auto px-2 sm:px-4 lg:px-6 xl:px-1 py-4 sm:py-6 lg:py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         <div className="lg:col-span-2">
           {course && (
@@ -756,7 +811,7 @@ const Course = () => {
                   className="text-muted-foreground text-sm sm:text-base"
                   dir={getDirection(course.description)}
                 >
-                  {course.description}
+                  <MathText text={course.description} />
                 </p>
                 <div
                   className={`flex flex-wrap items-center mt-3 sm:mt-4 text-xs sm:text-sm text-muted-foreground ${
@@ -1388,9 +1443,13 @@ const Course = () => {
                               className="text-start text-xs sm:text-sm"
                               dir={getDirection(prerequisite)}
                             >
-                              <strong>{title.trim()}</strong>
+                              <strong>
+                                <MathText text={title.trim()} />
+                              </strong>
                               {description && (
-                                <span>: {description.trim()}</span>
+                                <span>
+                                  : <MathText text={description.trim()} />{" "}
+                                </span>
                               )}
                             </span>
                           </li>
@@ -1443,9 +1502,9 @@ const Course = () => {
                               className="text-start text-xs sm:text-sm"
                               dir={getDirection(objective)}
                             >
-                              <strong>{title.trim()}</strong>
+                              <strong><MathText text= {title.trim()} /> : </strong>
                               {description && (
-                                <span>: {description.trim()}</span>
+                                <MathText text={description.trim()} />
                               )}
                             </span>
                           </li>
