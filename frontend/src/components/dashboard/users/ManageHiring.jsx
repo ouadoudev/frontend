@@ -117,7 +117,7 @@ const ManageHiring = () => {
     async (userId) => {
       setCvLoading(true);
       setCvError("");
-      setCv(null); // clear previous CV
+      setCv(null); 
 
       try {
         const response = await dispatch(fetchCvByUserId(userId)).unwrap();

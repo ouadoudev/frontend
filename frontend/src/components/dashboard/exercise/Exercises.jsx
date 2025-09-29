@@ -17,6 +17,64 @@ import { File, PlayIcon, TrashIcon } from "lucide-react";
 import { toast } from "react-toastify";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+// Composant pour afficher le texte avec support KaTeX
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
+
+
 const Exercises = () => {
   const { lessonId } = useParams();
   const dispatch = useDispatch();
@@ -92,7 +150,7 @@ const Exercises = () => {
                       className="text-gray-700 dark:text-gray-400"
                     >
                       <TableCell className="text-center px-4 py-2">
-                        {exercise?.title}
+                       <MathText text={exercise?.title}/>
                       </TableCell>
                       <TableCell className="text-center px-4 py-2">
                         <div className="flex justify-center gap-2">

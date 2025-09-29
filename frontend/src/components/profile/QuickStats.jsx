@@ -66,7 +66,6 @@ import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Progress } from "../ui/progress";
 import {
-  BookOpen,
   CheckCircle2,
   Target,
   Trophy,
@@ -75,10 +74,25 @@ import {
   Star,
   Lock,
   HelpCircle,
+  Zap,
+  Clock,
+  TrendingUp,
+  CheckCircle,
+  Handshake,
+  Wifi,
+  Timer,
+  Book,
+  MessageCircle,
+  Crown,
+  Compass,
+  MessageSquare,
+  List,
+  Globe,
+  User,
 } from "lucide-react";
-import { Badge } from "../ui/badge";
 import { fetchUserBadges } from "@/store/badgeSlice";
 import { useSelector, useDispatch } from "react-redux";
+
 
 const QuickStats = ({ user, ongoingCourses }) => {
   const dispatch = useDispatch();
@@ -113,19 +127,35 @@ const QuickStats = ({ user, ongoingCourses }) => {
   } = userBadges;
 
   // Function to get icon component based on icon name
-  const getBadgeIcon = (iconName, color = "#3B82F6") => {
-    const iconProps = { className: "h-6 w-6", style: { color } };
-    const iconMap = {
-      medal: Medal,
-      star: Star,
-      trophy: Trophy,
-      lock: Lock,
-      "help-circle": HelpCircle,
-      award: Award,
-    };
-    const IconComponent = iconMap[iconName] || Award;
-    return <IconComponent {...iconProps} />;
+const getBadgeIcon = (iconName, color = "#3B82F6") => {
+  const iconProps = { className: "h-6 w-6", style: { color } };
+  const iconMap = {
+    medal: Medal,
+    star: Star,
+    trophy: Trophy,
+    lock: Lock,
+    "help-circle": HelpCircle,
+    award: Award,
+    zap: Zap,
+    clock: Clock,
+    "trending-up": TrendingUp,
+    "check-circle": CheckCircle,
+    handshake: Handshake,
+    wifi: Wifi,
+    timer: Timer,
+    book: Book,
+    "message-circle": MessageCircle,
+    target: Target,
+    crown: Crown,
+    compass: Compass,
+    "message-square": MessageSquare,
+    list: List,
+    globe: Globe,
+    user: User,
   };
+  const IconComponent = iconMap[iconName] || Award;
+  return <IconComponent {...iconProps} />;
+};
 
   // Combine all badges for display
   const allBadges = [
@@ -335,7 +365,7 @@ const QuickStats = ({ user, ongoingCourses }) => {
 </CardHeader>
 
 <CardContent className="py-6">
-  <div className="flex flex-wrap gap-3">
+  <div className="flex flex-wrap gap-3 m-2">
     {allBadges.map((badge) => (
       <div
         key={badge._id || badge.badgeId}
@@ -373,7 +403,6 @@ const QuickStats = ({ user, ongoingCourses }) => {
       </div>
     ))}
   </div>
-
   {/* Progression */}
   <div className="space-y-3 mt-4">
     <Progress value={completionPercentage} className="h-3" />

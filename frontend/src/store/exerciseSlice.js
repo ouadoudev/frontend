@@ -190,6 +190,89 @@ export const fetchUserScore = createAsyncThunk(
   }
 );
 
+// Helper function to map MIME type to the expected Multer field name
+const getFieldNameFromMimeType = (mimeType) => {
+  // Use lowercase for reliable matching
+  const type = mimeType.toLowerCase();
+
+  if (type.startsWith("image/")) return "images";
+  if (type === "application/pdf") return "pdfs";
+
+  // Check for common document types (word, text, spreadsheet, etc.)
+  if (
+    type.includes("word") ||
+    type.includes("document") ||
+    type.includes("text/plain") ||
+    type.includes("spreadsheet")
+  )
+    return "documents";
+
+  if (type.startsWith("audio/")) return "audios";
+  return "images";
+};
+
+export const uploadAttachment = createAsyncThunk(
+  "exercise/uploadAttachment",
+  async ({ exerciseId, file, onProgress }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const user = loggedUser(state);
+      if (!user?.token) throw new Error("User not authenticated");
+
+      // 1. Determine the correct field name (e.g., 'images', 'pdfs', etc.)
+      const fieldName = getFieldNameFromMimeType(file.type);
+
+      const formData = new FormData();
+      formData.append("exerciseId", exerciseId);
+
+      // 2. CRITICAL FIX: Use the dynamic fieldName to append the file
+      formData.append(fieldName, file); // <-- Multer will now find a matching field
+
+      const response = await axios.post("/exercise/attachments", formData, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          // Removing 'Content-Type: multipart/form-data' explicitly here
+          // ensures Axios sets the correct boundary automatically.
+        },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onProgress(percent);
+          }
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deleteAttachment = createAsyncThunk(
+  "exercise/deleteAttachment",
+  async (exerciseId, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const user = loggedUser(state);
+      if (!user?.token) throw new Error("User not authenticated");
+
+      const response = await axios.delete(
+        `/exercise/attachments/${exerciseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+      return { exerciseId, ...response.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 // Create the slice
 const exerciseSlice = createSlice({
   name: "exercises",
@@ -202,10 +285,17 @@ const exerciseSlice = createSlice({
     success: false,
     loading: false,
     error: null,
+    uploadSuccess: false,
+    attachment: null,
   },
   reducers: {
-        clearFetchedExercise: (state) => {
+    clearFetchedExercise: (state) => {
       state.exercise = null;
+    },
+    clearUploadState: (state) => {
+      state.uploadSuccess = false;
+      state.error = null;
+      state.attachment = null;
     },
   },
   extraReducers: (builder) => {
@@ -329,9 +419,38 @@ const exerciseSlice = createSlice({
       .addCase(fetchUserScore.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(uploadAttachment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.uploadSuccess = false;
+      })
+      .addCase(uploadAttachment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.uploadSuccess = true;
+        state.attachment = action.payload.attachment;
+      })
+      .addCase(uploadAttachment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.uploadSuccess = false;
+      })
+
+      .addCase(deleteAttachment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteAttachment.fulfilled, (state) => {
+        state.loading = false;
+        state.attachment = null;
+        state.uploadSuccess = false;
+      })
+      .addCase(deleteAttachment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
-export const { clearFetchedExercise } = exerciseSlice.actions;
+export const { clearFetchedExercise, clearUploadState } = exerciseSlice.actions;
 // Export the reducer
 export default exerciseSlice.reducer;

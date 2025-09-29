@@ -725,6 +725,62 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+// Composant pour afficher le texte avec support KaTeX
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
 
 const translations = {
   ar: {
@@ -894,7 +950,7 @@ const ExerciseSubmit = () => {
                   className="flex-grow cursor-pointer"
                   dir={getDirection(option)}
                 >
-                  {option}
+                  <MathText text={option} />
                 </Label>
               </div>
             ))}
@@ -954,7 +1010,7 @@ const ExerciseSubmit = () => {
                   className="w-1/3 text-right font-medium"
                   dir={getDirection(term)}
                 >
-                  {term}
+                  <MathText text={term} />
                 </Label>
                 <Select
                   value={userAnswers[question._id]?.[index]?.definition || ""}
@@ -971,7 +1027,7 @@ const ExerciseSubmit = () => {
                   <SelectContent>
                     {rightItems.map((definition) => (
                       <SelectItem key={definition} value={definition}>
-                        {definition}
+                        <MathText text={definition} />
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1014,7 +1070,7 @@ const ExerciseSubmit = () => {
                           className="p-3 bg-white border rounded-md shadow-sm cursor-move hover:shadow-md transition-shadow duration-200"
                           dir={getDirection(item)}
                         >
-                          {item}
+                          <MathText text={item} />
                         </li>
                       )}
                     </Draggable>
@@ -1054,7 +1110,7 @@ const ExerciseSubmit = () => {
                       }`}
                       dir={getDirection(header)}
                     >
-                      {header}
+                      <MathText text={header} />
                     </th>
                   ))}
                 </tr>
@@ -1071,7 +1127,7 @@ const ExerciseSubmit = () => {
                       }`}
                       dir={getDirection(rowLabel)}
                     >
-                      {rowLabel}
+                      <MathText text={rowLabel} />
                     </td>
                     {columns.map((_, colIndex) => {
                       const cell = cells.find(
@@ -1218,18 +1274,58 @@ const ExerciseSubmit = () => {
       dir={isRTL ? "rtl" : "ltr"}
     >
       <AnimatedBackground />
-      <div className="z-50 container mx-auto p-4 max-w-4xl lg:py-32">
+      <div className="z-50 container mx-auto p-4 max-w-4xl ">
         <Card className="shadow-lg">
           <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
             <CardTitle className="text-2xl" dir={getDirection(exercise?.title)}>
-              {exercise?.title}
+              <MathText text={exercise?.title} />
             </CardTitle>
-            <CardDescription
-              className="text-gray-100"
-              dir={getDirection(exercise?.description)}
-            >
-              {exercise?.description}
-            </CardDescription>
+            <div className="flex flex-col md:flex-row md:items-start gap-4">
+              {/* Left: Attachment */}
+
+              <div className="flex-1">
+                <CardDescription
+                  className="text-gray-100 mt-2"
+                  dir={getDirection(exercise?.description)}
+                >
+                  <MathText text={exercise?.description} />
+                </CardDescription>
+              </div>
+              {exercise?.attachment?.file && (
+                <div className="flex-shrink-0 w-full md:w-2/5">
+                  {exercise.attachment.file.mimetype.startsWith("image/") && (
+                    <img
+                      src={exercise.attachment.file.url}
+                      alt={exercise.attachment.file.originalname}
+                      className="rounded-md max-w-full h-auto"
+                    />
+                  )}
+
+                  {exercise.attachment.file.mimetype.startsWith("audio/") && (
+                    <audio controls className="w-full">
+                      <source
+                        src={exercise.attachment.file.url}
+                        type={exercise.attachment.file.mimetype}
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  )}
+
+                  {(exercise.attachment.file.mimetype === "application/pdf" ||
+                    exercise.attachment.file.mimetype.startsWith(
+                      "application/"
+                    )) && (
+                    <a
+                      href={exercise.attachment.file.url}
+                      download={exercise.attachment.file.originalname}
+                      className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mt-2"
+                    >
+                      Download {exercise.attachment.file.originalname}
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           {loading && (
             <CardContent className="flex flex-col space-y-2">
@@ -1305,7 +1401,7 @@ const ExerciseSubmit = () => {
                   dir={getDirection(currentQuestion.questionText)}
                 >
                   <h3 className="text-lg font-medium mb-2">
-                    {currentQuestion.questionText}
+                    <MathText text={currentQuestion.questionText} />
                   </h3>
                   {renderQuestion(currentQuestion)}
                 </div>

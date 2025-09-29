@@ -8,7 +8,7 @@ export const isAuthenticated = () => {
 
   try {
     const decodedToken = jwtDecode(token);
-    const currentTime = Date.now() / 1000; // Current time in seconds
+    const currentTime = Date.now() / 1000; 
 
     if (decodedToken.exp < currentTime) {
       return false; // Token is expired

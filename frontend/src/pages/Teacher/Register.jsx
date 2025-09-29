@@ -24,6 +24,7 @@ const validSubjects = [
   "Español",
   "التربية الإسلامية",
   "Économie et comptabilité",
+  "Sciences de l'ingénieur",
   "Primaire"
 ];
 

@@ -328,7 +328,7 @@ const formatTime = (seconds, isRTL = false) => {
             variant="outline"
             onClick={() => navigate(-1)}
             size="lg"
-            className={`flex-1 sm:flex-none border-2 border-gray-200 hover:border-gray-300 flex items-center justify-center ${
+            className={`flex-1 sm:flex-none border-2 py-2 border-gray-200 hover:border-gray-300 flex items-center justify-center ${
               isRTL ? "flex-row-reverse" : ""
             }`}
           >
@@ -339,7 +339,7 @@ const formatTime = (seconds, isRTL = false) => {
             onClick={handleStartExam}
             disabled={isStarting}
             size="lg"
-            className={`flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center ${
+            className={`flex-1 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center ${
               isRTL ? "flex-row-reverse" : ""
             }`}
           >

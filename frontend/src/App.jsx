@@ -91,6 +91,7 @@ import BadgesDashboard from "./components/dashboard/badges/BadgesDashboard";
 import CreateBadge from "./components/dashboard/badges/CreateBadge";
 import UpdateBadge from "./components/dashboard/badges/updateBadge";
 import RenewSubscription from "./components/RenewSubscription";
+import ExerciseAttachmentUpload from "./components/dashboard/exercise/ExerciseAttachmentUpload";
 
 
 
@@ -162,6 +163,7 @@ const App = () => {
               element={<ExerciseGenerator />}
             />
             <Route path="/exercise/edit/:exerciseId" element={<EditExercise />} />
+            <Route path="/exercise/upload-attachment/:exerciseId" element={<ExerciseAttachmentUpload />} />
             <Route
               path={`/exam/create/:courseId`}
               element={<CreateExamForm />}

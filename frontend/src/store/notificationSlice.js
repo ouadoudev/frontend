@@ -42,7 +42,7 @@ export const markAllNotificationsAsRead = createAsyncThunk(
   async (userId) => {
     try {
       const response = await axios.put(`/mark-all-as-read/${userId}`)
-      return response.data.notifications // return updated list
+      return response.data.notifications 
     } catch (error) {
       throw Error(error.response?.data?.error || error.message)
     }

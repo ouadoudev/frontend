@@ -289,8 +289,8 @@ const Profile = () => {
 
           {/* Right side (1/3 width on large screens) */}
           <div className="flex flex-col gap-6 flex-1 lg:basis-1/3">
-            <AchievementsCard user={user} />
             <TodoCard todos={todos} status={todosStatus} />
+            <AchievementsCard user={user} />
           </div>
         </div>
       </div>

@@ -99,7 +99,7 @@ export const confirmSubscription = createAsyncThunk(
 export const renewSubscription = createAsyncThunk(
   "subscription/renewSubscription",
   async (
-    { invoiceNumber, bankAccountNumber },
+      { invoiceNumber, selectedSubjects, plan },
     { getState, rejectWithValue }
   ) => {
     try {
@@ -111,7 +111,7 @@ export const renewSubscription = createAsyncThunk(
 
       const response = await axios.post(
         `/renew-subscription/${invoiceNumber}`,
-        { invoiceNumber, bankAccountNumber },
+       { selectedSubjects, plan },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,

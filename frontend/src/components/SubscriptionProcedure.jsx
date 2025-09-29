@@ -208,8 +208,7 @@ const SubscriptionProcedure = () => {
             {(() => {
               const step = currentSteps[currentStep];
               const Icon = step.icon;
-              const isCompleted =
-                currentStep < currentSteps.length - 1 && currentStep > 0;
+              const isCompleted = currentStep < currentSteps.length - 1 && currentStep > 0;
 
               return (
                 <Card className="border-2 border-primary/20 h-[340px] shadow-lg">

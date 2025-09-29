@@ -16,10 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
 
-import {
-  getSubscription,
-  renewSubscription,
-} from "@/store/subscriptionSlice";
+import { getSubscription, renewSubscription } from "@/store/subscriptionSlice";
 import { fetchSubjects } from "@/store/subjectSlice";
 import ConfirmDialog from "./ConfirmDialog";
 import { loggedUser } from "@/store/authSlice";
@@ -31,35 +28,28 @@ export default function RenewSubscription() {
 
   const [subjectSelection, setSubjectSelection] = useState("all");
   const [customSubjects, setCustomSubjects] = useState([]);
-  const [selectedPlan, setSelectedPlan] = useState("semester");
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Subscription state
   const { subscription, loading, error } = useSelector(
     (state) => state.subscription
   );
 
-  // Subjects state
-  const { entities: subjects, isLoading: subjectsLoading, error: subjectsError } =
-    useSelector((state) => state.subjects);
+  const {
+    entities: subjects,
+    isLoading: subjectsLoading,
+    error: subjectsError,
+  } = useSelector((state) => state.subjects);
 
   const user = useSelector(loggedUser);
 
   // Fetch subscription and subjects
   useEffect(() => {
-    if (invoiceNumber) {
-      dispatch(getSubscription(invoiceNumber));
-    }
+    if (invoiceNumber) dispatch(getSubscription(invoiceNumber));
     dispatch(fetchSubjects());
   }, [dispatch, invoiceNumber]);
 
-  // Pre-select subscription subjects
-  useEffect(() => {
-    if (subscription?.subjects) {
-      setCustomSubjects(subscription.subjects.map((s) => s._id));
-    }
-  }, [subscription]);
-
+  // Filter subjects based on user's educational level
   const filteredSubjects = useMemo(() => {
     if (!user?.educationalLevel) return [];
     return subjects.filter(
@@ -67,21 +57,39 @@ export default function RenewSubscription() {
     );
   }, [subjects, user]);
 
+  // Initialize subjects selection when subscription is loaded
+  useEffect(() => {
+    if (subscription?.subjects?.length) {
+      setCustomSubjects(subscription.subjects.map((s) => s._id));
+    } else if (filteredSubjects.length > 0) {
+      setCustomSubjects(filteredSubjects.map((s) => s._id));
+    }
+  }, [subscription, filteredSubjects]);
+
+  // Handle selecting "all" or "custom"
   const handleSubjectChange = (value) => {
     setSubjectSelection(value);
-    if (value === "all" && subscription?.subjects) {
-      setCustomSubjects(subscription.subjects.map((s) => s._id));
-    } else {
-      setCustomSubjects([]); // custom only if user selects manually
+
+    if (value === "all") {
+      setCustomSubjects(filteredSubjects.map((s) => s._id));
+    } else if (value === "custom") {
+      // Pre-select subscription subjects if any, otherwise first subject
+      if (subscription?.subjects?.length) {
+        setCustomSubjects(subscription.subjects.map((s) => s._id));
+      } else if (filteredSubjects.length > 0) {
+        setCustomSubjects([filteredSubjects[0]._id]);
+      } else {
+        setCustomSubjects([]);
+      }
     }
   };
 
+  // Handle custom checkbox changes
   const handleCustomSubjectChange = (checked, subjectId) => {
-    if (checked) {
-      setCustomSubjects((prev) => [...prev, subjectId]);
-    } else {
-      setCustomSubjects((prev) => prev.filter((id) => id !== subjectId));
-    }
+    setCustomSubjects((prev) => {
+      if (checked) return [...prev, subjectId];
+      return prev.filter((id) => id !== subjectId);
+    });
   };
 
   const handleSubscribe = (planValue) => {
@@ -90,7 +98,7 @@ export default function RenewSubscription() {
   };
 
   const confirmRenewal = () => {
-    if (!Array.isArray(customSubjects) || customSubjects.length === 0) {
+    if (!customSubjects || customSubjects.length === 0) {
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -129,13 +137,14 @@ export default function RenewSubscription() {
     setSelectedPlan(null);
   };
 
-  // Prix basé sur les subjects choisis
-const totalPrice = filteredSubjects
-  .filter((s) => customSubjects.includes(s._id))
-  .reduce((acc, s) => acc + (s.price || 0), 0);
+  // Calculate prices
+  const totalPrice = filteredSubjects
+    .filter((s) => customSubjects.includes(s._id))
+    .reduce((acc, s) => acc + (s.price || 0), 0);
 
-const discountedPrice = totalPrice * 0.8 * 5;
+  const discountedPrice = totalPrice * 0.8 * 5;
 
+  // Define subscription plans
   const plans = useMemo(
     () => [
       {
@@ -174,11 +183,9 @@ const discountedPrice = totalPrice * 0.8 * 5;
   if (loading || subjectsLoading) return <p>Chargement...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
   if (subjectsError) return <p className="text-red-500">{subjectsError}</p>;
-  
-  
 
   return (
-    <div className="mx-auto px-4 py-16 ">
+    <div className="mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-4">
@@ -190,9 +197,9 @@ const discountedPrice = totalPrice * 0.8 * 5;
           </p>
         </div>
 
-        {/* Sélection des matières */}
+        {/* Subject selection */}
         <RadioGroup
-          defaultValue="all"
+          value={subjectSelection}
           onValueChange={handleSubjectChange}
           className="flex flex-wrap justify-center gap-4 mb-8"
         >
@@ -232,7 +239,7 @@ const discountedPrice = totalPrice * 0.8 * 5;
               key={plan.value}
               className={`flex flex-col justify-between transform transition-all duration-300 hover:scale-105 ${
                 plan.highlight ? "border-primary shadow-lg" : ""
-              }`}
+              } relative`}
             >
               <CardHeader>
                 <CardTitle className="text-2xl font-semibold">
@@ -263,6 +270,9 @@ const discountedPrice = totalPrice * 0.8 * 5;
                   className="w-full text-lg py-4"
                   variant={plan.highlight ? "default" : "outline"}
                   onClick={() => handleSubscribe(plan.value)}
+                  disabled={
+                    subjectSelection === "custom" && customSubjects.length === 0
+                  }
                 >
                   {plan.cta}
                 </Button>
