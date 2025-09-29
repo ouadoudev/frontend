@@ -490,9 +490,9 @@ const Lessons = () => {
       ? lessons.filter(
           (lesson) =>
             (!selectedCourse || lesson.course.title === selectedCourse) &&
-            (!selectedTeacher || lesson.teacher.username === selectedTeacher)
+            (!selectedTeacher || lesson.teacher?.username === selectedTeacher)
         )
-      : lessons.filter((lesson) => lesson.teacher.username === user.username);
+      : lessons.filter((lesson) => lesson.teacher?.username === user?.username);
 
   const indexOfLastLesson = currentPage * itemsPerPage;
   const indexOfFirstLesson = indexOfLastLesson - itemsPerPage;
@@ -505,7 +505,7 @@ const Lessons = () => {
 
   const courses = [...new Set(lessons.map((lesson) => lesson.course.title))];
   const teachers = [
-    ...new Set(lessons.map((lesson) => lesson.teacher.username)),
+    ...new Set(lessons.map((lesson) => lesson.teacher?.username)),
   ];
 
   return (
