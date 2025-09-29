@@ -1016,7 +1016,7 @@ const CreateLesson = () => {
       setVideoPreviewUrl(null);
       setHasVideo(false);
       setTimeout(() => {
-        navigate("/lessons");
+        navigate(-1);
       }, 1000);
     } catch (error) {
       if (error.response) {
