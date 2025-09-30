@@ -86,71 +86,71 @@ export default function Why() {
     },
   };
 
-  const reasons = [
-    {
-      id: 1,
-      title: "Adapté au Système Éducatif Marocain",
-      content:
-        "Tamadrus est conçu spécifiquement pour répondre aux besoins des élèves et enseignants du Maroc, du primaire au baccalauréat. Il est aligné avec le programme national et offre une expérience d'apprentissage interactive et enrichissante, parfaitement adaptée à la pédagogie marocaine.",
-      icon: MapPin,
-    },
-    {
-      id: 2,
-      title: "Accessibilité à Tous",
-      content:
-        "Que ce soit pour les élèves en milieu urbain ou rural, notre plateforme est accessible sur tous les types de dispositifs (PC, tablettes, smartphones). Les contenus sont optimisés pour un accès facile et fluide, quel que soit l'endroit où se trouvent les utilisateurs.",
-      icon: Smartphone,
-    },
-    {
-      id: 3,
-      title: "Suivi Personnalisé de la Progression",
-      content:
-        "Avec Tamadrus, chaque élève bénéficie d'un suivi personnalisé. Les enseignants peuvent suivre l'évolution de chaque étudiant en temps réel, identifier les points faibles et proposer des solutions adaptées pour chaque individu.",
-      icon: UserCheck,
-    },
-    {
-      id: 4,
-      title: "Support Multilingue",
-      content:
-        "Tamadrus propose des interfaces en plusieurs langues, y compris l'arabe et le français, afin de s'adapter aux langues d'enseignement courantes dans le système éducatif marocain, garantissant ainsi une accessibilité maximale pour tous.",
-      icon: Globe,
-    },
-    {
-      id: 5,
-      title: "Plateforme Interactive et Engagée",
-      content:
-        "En utilisant des outils interactifs tels que des quiz, des vidéos éducatives, des forums de discussion et des exercices pratiques, Tamadrus crée un environnement d'apprentissage stimulant, engageant et moderne. Les élèves peuvent apprendre à leur rythme, avec une richesse de ressources pédagogiques.",
-      icon: PlayCircle,
-    },
-    {
-      id: 6,
-      title: "Compatible avec le Programme National",
-      content:
-        "Nous avons intégré tous les cours et les matières enseignées au Maroc, du primaire au baccalauréat. Les élèves peuvent facilement suivre le programme tout en ayant accès à des ressources supplémentaires pour approfondir leurs connaissances.",
-      icon: BookOpen,
-    },
-    {
-      id: 7,
-      title: "Facilité de Gestion pour les Enseignants",
-      content:
-        "Les enseignants bénéficient d'une interface simple et intuitive pour gérer leurs cours, assigner des tâches, évaluer les élèves et communiquer avec eux, facilitant ainsi le suivi de la classe et la gestion pédagogique.",
-      icon: UserCog,
-    },
-    {
-      id: 8,
-      title: "Accessibilité 24/7",
-      content:
-        "Tamadrus permet aux étudiants et enseignants d'accéder aux contenus à tout moment, offrant ainsi une flexibilité maximale pour étudier et enseigner à leur propre rythme, en dehors des heures scolaires traditionnelles.",
-      icon: Clock,
-    },
-    {
-      id: 9,
-      title: "Sécurisé et Fiable",
-      content:
-        "Nous accordons une grande importance à la sécurité des données des utilisateurs. Notre plateforme garantit une protection de la vie privée et des informations personnelles grâce à des protocoles de sécurité avancés.",
-      icon: Shield,
-    },
-  ];
+const reasons = [
+  {
+    id: 1,
+    title: "Conforme au programme national marocain",
+    content:
+      "Tamadrus suit scrupuleusement les programmes officiels du Ministère de l’Éducation Nationale, du primaire au baccalauréat. Tous les cours sont alignés avec le référentiel marocain, pour un soutien scolaire 100 % pertinent.",
+    icon: MapPin,
+  },
+  {
+    id: 2,
+    title: "Accessible partout au Maroc, même en zone rurale",
+    content:
+      "Que vous soyez à Casablanca, Marrakech ou dans une région rurale, Tamadrus fonctionne sur smartphone, tablette ou ordinateur, avec une consommation data optimisée pour un accès fluide partout au Maroc.",
+    icon: Smartphone,
+  },
+  {
+    id: 3,
+    title: "Suivi personnalisé de la progression scolaire",
+    content:
+      "Chaque élève bénéficie d’un tableau de bord individuel. Les enseignants et parents peuvent suivre les progrès en temps réel, repérer les difficultés (maths, français, physique…) et intervenir avec des ressources ciblées.",
+    icon: UserCheck,
+  },
+  {
+    id: 4,
+    title: "Interface en arabe et en français",
+    content:
+      "Tamadrus s’adapte aux langues d’enseignement du système éducatif marocain. Les élèves peuvent naviguer et apprendre en arabe ou en français, selon leur préférence ou leur niveau.",
+    icon: Globe,
+  },
+  {
+    id: 5,
+    title: "Apprentissage interactif et motivant",
+    content:
+      "Quiz auto-correctifs, vidéos pédagogiques, exercices interactifs et forums de discussion : Tamadrus transforme l’apprentissage en une expérience engageante, moderne et adaptée aux jeunes générations.",
+    icon: PlayCircle,
+  },
+  {
+    id: 6,
+    title: "Toutes les matières, du primaire au bac",
+    content:
+      "Mathématiques, français, physique-chimie, SVT, histoire-géo… Toutes les disciplines du cursus marocain sont couvertes, avec des contenus riches, structurés et régulièrement mis à jour selon les dernières directives pédagogiques.",
+    icon: BookOpen,
+  },
+  {
+    id: 7,
+    title: "Outils intuitifs pour les enseignants",
+    content:
+      "Créez des devoirs, corrigez en ligne, suivez les résultats de la classe et communiquez facilement avec vos élèves — le tout depuis une interface simple, conçue spécifiquement pour les enseignants marocains.",
+    icon: UserCog,
+  },
+  {
+    id: 8,
+    title: "Disponible 24h/24, 7j/7",
+    content:
+      "Révisez avant un devoir, rattrapez un cours manqué ou approfondissez un chapitre : Tamadrus est accessible à tout moment, offrant une flexibilité totale pour apprendre à son rythme, en dehors de la classe.",
+    icon: Clock,
+  },
+  {
+    id: 9,
+    title: "Plateforme sécurisée et conforme RGPD",
+    content:
+      "Les données de vos élèves et enseignants sont protégées par des protocoles de sécurité avancés. Tamadrus respecte la vie privée et garantit un environnement numérique fiable et sécurisé pour l’éducation.",
+    icon: Shield,
+  },
+];
 
   return (
     <section
@@ -201,7 +201,7 @@ export default function Why() {
 
               {/* Right Column: Reason Details */}
               <motion.div
-                className="w-full md:w-1/2  p-8 md:p-8 my-4 lg:mx-10"
+                className="w-full md:w-2/3  p-8 md:p-8 my-4 lg:mx-10"
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
