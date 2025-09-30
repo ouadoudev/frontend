@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const AnimatedBackground = () => (
@@ -119,41 +119,40 @@ export default function Hero() {
       >
         <div className="flex-1 text-center lg:text-left lg:mr-8">
           <motion.h1
-            className="text-4xl lg:text-5xl h-28 md:h-28 md:text-5xl font-bold my-4 bg-clip-text text-transparent text-center bg-gradient-to-r from-blue-600 to-purple-600"
+            className="text-4xl lg:text-5xl md:text-5xl font-bold my-4 bg-clip-text text-transparent text-center bg-gradient-to-r from-blue-600 to-purple-600"
             variants={itemVariants}
           >
             <TypewriterText text="Chaque cours, un pas vers l’excellence académique" />
           </motion.h1>
           <motion.p
-            className="text-sm sm:text-sm mb-8 text-center text-gray-700"
+            className="text-sm lg:text-base m-6 text-center text-gray-700"
             variants={itemVariants}
           >
-            Rejoignez des milliers d’apprenants ambitieux et accédez à des cours
-            en ligne, des ressources pédagogiques interactives et un
-            accompagnement expert pour exceller dans vos études.
-          </motion.p>
+Rejoignez 50 000+ élèves du collège et lycée qui progressent grâce à nos cours en ligne interactifs, nos ressources conformes aux programmes officiels, et notre accompagnement personnalisé pour la réussite scolaire.
+ </motion.p>
           <motion.div
             className="flex flex-col sm:flex-row justify-center lg:justify-center items-center gap-4"
             variants={itemVariants}
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                className="px-8 py-4 bg-blue-600 text-white rounded-full text-lg font-semibold transition-all duration-300 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-300/50"
-                aria-label="Commencer maintenant"
+                 className="px-8 py-4 bg-blue-600 text-white rounded-full text-lg font-semibold transition-all duration-300 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-300/50"
+                aria-label="Démarrer gratuitement"
                 onClick={() => navigate("/register")}
               >
-                Commencer maintenant
+               Démarrer gratuitement
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="outline"
-                className="px-8 py-3 border-2 border-purple-600 text-purple-600 rounded-full text-lg font-semibold transition-all duration-300 hover:bg-purple-600 hover:text-white hover:shadow-lg hover:shadow-purple-300/50"
-                aria-label="Comment s’abonner"
+                className="px-6 py-2.5 border-2 border-purple-600 text-purple-600 rounded-full text-base font-medium transition-all duration-300 hover:bg-purple-50 hover:shadow-sm"
+                aria-label="Accéder au guide d’abonnement"
                 onClick={() => navigate("/procedure")}
               >
-                Comment s’abonner
+                <BookOpen className="mr-2 h-4 w-4" />
+                Guide d’abonnement
               </Button>
             </motion.div>
           </motion.div>
