@@ -56,15 +56,6 @@ const AnimatedBackground = () => (
 
 const faqData = [
   {
-    question: "Quels niveaux sont disponibles sur votre plateforme LMS ?",
-    answer:
-      "Tamadrus couvre l'ensemble du parcours scolaire au Maroc, du primaire au baccalauréat. Les cours incluent toutes les matières principales telles que les mathématiques, les sciences, les langues (français, arabe, anglais), ainsi que des matières spécialisées selon les options du bac.",
-    category: "Général",
-  },
-  {
-    question: "Comment les cours sont-ils organisés ?",
-    answer:const faqData = [
-  {
     question: "Quels niveaux scolaires couvre Tamadrus au Maroc ?",
     answer:
       "Tamadrus accompagne les élèves marocains de l’école primaire jusqu’au baccalauréat, conformément aux programmes du Ministère de l’Éducation Nationale. Toutes les matières sont disponibles : maths, français, arabe, anglais, physique-chimie, SVT, histoire-géo, et les spécialités du bac (sciences, lettres, économie, etc.).",
