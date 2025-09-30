@@ -34,19 +34,40 @@ const Footer = () => {
           <div className="lg:col-span-1 space-y-6">
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <img src="/tamadrus_logo.png" className="h-12 mb-3" alt="tamadrus logo" />
+                <img
+                  src="/tamadrus_logo.png"
+                  className="h-12 mb-3"
+                  alt="tamadrus logo"
+                />
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
                   Tamadrus
                 </h3>
               </div>
               <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-white">À Propos de Tamadrus</h4>
+                <h4 className="text-lg font-semibold text-white">
+                  À Propos de Tamadrus
+                </h4>
                 <p className="text-slate-300 leading-relaxed text-sm">
-                  Tamadrus est une plateforme éducative en ligne innovante qui connecte les étudiants à des enseignants qualifiés pour un apprentissage personnalisé et interactif. Nous offrons des cours variés, des ressources pédagogiques modernes et un accompagnement sur mesure pour aider chaque apprenant à exceller académiquement, du primaire au baccalauréat.
+                  Tamadrus est la plateforme éducative en ligne conçue pour les
+                  élèves marocains, du primaire au baccalauréat. Nos cours
+                  interactifs, conformes aux programmes du Ministère de
+                  l’Éducation Nationale, sont dispensés par des enseignants
+                  qualifiés et disponibles en français et en arabe. Nous aidons
+                  chaque élève à progresser en maths, en français, en
+                  physique-chimie et dans toutes les matières du cursus scolaire
+                  marocain.
                 </p>
-                <h4 className="text-lg font-semibold text-white">Notre Mission</h4>
+
+                <h4 className="text-lg font-semibold text-white">
+                  Notre Mission
+                </h4>
                 <p className="text-slate-300 leading-relaxed text-sm">
-                  Notre mission est de démocratiser l’accès à une éducation de qualité. En combinant technologie de pointe et expertise pédagogique, Tamadrus permet à chaque étudiant de progresser à son rythme dans un environnement motivant, tout en offrant des solutions flexibles et accessibles pour atteindre leurs objectifs scolaires.
+                  Rendre une éducation de qualité accessible à tous les élèves
+                  au Maroc — y compris en zone rurale. Grâce à une technologie
+                  éducative simple et efficace, combinée à une pédagogie adaptée
+                  au contexte marocain, Tamadrus permet à chaque enfant
+                  d’apprendre à son rythme, de combler ses lacunes et de réussir
+                  ses examens, du contrôle continu au baccalauréat.
                 </p>
               </div>
             </div>
