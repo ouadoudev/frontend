@@ -27,11 +27,15 @@ const Home = () => {
        <Suspense fallback={<LoadingPlaceholder />}>
       
       <PopularCourses />
+          </Suspense>
       <Features/>
+         <Suspense fallback={<LoadingPlaceholder />}>
       <Teachers />
+            </Suspense>
        <Faq /> 
       <Testimonials/>
       <Contact />
+         <Suspense fallback={<LoadingPlaceholder />}>
       <Partenaires/>
        </Suspense>
       </div>
