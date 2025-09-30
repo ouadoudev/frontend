@@ -105,7 +105,7 @@ const reasons = [
     id: 3,
     title: "Suivi personnalisé de la progression scolaire",
     content:
-      "Chaque élève bénéficie d’un tableau de bord individuel. Les enseignants et parents peuvent suivre les progrès en temps réel, repérer les difficultés (maths, français, physique…) et intervenir avec des ressources ciblées.",
+      "Chaque élève bénéficie d’un tableau de bord individuel. Les enseignants et parents peuvent suivre les progrès en temps réel, repérer les difficultés ( maths, français, physique…) et intervenir avec des ressources ciblées.",
     icon: UserCheck,
   },
   {
