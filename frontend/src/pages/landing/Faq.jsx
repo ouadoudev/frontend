@@ -63,35 +63,44 @@ const faqData = [
   },
   {
     question: "Comment les cours sont-ils organisés ?",
+    answer:const faqData = [
+  {
+    question: "Quels niveaux scolaires couvre Tamadrus au Maroc ?",
     answer:
-      "Les cours sont structurés en modules interactifs, avec des vidéos explicatives, des quiz, des exercices pratiques et des évaluations. Le contenu est conçu pour être accessible à chaque niveau, et il est régulièrement mis à jour pour rester pertinent et engageant.",
+      "Tamadrus accompagne les élèves marocains de l’école primaire jusqu’au baccalauréat, conformément aux programmes du Ministère de l’Éducation Nationale. Toutes les matières sont disponibles : maths, français, arabe, anglais, physique-chimie, SVT, histoire-géo, et les spécialités du bac (sciences, lettres, économie, etc.).",
+    category: "Général",
+  },
+  {
+    question: "Comment sont organisés les cours en ligne ?",
+    answer:
+      "Chaque cours est structuré en modules interactifs : vidéos pédagogiques courtes, exercices auto-corrigés, quiz de compréhension et évaluations finales. Le contenu est conçu par des enseignants marocains et aligné sur le programme national pour un apprentissage efficace et engageant.",
     category: "Cours",
   },
   {
-    question: "Les élèves peuvent-ils suivre les cours à leur rythme ?",
+    question: "Mon enfant peut-il réviser à son rythme ?",
     answer:
-      "Oui, notre plateforme permet aux étudiants de suivre les cours à leur propre rythme. Ils peuvent revoir les vidéos, refaire les exercices et passer les évaluations selon leur disponibilité et leurs besoins.",
+      "Oui ! Votre enfant peut revoir les leçons quand il le souhaite, refaire les exercices autant de fois que nécessaire, et progresser à son propre rythme. Idéal pour combler les lacunes ou approfondir une notion avant un devoir.",
     category: "Apprentissage",
   },
   {
-    question: "Quels outils sont à la disposition des étudiants pour leur apprentissage ?",
+    question: "Quels outils d’aide sont disponibles pour les élèves ?",
     answer:
-      "Les étudiants peuvent accéder à des forums de discussion, des sessions de questions-réponses en direct, des quiz interactifs, des fiches de révision et un système de suivi des progrès pour les aider à avancer dans leur apprentissage.",
+      "Tamadrus propose des fiches de révision téléchargeables, des quiz interactifs, des forums modérés, des sessions de questions-réponses en direct avec des enseignants, et un tableau de bord personnel pour suivre ses progrès en temps réel.",
     category: "Outils",
   },
   {
-    question: "Est-ce que les cours sont accessibles sur mobile ?",
+    question: "Peut-on utiliser Tamadrus sur smartphone au Maroc ?",
     answer:
-      "Oui, Tamadrus est entièrement responsive et accessible sur les appareils mobiles. Les étudiants peuvent suivre leurs cours via l'application mobile disponible sur iOS et Android, ce qui leur permet d'apprendre à tout moment et en tout lieu.",
+      "Oui, la plateforme fonctionne parfaitement sur smartphone, tablette et ordinateur. L’interface est légère et optimisée pour les connexions mobiles, même en zone rurale. Une application dédiée est disponible sur iOS et Android pour réviser partout, à tout moment.",
     category: "Technique",
   },
   {
-    question: "Puis-je utiliser la plateforme pour me préparer aux examens de fin d'année ?",
+    question: "Est-ce que Tamadrus aide à préparer le baccalauréat marocain ?",
     answer:
-      "Oui, Tamadrus propose des parcours de révision spécialement conçus pour préparer les examens de fin d'année. Les étudiants peuvent accéder à des simulations d'examen, des exercices de révision et des sessions de préparation intensives pour le Bac.",
+      "Absolument ! Nous proposons des parcours de révision complets pour le bac marocain, avec des annales corrigées, des simulations d’examens chronométrées, des fiches de synthèse par chapitre, et des conseils méthodologiques spécifiques aux épreuves du baccalauréat national.",
     category: "Examens",
   },
-]
+];
 
 const FAQItem = ({
   faq,
