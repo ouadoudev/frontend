@@ -92,11 +92,31 @@ import CreateBadge from "./components/dashboard/badges/CreateBadge";
 import UpdateBadge from "./components/dashboard/badges/updateBadge";
 import RenewSubscription from "./components/RenewSubscription";
 import ExerciseAttachmentUpload from "./components/dashboard/exercise/ExerciseAttachmentUpload";
+import "./utils/axiosConfig";
+import { logout } from "./store/authSlice";
+import store from "./store/store";
 
-
-
-axios.defaults.baseURL = "https://tamadrus-api.onrender.com";
+axios.defaults.baseURL = "http://localhost:3000";
 axios.defaults.withCredentials = true;
+
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const code = error.response?.data?.code;
+
+    if (code === "TOKEN_EXPIRED") {
+      try {
+        await store.dispatch(logout());
+      } catch (err) {
+        console.error("Force logout failed", err);
+      } finally {
+        window.location.href = "/login"; 
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 const App = () => {
   return (
@@ -114,7 +134,7 @@ const App = () => {
             <Route path="/educational-cycle" element={<EducationalCycle />} />
           </Route>
           <Route path="/login" element={<Login />} />
-          <Route path="/register/admin" element={<AdminRegister/>} />
+          <Route path="/register/admin" element={<AdminRegister />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register/teacher" element={<TeacherRegister />} />
           <Route path="/" element={<Layout />}>
@@ -122,8 +142,11 @@ const App = () => {
             <Route path={`/teacher`} element={<ProfileTeacher />} />
             <Route path="/CreateLesson" element={<CreateLesson />} />
             <Route path="/Tasks" element={<TodoCard />} />
-            <Route path="/revenue-teacher" element ={<TeacherRevenueHistory />}/>
-            <Route path="/revenue-admin" element ={<PendingRevenuesAdmin />}/>
+            <Route
+              path="/revenue-teacher"
+              element={<TeacherRevenueHistory />}
+            />
+            <Route path="/revenue-admin" element={<PendingRevenuesAdmin />} />
             <Route
               path="/subscription-requests"
               element={<SubscriptionRequests />}
@@ -135,7 +158,10 @@ const App = () => {
             <Route path={`/update/:id`} element={<UpdateUser />} />
             <Route path="/testimonial" element={<Testimonial />} />
             <Route path="/dashboard/messages" element={<Conversation />} />
-            <Route path="/dashboard/admin/messages" element={<AdminConversation />} />
+            <Route
+              path="/dashboard/admin/messages"
+              element={<AdminConversation />}
+            />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/students" element={<Students />} />
             <Route path="/subjects" element={<Subjects />} />
@@ -145,7 +171,10 @@ const App = () => {
             <Route path="/badges/update/:id" element={<UpdateBadge />} />
             <Route path="/resource/:subject" element={<SubjectResources />} />
             <Route path="/CreateResource" element={<CreateResource />} />
-            <Route path="/update/resource/:resourceId" element={<UpdateResource />} />
+            <Route
+              path="/update/resource/:resourceId"
+              element={<UpdateResource />}
+            />
             <Route path="/partenaires" element={<Partenaires />} />
             <Route path="/CreatePartenaire" element={<CreatePartenaire />} />
             <Route
@@ -162,16 +191,25 @@ const App = () => {
               path={`/exercise/create/:lessonId`}
               element={<ExerciseGenerator />}
             />
-            <Route path="/exercise/edit/:exerciseId" element={<EditExercise />} />
-            <Route path="/exercise/upload-attachment/:exerciseId" element={<ExerciseAttachmentUpload />} />
+            <Route
+              path="/exercise/edit/:exerciseId"
+              element={<EditExercise />}
+            />
+            <Route
+              path="/exercise/upload-attachment/:exerciseId"
+              element={<ExerciseAttachmentUpload />}
+            />
             <Route
               path={`/exam/create/:courseId`}
               element={<CreateExamForm />}
             />
             <Route path={`/exam/edit/:examId`} element={<UpdateExamForm />} />
             <Route path={`/course/:courseId/exams`} element={<ExamList />} />
-             <Route path="/exam/:examId/leaderboard" element={<LeaderboardPage/>} />
-            
+            <Route
+              path="/exam/:examId/leaderboard"
+              element={<LeaderboardPage />}
+            />
+
             <Route path="/quiz/create/:lessonId" element={<CreateQuiz />} />
             <Route
               path="/quiz/update/:lessonId/:quizId"
@@ -186,12 +224,15 @@ const App = () => {
             <Route path={`/profile`} element={<Profile />} />
             <Route path="/messages" element={<UserConversation />} />
             <Route path={`/update/profile/:id`} element={<UpdateUser />} />
-            <Route path={`/subscription/:invoiceNumber`} element={<RenewSubscription />} />
+            <Route
+              path={`/subscription/:invoiceNumber`}
+              element={<RenewSubscription />}
+            />
           </Route>
           <Route path={`/lessons/:id`} element={<Lesson />} />
           <Route path={`/exercise/:id`} element={<ExerciseSubmission />} />
-           <Route path={`/exam/view/:examId`} element={<ExamView />} />
-           <Route path={`/exam/:examId/results`} element={<ExamResults />} />
+          <Route path={`/exam/view/:examId`} element={<ExamView />} />
+          <Route path={`/exam/:examId/results`} element={<ExamResults />} />
           <Route path="/exam/:examId/submit" element={<SubmitExam />} />
           <Route path="/exam/:examId" element={<UserScorePage />} />
           <Route path={`/courses/:id`} element={<Course />} />
