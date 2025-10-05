@@ -95,7 +95,7 @@ import ExerciseAttachmentUpload from "./components/dashboard/exercise/ExerciseAt
 import { logout } from "./store/authSlice";
 import store from "./store/store";
 
-axios.defaults.baseURL = "http://tamadrus-api.onrender.com";
+axios.defaults.baseURL = "https://tamadrus-api.onrender.com";
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
