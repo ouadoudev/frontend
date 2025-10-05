@@ -92,7 +92,6 @@ import CreateBadge from "./components/dashboard/badges/CreateBadge";
 import UpdateBadge from "./components/dashboard/badges/updateBadge";
 import RenewSubscription from "./components/RenewSubscription";
 import ExerciseAttachmentUpload from "./components/dashboard/exercise/ExerciseAttachmentUpload";
-import "./utils/axiosConfig";
 import { logout } from "./store/authSlice";
 import store from "./store/store";
 
