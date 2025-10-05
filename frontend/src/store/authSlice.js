@@ -217,7 +217,6 @@
 // export default authSlice.reducer;
 // export const loggedUser = (state) => state.auth.user;
 
-
 import { createSlice, createAsyncThunk, createAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -227,35 +226,12 @@ const initialState = {
   user: user ? user : null,
   status: "idle",
   error: null,
-  isAuthenticated: false, 
+  isAuthenticated: user ? true : false,
   token: user ? user.token : null,
-  role: user ? user.role : null,
 };
 
 export const setUserRole = createAction("auth/setUserRole");
 export const updateUserSuccess = createAction("auth/updateUserSuccess");
-
-export const verifyToken = createAsyncThunk(
-  'auth/verifyToken',
-  async (_, { getState, rejectWithValue, dispatch }) => {
-    const state = getState();
-    const token = state.auth.token;
-    if (!token) return rejectWithValue('No token');
-
-    try {
-      const response = await axios.get('/users/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
-    } catch (error) {
-      if (error.response?.status === 401) {
-        dispatch(logout());
-        return rejectWithValue('Session expired. Please login again.');
-      }
-      return rejectWithValue(error.message);
-    }
-  }
-);
 
 export const registerAdmin = createAsyncThunk(
   "auth/registerAdmin",
@@ -362,48 +338,34 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const logout = createAsyncThunk(
+  "auth/logout",
+  async (_, { getState }) => {
+    const { auth } = getState();
+    const token = auth.token;
+
+    try {
+      await axios.post("/users/logout", null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      const code = error.response?.data?.code;
+      // ✅ Only retry if token expired
+      if (code === "TOKEN_EXPIRED") {
+        await axios.post("/users/force-logout", null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    }
+
+    return true; // always clear client state
+  }
+);
+
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    logout: (state) => {
-      try {
-        delete axios.defaults.headers.common['Authorization'];
-        if (state.token) {
-          axios
-            .post("/users/logout", null, {
-              headers: { Authorization: `Bearer ${state.token}` },
-            })
-            .catch((error) => {
-              console.error("Logout error:", error);
-            });
-        }
-        localStorage.removeItem("user");
-        state.user = null;
-        state.token = null;
-        state.role = null;
-        state.status = "idle";
-        state.error = null;
-        state.isAuthenticated = false;
-      } catch (error) {
-        console.error("Logout action error:", error);
-        localStorage.removeItem("user");
-        state.user = null;
-        state.token = null;
-        state.role = null;
-        state.status = "idle";
-        state.error = null;
-        state.isAuthenticated = false;
-      }
-    },
-    setToken: (state, action) => {
-      state.token = action.payload;
-      axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload}`;
-      if (state.user) {
-        state.user.token = action.payload;
-        localStorage.setItem("user", JSON.stringify(state.user));
-      }
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -416,8 +378,6 @@ export const authSlice = createSlice({
         state.token = action.payload.token;
         state.role = action.payload.role;
         state.isAuthenticated = true;
-        axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
-        localStorage.setItem("user", JSON.stringify(action.payload));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
@@ -455,30 +415,19 @@ export const authSlice = createSlice({
         state.user = { ...state.user, ...action.payload };
         localStorage.setItem("user", JSON.stringify(state.user));
       })
-        .addCase(verifyToken.pending, (state) => {
-      state.status = "loading";
-    })
-    .addCase(verifyToken.fulfilled, (state, action) => {
-      state.status = "succeeded";
-      state.user = action.payload;
-      state.role = action.payload.role;
-      state.isAuthenticated = true;
-      if (state.token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
-      }
-    })
-    .addCase(verifyToken.rejected, (state, action) => {
-      state.status = "failed";
-      state.error = action.payload;
+      .addCase(logout.fulfilled, (state) => {
+      localStorage.removeItem("user");
+      state.user = null;
+      state.token = null;
+      state.role = null;
+      state.status = "idle";
+      state.error = null;
+      state.isAuthenticated = false;
     });
-
   },
 });
 
-export const { logout, setToken } = authSlice.actions;
+
 
 export default authSlice.reducer;
 export const loggedUser = (state) => state.auth.user;
-export const selectAuthStatus = (state) => state.auth.status;
-export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
-export const selectUserRole = (state) => state.auth.role;
