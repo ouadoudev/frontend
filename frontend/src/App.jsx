@@ -96,7 +96,7 @@ import "./utils/axiosConfig";
 import { logout } from "./store/authSlice";
 import store from "./store/store";
 
-axios.defaults.baseURL = "http://localhost:3000";
+axios.defaults.baseURL = "http://tamadrus-api.onrender.com";
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
