@@ -16,12 +16,20 @@ export const fetchUsers = createAsyncThunk(
 
 export const fetchUserById = createAsyncThunk(
   "users/fetchUserById",
-  async (id, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`/users/${id}`);
+  async (id, { getState, rejectWithValue }) => {
+  try {
+      const state = getState();
+      const user = loggedUser(state);
+
+      if (!user || !user.id || !user.token) {
+        throw new Error("User not authenticated");
+      }
+      const response = await axios.get(`/users/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || 'Failed to fetch user');
     }
   }
 );
@@ -124,12 +132,20 @@ export const updateUser = createAsyncThunk(
 
 export const deleteUser = createAsyncThunk(
   "users/deleteUser",
-  async (userId, { rejectWithValue }) => {
+  async (userId, { getState, rejectWithValue }) => {
     try {
-      await axios.delete(`/users/${userId}`);
+      const state = getState();
+      const user = loggedUser(state);
+
+      if (!user || !user.id || !user.token) {
+        throw new Error("User not authenticated");
+      }
+      await axios.delete(`/users/${userId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
       return userId;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || 'Failed to delete user');
     }
   }
 );
@@ -156,9 +172,17 @@ export const registerTeacher = createAsyncThunk(
 
 export const fetchCvByUserId = createAsyncThunk(
   "user/fetchCvByUserId",
-  async (userId, { rejectWithValue }) => {
+  async (userId, { getState, rejectWithValue }) => {
     try {
-      const response = await axios.get(`/users/cv/${userId}`);
+      const state = getState();
+      const user = loggedUser(state);
+
+      if (!user || !user.id || !user.token) {
+        throw new Error("User not authenticated");
+      }
+      const response = await axios.get(`/users/cv/${userId}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
       return response.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Network error");
@@ -172,12 +196,12 @@ export const hiringTeacher = createAsyncThunk(
     { userId, action, interviewDate },
     { dispatch, getState, rejectWithValue }
   ) => {
-    try {
+   try {
       const state = getState();
-      const user = state.auth.user;
+      const user = loggedUser(state);
 
-      if (!user || !user.token) {
-        return rejectWithValue({ error: "User not authenticated" });
+      if (!user || !user.id || !user.token) {
+        throw new Error("User not authenticated");
       }
 
       if (user.role !== "admin") {
@@ -241,7 +265,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserById.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.status = "succeeded";
