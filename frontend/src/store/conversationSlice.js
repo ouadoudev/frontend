@@ -134,15 +134,27 @@
 
 // export default conversationsSlice.reducer;
 
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { loggedUser } from './authSlice';
 
 // Async thunk to create a conversation
 export const createConversation = createAsyncThunk(
   'conversations/createConversation',
-  async ({ userId, teacherId, groupTitle }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post('/conversation', { userId, teacherId, groupTitle });
+  async ({ userId, teacherId, groupTitle }, { getState,rejectWithValue }) => {
+      try {
+         const state = getState();
+         const user = loggedUser(state);
+   
+         if (!user || !user.id || !user.token) {
+           throw new Error("User not authenticated");
+         }
+      const response = await axios.post('/conversation', { userId, teacherId, groupTitle }, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       return response.data.conversation;
     } catch (error) {
       return rejectWithValue(error.response.data);
