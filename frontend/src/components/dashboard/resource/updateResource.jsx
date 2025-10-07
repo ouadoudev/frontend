@@ -104,6 +104,15 @@ const UpdateResource = () => {
     }
   }, [singleResource]);
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    }
+  }, [error]);
+
   const handleInputChange = (e) => {
     const { name, value, options, type } = e.target;
 
@@ -126,21 +135,38 @@ const UpdateResource = () => {
       }));
     }
   };
+
   const handleFileChange = (e) => {
     setFormData((prev) => ({ ...prev, pdf: e.target.files[0] }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate that stream is required for Lycée
+    if (formData.educationalCycle === "Lycée" && 
+        (!Array.isArray(formData.stream) || formData.stream.length === 0)) {
+      toast.error("Veuillez sélectionner au moins une filière pour le niveau Lycée", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     formDataToSend.append("description", formData.description);
     formDataToSend.append("type", formData.type);
     formDataToSend.append("educationalCycle", formData.educationalCycle);
     formDataToSend.append("educationalLevel", formData.educationalLevel);
-    formData.stream.forEach((s) => {
-      formDataToSend.append("stream", s);
-    });
+    
+    // Safe check for stream array
+    if (Array.isArray(formData.stream) && formData.stream.length > 0) {
+      formData.stream.forEach((s) => {
+        formDataToSend.append("stream", s);
+      });
+    }
+    
     formDataToSend.append("subject", formData.subject);
     if (formData.pdf) {
       formDataToSend.append("pdf", formData.pdf);
@@ -164,22 +190,18 @@ const UpdateResource = () => {
   };
 
   const handleBack = () => {
-    navigate(-2);
+    navigate(-1);
   };
 
-  if (isLoading) {
-    return <div className="text-center py-12">Loading...</div>;
+  if (isLoading && !singleResource) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
-  if (error) {
-    toast.error(error, {
-      position: "bottom-right",
-      autoClose: 3000,
-    });
-    return <div className="text-center py-12 text-red-600">Error: {error}</div>;
-  }
-
-  if (!singleResource) {
+  if (!singleResource && !isLoading) {
     return (
       <div className="text-center py-12">
         <h3 className="text-2xl font-semibold mb-2">
@@ -366,10 +388,9 @@ const UpdateResource = () => {
                       <select
                         id="stream"
                         name="stream"
-                        multiple // Allow multiple selections
-                        value={formData.stream} // value expects an array now
+                        multiple
+                        value={formData.stream}
                         onChange={handleInputChange}
-                        required
                         disabled={!formData.educationalLevel}
                         className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
