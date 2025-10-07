@@ -97,15 +97,14 @@ const CreateResource = () => {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        // Reset dependent fields when parent field changes
+        // Reset dependent fields when parent field changes - FIX: use empty array for stream
         ...(name === "educationalCycle"
-          ? { educationalLevel: "", stream: "" }
+          ? { educationalLevel: "", stream: [] } // Changed from "" to []
           : {}),
-        ...(name === "educationalLevel" ? { stream: "" } : {}),
+        ...(name === "educationalLevel" ? { stream: [] } : {}), // Changed from "" to []
       }));
     }
   };
-
   const handleFileChange = (e) => {
     setFormData((prev) => ({ ...prev, pdf: e.target.files[0] }));
   };
@@ -118,9 +117,14 @@ const CreateResource = () => {
     formDataToSend.append("type", formData.type);
     formDataToSend.append("educationalCycle", formData.educationalCycle);
     formDataToSend.append("educationalLevel", formData.educationalLevel);
-    formData.stream.forEach((s) => {
-      formDataToSend.append("stream", s);
-    });
+
+    // Safety check - ensure stream is an array before using forEach
+    if (Array.isArray(formData.stream)) {
+      formData.stream.forEach((s) => {
+        formDataToSend.append("stream", s);
+      });
+    }
+
     formDataToSend.append("subject", formData.subject);
     if (formData.pdf) {
       formDataToSend.append("pdf", formData.pdf);
@@ -310,7 +314,7 @@ const CreateResource = () => {
                         setFormData({
                           ...formData,
                           educationalLevel: e.target.value,
-                          stream: "",
+                          stream: [], // Changed from "" to []
                         })
                       }
                       className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
