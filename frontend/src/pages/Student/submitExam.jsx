@@ -1054,6 +1054,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
 // RTL Detection Function
 const getDirection = (text) => {
