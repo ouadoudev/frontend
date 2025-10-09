@@ -1054,8 +1054,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import katex from "katex";
-import "katex/dist/katex.min.css";
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 // RTL Detection Function
 const getDirection = (text) => {
@@ -1064,12 +1064,12 @@ const getDirection = (text) => {
   return rtlChars.test(text) ? "rtl" : "ltr";
 };
 
-// MathText component for rendering text
+// MathText Component with KaTeX support
 const MathText = ({ text, dir = "ltr", className = "" }) => {
   if (!text) return null;
 
   const renderWithKaTeX = (content) => {
-    // Regex pour trouver les formules LaTeX entre $$ ou $
+    // Regex to find LaTeX formulas between $$ or $
     const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
 
     const parts = [];
@@ -1077,14 +1077,14 @@ const MathText = ({ text, dir = "ltr", className = "" }) => {
     let match;
 
     while ((match = latexRegex.exec(content)) !== null) {
-      // Texte avant la formule
+      // Text before the formula
       if (match.index > lastIndex) {
         parts.push(content.substring(lastIndex, match.index));
       }
 
-      // La formule LaTeX (avec $$ ou $)
+      // LaTeX formula (with $$ or $)
       const latexContent = match[1] || match[2];
-      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+      const isDisplayMode = match[1] !== undefined; // $$ for display mode
 
       try {
         const html = katex.renderToString(latexContent, {
@@ -1096,14 +1096,14 @@ const MathText = ({ text, dir = "ltr", className = "" }) => {
           <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
         );
       } catch (error) {
-        console.error("Erreur KaTeX:", error);
+        console.error("KaTeX Error:", error);
         parts.push(`$${latexContent}$`);
       }
 
       lastIndex = match.index + match[0].length;
     }
 
-    // Texte après la dernière formule
+    // Text after the last formula
     if (lastIndex < content.length) {
       parts.push(content.substring(lastIndex));
     }
@@ -1125,17 +1125,20 @@ const ExerciseHeader = ({ exercise, isRTL, flexDir }) => {
   return (
     <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-2xl" dir={getDirection(exercise?.title)}>
-          <MathText text={exercise?.title} />
+        <CardTitle className="text-2xl">
+          <MathText 
+            text={exercise?.title} 
+            dir={getDirection(exercise?.title)}
+          />
         </CardTitle>
         <div className={`flex flex-col md:flex-row md:items-start gap-4 ${flexDir}`}>
           {/* Left: Description */}
           <div className="flex-1">
-            <CardDescription
-              className="text-gray-700 mt-2 text-base leading-relaxed"
-              dir={getDirection(exercise?.description)}
-            >
-              <MathText text={exercise?.description} />
+            <CardDescription className="text-gray-700 mt-2 text-base leading-relaxed">
+              <MathText 
+                text={exercise?.description} 
+                dir={getDirection(exercise?.description)}
+              />
             </CardDescription>
           </div>
           
@@ -1304,9 +1307,8 @@ const renderQuestion = (
               <Label
                 htmlFor={`${question._id}-${index}`}
                 className="flex-grow cursor-pointer"
-                dir={getDirection(option)}
               >
-                {option}
+                <MathText text={option} dir={getDirection(option)} />
               </Label>
             </div>
           ))}
@@ -1361,11 +1363,8 @@ const renderQuestion = (
               key={index}
               className={`flex items-center space-x-4 ${flexDir}`}
             >
-              <Label
-                className="w-1/3 font-medium"
-                dir={getDirection(term)}
-              >
-                {term}
+              <Label className="w-1/3 font-medium">
+                <MathText text={term} dir={getDirection(term)} />
               </Label>
               <Select
                 value={userAnswers[question._id]?.[index]?.definition || ""}
@@ -1382,7 +1381,7 @@ const renderQuestion = (
                 <SelectContent>
                   {rightItems.map((definition) => (
                     <SelectItem key={definition} value={definition}>
-                      {definition}
+                      <MathText text={definition} dir={getDirection(definition)} />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1422,9 +1421,8 @@ const renderQuestion = (
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           className="p-3 bg-white border rounded-md shadow-sm cursor-move hover:shadow-md transition-shadow duration-200"
-                          dir={getDirection(item)}
                         >
-                          {item}
+                          <MathText text={item} dir={getDirection(item)} />
                         </li>
                       )}
                     </Draggable>
@@ -1463,9 +1461,8 @@ const renderQuestion = (
                     className={`border border-gray-300 p-2 ${
                       questionDir === "rtl" ? "text-right" : "text-left"
                     }`}
-                    dir={getDirection(header)}
                   >
-                    {header}
+                    <MathText text={header} dir={getDirection(header)} />
                   </th>
                 ))}
               </tr>
@@ -1480,9 +1477,8 @@ const renderQuestion = (
                     className={`border border-gray-300 p-2 font-medium ${
                       questionDir === "rtl" ? "text-right" : "text-left"
                     }`}
-                    dir={getDirection(rowLabel)}
                   >
-                    {rowLabel}
+                    <MathText text={rowLabel} dir={getDirection(rowLabel)} />
                   </td>
                   {columns.map((_, colIndex) => {
                     const cell = cells.find(
@@ -1500,10 +1496,12 @@ const renderQuestion = (
                         key={colIndex}
                         className="border border-gray-300 p-2"
                       >
-                        <Input
-                          value={inputValue}
-                          onChange={(e) => {
-                            if (!isCellTextNonEmpty) {
+                        {isCellTextNonEmpty ? (
+                          <MathText text={cellText} dir={questionDir} />
+                        ) : (
+                          <Input
+                            value={inputValue}
+                            onChange={(e) => {
                               const newAnswers = [
                                 ...(userAnswers[question._id] || []),
                               ];
@@ -1514,12 +1512,12 @@ const renderQuestion = (
                               }
                               newAnswers[rowIndex][colIndex] = e.target.value;
                               handleAnswerChange(question._id, newAnswers);
-                            }
-                          }}
-                          disabled={isCellTextNonEmpty || isReviewMode}
-                          className="w-full border-none bg-transparent focus:ring-2 focus:ring-blue-500"
-                          dir={questionDir}
-                        />
+                            }}
+                            disabled={isReviewMode}
+                            className="w-full border-none bg-transparent focus:ring-2 focus:ring-blue-500"
+                            dir={questionDir}
+                          />
+                        )}
                       </td>
                     );
                   })}
@@ -1587,11 +1585,14 @@ const QuestionRenderer = ({
       <CardHeader className="pb-4">
         <div className={`flex items-start justify-between ${flexDir}`}>
           <div className="flex-1">
-            <CardTitle className="text-lg" dir={getDirection(question.questionText)}>
+            <CardTitle className="text-lg">
               {t.question.replace("%d", questionIndex + 1)}
             </CardTitle>
-            <CardDescription className="mt-2" dir={getDirection(question.questionText)}>
-              {question.questionText}
+            <CardDescription className="mt-2">
+              <MathText 
+                text={question.questionText} 
+                dir={getDirection(question.questionText)} 
+              />
             </CardDescription>
           </div>
           <div className={`flex gap-2 ${flexDir}`}>
@@ -1877,12 +1878,12 @@ const SubmitExam = () => {
                   <Progress value={getProgress()} className="w-32" />
                 </div>
                 <div>
-                  <CardTitle
-                    className="text-2xl flex items-center gap-2"
-                    dir={getDirection(currentExam.title)}
-                  >
+                  <CardTitle className="text-2xl flex items-center gap-2">
                     <FileText className="h-6 w-6" />
-                    {currentExam.title}
+                    <MathText 
+                      text={currentExam.title} 
+                      dir={getDirection(currentExam.title)}
+                    />
                   </CardTitle>
                   <CardDescription className="mt-2">
                     {t.questionsCount
@@ -1894,12 +1895,12 @@ const SubmitExam = () => {
             ) : (
               <>
                 <div>
-                  <CardTitle
-                    className="text-2xl flex items-center gap-2"
-                    dir={getDirection(currentExam.title)}
-                  >
+                  <CardTitle className="text-2xl flex items-center gap-2">
                     <FileText className="h-6 w-6" />
-                    {currentExam.title}
+                    <MathText 
+                      text={currentExam.title} 
+                      dir={getDirection(currentExam.title)}
+                    />
                   </CardTitle>
                   <CardDescription className="mt-2">
                     {t.questionsCount
