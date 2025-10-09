@@ -1062,9 +1062,58 @@ const getDirection = (text) => {
   return rtlChars.test(text) ? "rtl" : "ltr";
 };
 
-// Simple MathText component for rendering text
-const MathText = ({ text }) => {
-  return <span>{text}</span>;
+// MathText component for rendering text
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
 };
 
 // Exercise Header Component
