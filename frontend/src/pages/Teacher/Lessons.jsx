@@ -1,378 +1,3 @@
-// import { useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useDispatch, useSelector } from "react-redux";
-// import { fetchLessons, deleteLesson } from "@/store/lessonSlice";
-// import { loggedUser } from "@/store/authSlice";
-// import { toast } from "react-toastify";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "../ui/card";
-// import {
-//   Table,
-//   TableHeader,
-//   TableRow,
-//   TableHead,
-//   TableBody,
-//   TableCell,
-// } from "../ui/table";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-//   PaginationPrevious,
-//   PaginationLink,
-//   PaginationNext,
-// } from "../ui/pagination";
-// import {
-//   File,
-//   FileEditIcon,
-//   PlayIcon,
-//   Plus,
-//   PlusCircleIcon,
-//   TrashIcon,
-// } from "lucide-react";
-
-// import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-// import "react-toastify/dist/ReactToastify.css";
-// import QuizForm from "../QuizForm";
-// import UpdateLesson from "./updateLesson";
-// import { Button } from "../ui/button";
-// import { Label } from "../ui/label";
-
-// const Lessons = () => {
-//   const dispatch = useDispatch();
-//   const lessons = useSelector((state) => state.lesson.lessons);
-//   const user = useSelector(loggedUser);
-//   const navigate = useNavigate();
-//   const [editedLesson, setEditedLesson] = useState(null);
-//   const [quizLessonId, setQuizLessonId] = useState(null);
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [itemsPerPage] = useState(9);
-//   const [selectedCourse, setSelectedCourse] = useState(null);
-//   const [selectedTeacher, setSelectedTeacher] = useState(null);
-
-//   useEffect(() => {
-//     dispatch(fetchLessons());
-//   }, [dispatch]);
-
-//   const handleDeleteLesson = async (lessonId) => {
-//     try {
-//       const confirmDelete = window.confirm(
-//         "Are you sure you want to delete this lesson?"
-//       );
-//       if (confirmDelete) {
-//         await dispatch(deleteLesson(lessonId));
-//         toast.success("Lesson deleted successfully", {
-//           position: "bottom-right",
-//           autoClose: 3000,
-//         });
-//         dispatch(fetchLessons());
-//       }
-//     } catch (error) {
-//       toast.error("Error deleting lesson", {
-//         position: "bottom-right",
-//         autoClose: 3000,
-//       });
-//     }
-//   };
-
-//   const handlePlayLesson = (lessonId) => {
-//     navigate(`/lessons/${lessonId}`);
-//   };
-
-//   const handleCreateLesson = () => {
-//     navigate("/CreateLesson");
-//   };
-
-//   const handlePageChange = (pageNumber) => {
-//     setCurrentPage(pageNumber);
-//   };
-
-//   const filteredLessons =
-//     user.role === "admin"
-//       ? lessons.filter(
-//           (lesson) =>
-//             (!selectedCourse || lesson.course.title === selectedCourse) &&
-//             (!selectedTeacher || lesson.teacher.username === selectedTeacher)
-//         )
-//       : lessons.filter((lesson) => lesson.teacher.username === user.username);
-//   const indexOfLastLesson = currentPage * itemsPerPage;
-//   const indexOfFirstLesson = indexOfLastLesson - itemsPerPage;
-//   const lessonsOnPage = filteredLessons.slice(
-//     indexOfFirstLesson,
-//     indexOfLastLesson
-//   );
-//   const totalPages = Math.ceil(filteredLessons.length / itemsPerPage);
-
-//   const courses = [...new Set(lessons.map((lesson) => lesson.course.title))];
-//   const teachers = [
-//     ...new Set(lessons.map((lesson) => lesson.teacher.username)),
-//   ];
-
-//   return (
-//      <div className="bg-gray-100 min-h-screen p-8">
-//       <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-//          <Card>
-//           <CardHeader>
-//             <CardTitle>Lessons</CardTitle>
-//             <CardDescription>View and manage Lessons</CardDescription>
-//           </CardHeader>
-//           <CardContent>
-//             <div className="flex justify-between items-center mb-4">
-//               <div>
-//                 <Button
-//                   onClick={handleCreateLesson}
-//                   className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-//                 >
-//                   <Plus className="h-4 w-4 mr-2" />
-//                   Add Lesson
-//                 </Button>
-//               </div>
-
-//               <div className="flex flex-row gap-4 items-center">
-//                 {user.role === "admin" && (
-//                   <>
-//                     <div className="flex flex-col">
-//                       <Label htmlFor="teacherFilter" className="mb-1">
-//                         Teacher:
-//                       </Label>
-//                       <select
-//                         id="teacherFilter"
-//                         onChange={(e) =>
-//                           setSelectedTeacher(e.target.value || null)
-//                         }
-//                         value={selectedTeacher || ""}
-//                         className="py-1 px-16  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                   >
-//                         <option value="">All</option>
-//                         {teachers.map((teacher, index) => (
-//                           <option key={index} value={teacher}>
-//                             {teacher}
-//                           </option>
-//                         ))}
-//                       </select>
-//                     </div>
-//                           <div className="flex flex-col">
-//                       <Label htmlFor="courseFilter" className="mb-1">
-//                         Course:
-//                       </Label>
-//                       <select
-//                         id="courseFilter"
-//                         onChange={(e) =>
-//                           setSelectedCourse(e.target.value || null)
-//                         }
-//                         value={selectedTeacher || ""}
-//                         className="py-1 px-16 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                   >
-//                         <option value="">All Courses</option>
-//                         {courses.map((course, index) => (
-//                           <option key={index} value={course}>
-//                             {course}
-//                           </option>
-//                         ))}
-//                       </select>
-//                     </div>
-//                   </>
-//                 )}
-//               </div>
-//             </div>
-//             <div>
-//               <Table>
-//                 <TableHeader>
-//                   <TableRow className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-//                     <TableHead className="text-center px-4 py-2">
-//                       Title
-//                     </TableHead>
-//                     <TableHead className="text-center px-4 py-2">
-//                       Type
-//                     </TableHead>
-//                     <TableHead className="text-center px-4 py-2">
-//                       Course
-//                     </TableHead>
-//                     <TableHead className="text-center px-4 py-2">
-//                       Actions
-//                     </TableHead>
-//                     <TableHead className="text-center px-4 py-2">
-//                       Quiz
-//                     </TableHead>
-//                     <TableHead className="text-center px-4 py-2">
-//                       Exercises
-//                     </TableHead>
-//                   </TableRow>
-//                 </TableHeader>
-//                 <TableBody>
-//                   {lessons &&
-//                     lessonsOnPage.map((lesson) => (
-//                       <TableRow
-//                         key={lesson._id}
-//                         className="text-gray-700 dark:text-gray-400"
-//                       >
-//                         <TableCell className=" px-4 py-2">
-//                           {lesson.title}
-//                         </TableCell>
-//                         <TableCell className=" text-center px-4 py-2">
-//                           <span
-//                             className={` px-2 py-1 rounded ${
-//                               lesson.published
-//                                 ? "bg-green-200 text-green-800"
-//                                 : "bg-red-200 text-red-800"
-//                             } dark:bg-opacity-20 dark:text-opacity-80`}
-//                           >
-//                             {lesson.published ? "Public" : "Private"}
-//                           </span>
-//                         </TableCell>
-//                         <TableCell className=" text-center px-4 py-2">
-//                           {lesson.course.title}
-//                         </TableCell>
-//                         <TableCell className=" px-4 py-2">
-//                           <div className="flex justify-center gap-2">
-//                             <Button
-//                               variant="outline"
-//                               className="h-8"
-//                               onClick={() => handlePlayLesson(lesson._id)}
-//                             >
-//                               <PlayIcon className="w-4 h-4" />
-//                               View
-//                             </Button>
-//                             <Button
-//                               variant="outline"
-//                               className="h-8"
-//                               onClick={() =>
-//                                 navigate(`/update/lesson/${lesson._id}`)
-//                               }
-//                             >
-//                               <FileEditIcon className="w-4 h-4" />
-//                               Edit
-//                             </Button>
-//                             {/* <Dialog>
-//                               <DialogTrigger asChild>
-//                                 <Button
-//                                   variant="outline"
-//                                   className="h-8"
-//                                   onClick={() => setEditedLesson(lesson)}
-//                                 >
-//                                   <FileEditIcon className="w-4 h-4" />
-//                                   Edit
-//                                 </Button>
-//                               </DialogTrigger>
-//                               <DialogContent>
-//                                 {editedLesson && (
-//                                   <UpdateLesson lessonId={editedLesson._id} />
-//                                 )}
-//                               </DialogContent>
-//                             </Dialog> */}
-//                             <Button
-//                               variant="outline"
-//                               className="h-8"
-//                               onClick={() => handleDeleteLesson(lesson._id)}
-//                             >
-//                               <TrashIcon className="w-4 h-4" />
-//                               Delete
-//                             </Button>
-//                           </div>
-//                         </TableCell>
-//                         <TableCell className=" px-4 py-2">
-//                           <div className="flex justify-center gap-2">
-//                             <Dialog>
-//                               <DialogTrigger asChild>
-//                                 <Button
-//                                   variant="outline"
-//                                   className="h-8"
-//                                   onClick={() => setQuizLessonId(lesson._id)}
-//                                 >
-//                                   <FileEditIcon />
-//                                 </Button>
-//                               </DialogTrigger>
-//                               <DialogContent>
-//                                 {quizLessonId === lesson._id && (
-//                                   <>
-//                                     <QuizForm
-//                                       lessonId={lesson._id}
-//                                       quizId={lesson.quizId}
-//                                     />
-//                                   </>
-//                                 )}
-//                               </DialogContent>
-//                             </Dialog>
-//                           </div>
-//                         </TableCell>
-//                         <TableCell className=" px-4 py-2">
-//                           <div className="flex justify-center gap-2">
-//                             <Button
-//                               variant="outline"
-//                               className="h-8"
-//                               onClick={() =>
-//                                 navigate(`/exercise/create/${lesson._id}`)
-//                               }
-//                             >
-//                               <FileEditIcon className="w-4 h-4 mr-1" />
-//                             </Button>
-//                             <Button
-//                               variant="outline"
-//                               className="h-8"
-//                               onClick={() =>
-//                                 navigate(`/exercises/${lesson._id}`)
-//                               }
-//                             >
-//                               <File className="w-4 h-4 mr-1" />
-//                             </Button>
-//                           </div>
-//                         </TableCell>
-//                       </TableRow>
-//                     ))}
-//                 </TableBody>
-//               </Table>
-//               <div className="flex justify-center mt-4">
-//                 <Pagination>
-//                   <PaginationContent>
-//                     <PaginationItem>
-//                       {currentPage !== 1 && (
-//                         <PaginationPrevious
-//                           className="cursor-pointer"
-//                           onClick={() => handlePageChange(currentPage - 1)}
-//                           disabled={currentPage === 1}
-//                         />
-//                       )}
-//                     </PaginationItem>
-//                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-//                       (page) => (
-//                         <PaginationItem key={page}>
-//                           <PaginationLink
-//                             className="cursor-pointer"
-//                             onClick={() => handlePageChange(page)}
-//                             isActive={page === currentPage}
-//                           >
-//                             {page}
-//                           </PaginationLink>
-//                         </PaginationItem>
-//                       )
-//                     )}
-//                     <PaginationItem>
-//                       {currentPage !== totalPages && (
-//                         <PaginationNext
-//                           className="cursor-pointer"
-//                           onClick={() => handlePageChange(currentPage + 1)}
-//                           disabled={currentPage === totalPages}
-//                         />
-//                       )}
-//                     </PaginationItem>
-//                   </PaginationContent>
-//                 </Pagination>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Lessons;
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -490,9 +115,13 @@ const Lessons = () => {
       ? lessons.filter(
           (lesson) =>
             (!selectedCourse || lesson.course.title === selectedCourse) &&
-            (!selectedTeacher || lesson.teacher?.username === selectedTeacher)
+            (!selectedTeacher || lesson.teacher.username === selectedTeacher)
         )
-      : lessons.filter((lesson) => lesson.teacher?.username === user?.username);
+      : lessons.filter(
+        (lesson) =>
+          lesson.teacher.username === user.username &&
+          (!selectedCourse || lesson.course.title === selectedCourse)
+      );
 
   const indexOfLastLesson = currentPage * itemsPerPage;
   const indexOfFirstLesson = indexOfLastLesson - itemsPerPage;
@@ -505,7 +134,7 @@ const Lessons = () => {
 
   const courses = [...new Set(lessons.map((lesson) => lesson.course.title))];
   const teachers = [
-    ...new Set(lessons.map((lesson) => lesson.teacher?.username)),
+    ...new Set(lessons.map((lesson) => lesson.teacher.username)),
   ];
 
   return (
@@ -531,9 +160,8 @@ const Lessons = () => {
               </Button>
 
               {/* Filtres (enseignant + cours) */}
-              {user.role === "admin" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto">
-                  {/* Filtre Enseignant */}
+               {user.role === "admin" && (
                   <div>
                     <Label
                       htmlFor="teacherFilter"
@@ -557,8 +185,7 @@ const Lessons = () => {
                       ))}
                     </select>
                   </div>
-
-                  {/* Filtre Cours */}
+                )}
                   <div>
                     <Label
                       htmlFor="courseFilter"
@@ -583,7 +210,6 @@ const Lessons = () => {
                     </select>
                   </div>
                 </div>
-              )}
             </div>
 
             <div>
