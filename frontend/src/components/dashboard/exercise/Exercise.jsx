@@ -438,7 +438,7 @@ const ExerciseGenerator = () => {
                         <span className="mr-2 font-mono">
                           {String.fromCharCode(65 + index)}.
                         </span>
-                        {option}
+                       <MathText value={option} />
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -1309,7 +1309,7 @@ const ExerciseGenerator = () => {
                                 <Separator />
                                 <div className="space-y-2">
                                   <Label>Bonne réponse :</Label>
-                                  {renderCorrectAnswerInput(question)}
+                                  <MathText>{renderCorrectAnswerInput(question)}</MathText>
                                 </div>
                               </CardContent>
                             </Card>
