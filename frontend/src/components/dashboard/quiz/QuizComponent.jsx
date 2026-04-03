@@ -13,6 +13,7 @@ import {
   BookOpen,
   BarChart3,
   Clock,
+  Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
@@ -101,6 +102,7 @@ const QuizComponent = ({
   const [answerError, setAnswerError] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [quizStartTime, setQuizStartTime] = useState(null);
+  const [showHint, setShowHint] = useState(false);
 
   // Fetch quiz data when component mounts
   useEffect(() => {
@@ -109,6 +111,10 @@ const QuizComponent = ({
       dispatch(getQuizByLesson(lessonId));
     }
   }, [dispatch, lessonId]);
+
+  useEffect(() => {
+    setShowHint(false);
+  }, [currentQuestionIndex]);
 
   // Fetch user's previous submission if it exists
   useEffect(() => {
@@ -168,16 +174,16 @@ const QuizComponent = ({
   };
 
   const handleAnswerChange = (questionId, answer) => {
-    const newAnswers = [...answers];
-    const existingAnswerIndex = newAnswers.findIndex(
-      (ans) => ans.questionId === questionId,
-    );
-    if (existingAnswerIndex !== -1) {
-      newAnswers[existingAnswerIndex].answer = answer;
-    } else {
-      newAnswers.push({ questionId, answer });
-    }
-    setAnswers(newAnswers);
+    setAnswers((prev) => {
+      const newAnswers = [...prev];
+      const index = newAnswers.findIndex((a) => a.questionId === questionId);
+      if (index !== -1) {
+        newAnswers[index].answer = answer;
+      } else {
+        newAnswers.push({ questionId, answer });
+      }
+      return newAnswers;
+    });
     setAnswerError(null);
   };
 
@@ -392,169 +398,158 @@ const QuizComponent = ({
     (ans) => ans.questionId === currentQuestion._id,
   );
   const isQuestionRTL = getDirection(currentQuestion.questionText) === "rtl";
-
   return (
-    <div className="space-y-4" dir={isRTL || isQuestionRTL ? "rtl" : "ltr"}>
-      {/* Header with progress and timer */}
+    <div className="space-y-6" dir={isRTL || isQuestionRTL ? "rtl" : "ltr"}>
+      {/* Header + Timer + Progress */}
       <div
         className={cn(
           "flex items-center justify-between p-4 bg-gray-50 rounded-lg",
-          isRTL || isQuestionRTL ? "flex-row-reverse" : "flex-row",
         )}
       >
-        <div
-          className={cn(
-            "flex items-center space-x-3",
-            isRTL || isQuestionRTL ? "space-x-reverse" : "",
-          )}
-        >
-          <Badge variant="outline" className="text-xs">
-            {currentQuestionIndex + 1}/{currentQuiz.questions.length}
+        <div className="flex items-center gap-3">
+          <Badge variant="outline">
+            {currentQuestionIndex + 1} / {currentQuiz.questions.length}
           </Badge>
-          <div className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500">
             {Math.round(progressPercentage)}%
-          </div>
-        </div>
-        <div
-          className={cn(
-            "flex items-center space-x-2 text-sm font-semibold",
-            isRTL || isQuestionRTL ? "space-x-reverse" : "",
-          )}
-        >
-          <Timer
-            className={cn(
-              "w-4 h-4",
-              timeRemaining < 60 ? "text-red-500" : "text-blue-500",
-            )}
-          />
-          <span
-            className={cn(
-              timeRemaining < 60 ? "text-red-500" : "text-blue-500",
-            )}
-          >
-            {formatTime(timeRemaining)}
           </span>
         </div>
+
+        <div className="flex items-center gap-2 font-semibold">
+          <Timer
+            className={cn("w-4 h-4", timeRemaining < 60 ? "text-red-500" : "")}
+          />
+          <span>{formatTime(timeRemaining)}</span>
+        </div>
       </div>
+
       <Progress value={progressPercentage} className="h-2" />
 
       {/* Question */}
-      <div className="space-y-4">
-        <h3
-          className={cn(
-            "text-lg font-semibold leading-relaxed",
-            isRTL || isQuestionRTL ? "text-right" : "text-left",
-          )}
-        >
-          <MathText text={currentQuestion.questionText} />
-        </h3>
+      <div className="space-y-5">
+        <div className="flex justify-between items-start">
+          <h3
+            className={cn(
+              "text-xl font-semibold",
+              isQuestionRTL && "text-right",
+            )}
+          >
+            <MathText text={currentQuestion.questionText} />
+          </h3>
 
-        <div className="space-y-2">
+          {currentQuestion.hint && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHint(!showHint)}
+              className="text-amber-600"
+            >
+              <Lightbulb className="w-4 h-4 mr-2" />
+              Indice
+            </Button>
+          )}
+        </div>
+
+        {showHint && currentQuestion.hint && (
+          <Alert className="bg-amber-50 border-amber-200">
+            <AlertDescription>{currentQuestion.hint}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Options */}
+        <div className="space-y-3">
           {currentQuestion.options.map((option, index) => {
-            const isSelected = selectedAnswer?.answer === option;
-            const isOptionRTL = getDirection(option) === "rtl";
+            const optionText =
+              typeof option === "object" ? option.text : option;
+            const isSelected = selectedAnswer?.answer === optionText;
+            const isOptionRTL = getDirection(optionText) === "rtl";
+
             return (
               <label
-                key={option}
+                key={index}
                 className={cn(
-                  "flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200",
+                  "flex items-center p-2 rounded-2xl border-2 cursor-pointer transition-all",
                   isSelected
-                    ? "border-blue-500 bg-blue-50 shadow-sm"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                  isRTL || isQuestionRTL || isOptionRTL
-                    ? "flex-row-reverse space-x-reverse text-right"
-                    : "flex-row text-left",
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300",
                 )}
               >
                 <input
                   type="radio"
                   name={currentQuestion._id}
-                  value={option}
-                  onChange={() =>
-                    handleAnswerChange(currentQuestion._id, option)
-                  }
+                  value={optionText}
                   checked={isSelected}
-                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  onChange={() =>
+                    handleAnswerChange(currentQuestion._id, optionText)
+                  }
+                  className="hidden"
                 />
-                <span className="flex-1 text-gray-900 text-sm">
-                  <span className="inline-block w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-xs font-bold text-center leading-5 mx-4">
+
+                <div
+                  className={cn(
+                    "flex flex-1 items-center",
+                    isOptionRTL && "flex-row-reverse",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "w-9 h-9 rounded-full flex items-center justify-center font-bold mr-4",
+                      isSelected
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-600",
+                    )}
+                  >
                     {String.fromCharCode(65 + index)}
                   </span>
-                  <MathText text={option} dir={isOptionRTL ? "rtl" : "ltr"} />
-                </span>
+
+                  <div className="flex-1">
+                    <MathText
+                      text={optionText}
+                      dir={isOptionRTL ? "rtl" : "ltr"}
+                    />
+                  </div>
+                </div>
+
                 {isSelected && (
-                  <CheckCircle className="w-4 h-4 text-blue-500" />
+                  <CheckCircle className="w-6 h-6 text-blue-600" />
                 )}
               </label>
             );
           })}
         </div>
-
         {answerError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              {isRTL || isQuestionRTL
-                ? "يرجى اختيار إجابة قبل المتابعة."
-                : answerError}
-            </AlertDescription>
+            <AlertDescription>{answerError}</AlertDescription>
           </Alert>
         )}
 
-        {/* Navigation buttons */}
+        {/* Navigation */}
         <div
           className={cn(
-            "flex justify-between pt-4",
-            isRTL || isQuestionRTL ? "flex-row-reverse" : "flex-row",
+            "flex justify-between pt-6 border-t",
+            isRTL && "flex-row-reverse",
           )}
         >
           <Button
             onClick={moveToPreviousQuestion}
             disabled={currentQuestionIndex === 0}
-            variant="outline"
-            size="sm"
-            className={cn(
-              "flex items-center space-x-2 bg-transparent",
-              isRTL || isQuestionRTL ? "space-x-reverse" : "",
-            )}
+            variant="ghost"
           >
-            <ChevronLeft
-              className={cn(
-                "w-4 h-4",
-                isRTL || isQuestionRTL ? "transform rotate-180" : "",
-              )}
-            />
-            <span>{isRTL || isQuestionRTL ? "السابق" : "Précédent"}</span>
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Précédent
           </Button>
 
           {currentQuestionIndex < currentQuiz.questions.length - 1 ? (
-            <Button
-              onClick={moveToNextQuestion}
-              size="sm"
-              className={cn(
-                "flex items-center space-x-2 bg-blue-600 hover:bg-blue-700",
-                isRTL || isQuestionRTL ? "space-x-reverse" : "",
-              )}
-            >
-              <span>{isRTL || isQuestionRTL ? "التالي" : "Suivant"}</span>
-              <ChevronRight
-                className={cn(
-                  "w-4 h-4",
-                  isRTL || isQuestionRTL ? "transform rotate-180" : "",
-                )}
-              />
+            <Button onClick={moveToNextQuestion} className="bg-blue-600">
+              Suivant <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
             <Button
               onClick={handleSubmit}
-              size="sm"
-              className={cn(
-                "flex items-center space-x-2 bg-green-600 hover:bg-green-700",
-                isRTL || isQuestionRTL ? "space-x-reverse" : "",
-              )}
+              className="bg-green-600 hover:bg-green-700"
             >
-              <CheckCircle className="w-4 h-4" />
-              <span>{isRTL || isQuestionRTL ? "إرسال" : "Soumettre"}</span>
+              Soumettre le quiz <CheckCircle className="w-4 h-4 ml-2" />
             </Button>
           )}
         </div>
