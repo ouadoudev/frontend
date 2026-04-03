@@ -1,343 +1,4 @@
-// import { useState, useEffect } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import ReactQuill from "react-quill";
-// import "react-quill/dist/quill.snow.css";
-// import { Button } from "../../ui/button";
-// import { Input } from "../../ui/input";
-// import { Label } from "../../ui/label";
-// import { fetchLesson, updateLesson } from "@/store/lessonSlice";
-// import { fetchCourses } from "@/store/courseSlice";
-// import { UploadCloudIcon, VideoIcon, BookOpenIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-// import Loader from "@/components/Loader";
-// import { useNavigate, useParams } from "react-router-dom";
-// import { toast } from "react-toastify"
-
-// const UpdateLesson = () => {
-//   const { id: lessonId } = useParams();
-//   const dispatch = useDispatch();
-//   const navigate = useNavigate();
-//   const courses = useSelector((state) => state.courses.courses);
-//   const lesson = useSelector((state) => state.lesson.lesson);
-//   const [title, setTitle] = useState("");
-//   const [content, setContent] = useState("");
-//   const [course, setCourse] = useState("");
-//   const [published, setPublished] = useState(false);
-//   const [loading, setLoading] = useState(true);
-//   const [submitting, setSubmitting] = useState(false);
-//   const [video, setVideo] = useState(null);
-//   const [videoPreviewUrl, setVideoPreviewUrl] = useState(null);
-//   const [hasVideo, setHasVideo] = useState(false);
-//   const [message, setMessage] = useState("");
-
-//   useEffect(() => {
-//     if (!lessonId) {
-//       console.error("Lesson ID is undefined.");
-//       setLoading(false);
-//       return;
-//     }
-
-//     const fetchData = async () => {
-//       try {
-//         await dispatch(fetchCourses());
-//         await dispatch(fetchLesson(lessonId));
-//         setLoading(false);
-//       } catch (error) {
-//         console.error("Error fetching data:", error);
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [dispatch, lessonId]);
-
-//   useEffect(() => {
-//     if (lesson) {
-//       setTitle(lesson.title || "");
-//       setContent(lesson.content || "");
-//       setCourse(lesson.course || "");
-//       setPublished(lesson.published || false);
-//       setVideoPreviewUrl(lesson.video ? lesson.video.url : null);
-//       setHasVideo(Boolean(lesson.video));
-//     }
-//   }, [lesson]);
-
-//   const handleVideoChange = (event) => {
-//     const selectedFile = event.target.files[0];
-//     if (selectedFile) {
-//       setVideo(selectedFile);
-//       setVideoPreviewUrl(URL.createObjectURL(selectedFile));
-//       setHasVideo(true);
-//     }
-//   };
-
-//   const handleDragOver = (event) => {
-//     event.preventDefault();
-//   };
-
-//   const handleDrop = (event) => {
-//     event.preventDefault();
-//     const selectedFile = event.dataTransfer.files[0];
-//     if (selectedFile) {
-//       setVideo(selectedFile);
-//       setVideoPreviewUrl(URL.createObjectURL(selectedFile));
-//       setHasVideo(true);
-//     }
-//   };
-//   const getDirection = (text) => {
-//     const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
-//     return rtlChars.test(text) ? "rtl" : "ltr";
-//   };
-
-//   const handleSubmit = async (event) => {
-//     event.preventDefault();
-
-//     if (!lessonId) {
-//       console.error("Lesson ID is undefined.");
-//       setMessage("Error: Lesson ID is missing.");
-//       return;
-//     }
-
-//     setSubmitting(true);
-
-//     const formData = new FormData();
-//     formData.append("title", title);
-//     formData.append("content", content);
-//     formData.append("course", course);
-//     formData.append("published", published);
-//     if (video) {
-//       formData.append("video", video);
-//     }
-
-//     try {
-//        setLoading(true)
-//       await dispatch(updateLesson({ lessonId, formData })).unwrap();
-//       toast.success("Lesson updated successfully!")
-//       setTimeout(() => navigate("/lessons"), 1000)
-//     } catch (error) {
-//       if (error.response) {
-//         setMessage(`Error: ${error.response.data.error}`);
-//       } else {
-//         setMessage("Error: " + error.message);
-//       }
-//     } finally {
-//       setSubmitting(false);
-//       setLoading(false)
-//     }
-//   };
-
-//   const modules = {
-//     toolbar: [
-//       [{ header: [1, 2, false] }],
-//       [{ font: [] }],
-//       [{ size: ["small", false, "large", "huge"] }],
-//       ["bold", "italic", "underline", "strike"],
-//       [{ color: [] }, { background: [] }],
-//       [{ script: "sub" }, { script: "super" }],
-//       [{ align: [] }],
-//       [{ list: "ordered" }, { list: "bullet" }],
-//       ["link", "image", "video"],
-//       ["formula"],
-//       ["clean"],
-//       [{ direction: "rtl" }],
-//     ],
-//   };
-
-//   const formats = [
-//     "header",
-//     "font",
-//     "size",
-//     "bold",
-//     "italic",
-//     "underline",
-//     "strike",
-//     "color",
-//     "background",
-//     "script",
-//     "align",
-//     "list",
-//     "bullet",
-//     "link",
-//     "image",
-//     "video",
-//     "formula",
-//     "direction",
-//   ];
-
-//   if (loading || submitting) {
-//     return <Loader />;
-//   }
-
-//   return (
-//     <div className="bg-gray-100 h-screen p-8">
-//       <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-//         <form className="p-6 space-y-6" onSubmit={handleSubmit}>
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//             <div className="space-y-4">
-//               <div>
-//                 <Label htmlFor="title" className="text-lg font-semibold text-gray-700">
-//                   <BookOpenIcon className="inline-block mr-2 h-5 w-5" />
-//                   Lesson Title
-//                 </Label>
-//                 <Input
-//                   id="title"
-//                   value={title}
-//                   dir={getDirection(title)}
-//                   onChange={(event) => setTitle(event.target.value)}
-//                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-//                   placeholder="Enter lesson title"
-//                 />
-//               </div>
-//               <div>
-//                 <Label htmlFor="course" className="text-lg font-semibold text-gray-700">
-//                   <BookOpenIcon className="inline-block mr-2 h-5 w-5" />
-//                   Course
-//                 </Label>
-//                 <div className="relative mt-1">
-//                   <select
-//                     id="course"
-//                     value={course}
-//                     onChange={(event) => setCourse(event.target.value)}
-//                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-//                   >
-//                     <option value="">Select a course</option>
-//                     {courses ? (
-//                       courses.map((course) => (
-//                         <option key={course._id} value={course._id}>
-//                           {course.title}
-//                         </option>
-//                       ))
-//                     ) : (
-//                       <option value="">No courses available</option>
-//                     )}
-//                   </select>
-//                 </div>
-//               </div>
-//               <div>
-//                 <Label className="text-lg font-semibold text-gray-700">Visibility</Label>
-//                 <div className="mt-2 space-x-4">
-//                   <Label className="inline-flex items-center">
-//                     <Input
-//                       type="radio"
-//                       name="visibility"
-//                       value="true"
-//                       checked={published === true}
-//                       onChange={() => setPublished(true)}
-//                       className="form-radio h-5 w-5 text-blue-600"
-//                     />
-//                     <span className="ml-2 text-gray-700">
-//                       <EyeIcon className="inline-block mr-1 h-5 w-5" />
-//                       Public
-//                     </span>
-//                   </Label>
-//                   <Label className="inline-flex items-center">
-//                     <Input
-//                       type="radio"
-//                       name="visibility"
-//                       value="false"
-//                       checked={published === false}
-//                       onChange={() => setPublished(false)}
-//                       className="form-radio h-5 w-5 text-blue-600"
-//                     />
-//                     <span className="ml-2 text-gray-700">
-//                       <EyeOffIcon className="inline-block mr-1 h-5 w-5" />
-//                       Private
-//                     </span>
-//                   </Label>
-//                 </div>
-//               </div>
-//             </div>
-//             <div className="space-y-4">
-//               <Label htmlFor="video" className="text-lg font-semibold text-gray-700">
-//                 <VideoIcon className="inline-block mr-2 h-5 w-5" />
-//                 Lesson Video
-//               </Label>
-//               <div
-//                 className={`border-2 border-dashed rounded-lg p-4 text-center ${
-//                   hasVideo
-//                     ? "hidden"
-//                     : "border-gray-300 hover:border-blue-500 transition-colors duration-300"
-//                 }`}
-//                 onDragOver={handleDragOver}
-//                 onDrop={handleDrop}
-//               >
-//                 <div>
-//                   <UploadCloudIcon className="mx-auto h-12 w-12 text-gray-400" />
-//                   <p className="mt-1 text-sm text-gray-600">Drag and drop your video here, or click to select</p>
-//                   <input
-//                     id="file-upload"
-//                     name="file-upload"
-//                     type="file"
-//                     className="sr-only"
-//                     onChange={handleVideoChange}
-//                     accept="video/*"
-//                   />
-//                   <Button
-//                     type="button"
-//                     onClick={() => document.getElementById("file-upload").click()}
-//                     className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-//                   >
-//                     Select Video
-//                   </Button>
-//                 </div>
-//               </div>
-//               {videoPreviewUrl && (
-//                 <video className="w-full h-auto rounded-lg shadow-md" controls>
-//                   <source src={videoPreviewUrl} type="video/mp4" />
-//                   Your browser does not support the video tag.
-//                 </video>
-//               )}
-//             </div>
-//           </div>
-//           <div className="space-y-2">
-//             <Label htmlFor="description" className="text-lg font-semibold text-gray-700">
-//               <BookOpenIcon className="inline-block mr-2 h-5 w-5" />
-//               Lesson Content
-//             </Label>
-//             <div className="h-80 overflow-y-auto border border-gray-300 rounded-md shadow-sm">
-//               <ReactQuill
-//                 theme="snow"
-//                 value={content}
-//                 onChange={setContent}
-//                 modules={modules}
-//                 formats={formats}
-//                 className="h-full bg-white"
-//                 placeholder="Write your lesson content here..."
-//                 style={{ direction: "rtl" }} // Set the direction to RTL
-//               />
-//             </div>
-//           </div>
-//            <div className="flex gap-4 pt-4">
-//             <Button type="button" variant="outline" onClick={() => navigate("/lessons")} className="flex-1">
-//               Cancel
-//             </Button>
-//             <Button
-//               type="submit"
-//               disabled={loading}
-//               className="flex-1 px-4 py-2 text-lg font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300"
-//             >
-//               {loading ? "Updating..." : "Update Lesson"}
-//             </Button>
-//           </div>
-//         </form>
-//         {message && (
-//           <div
-//             className={`p-4 ${
-//               message.includes("Error") ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-//             } rounded-b-lg`}
-//           >
-//             {message}
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default UpdateLesson;
-
-import { useRef } from "react";
-
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -354,20 +15,28 @@ import {
   EyeIcon,
   EyeOffIcon,
   InfoIcon,
+  Trash2Icon,
+  Loader2,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import Quill from "quill";
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Image Resize Module Imports
+window.Quill = Quill;
+import ImageResize from "quill-image-resize-module-react";
 
 window.katex = katex;
 
 const Font = Quill.import("formats/font");
 Font.whitelist = ["sans-serif", "serif", "monospace"];
 Quill.register(Font, true);
+Quill.register("modules/imageResize", ImageResize);
 
 // Translation object for static text
 const translations = {
@@ -377,6 +46,7 @@ const translations = {
     course: "Course",
     selectCourse: "Select a course",
     noCoursesAvailable: "No courses available",
+    noEducationalDetails: "No educational details",
     visibility: "Visibility",
     public: "Public",
     private: "Private",
@@ -384,6 +54,7 @@ const translations = {
     lessonVideo: "Lesson Video",
     dragDropVideo: "Drag and drop your video here, or click to select",
     selectVideo: "Select Video",
+    removeVideo: "Remove Video",
     lessonContent: "Lesson Content",
     updateLesson: "Update Lesson",
     lessonUpdatedSuccessfully: "Lesson updated successfully!",
@@ -403,6 +74,7 @@ const translations = {
     course: "الدورة",
     selectCourse: "اختر دورة",
     noCoursesAvailable: "لا توجد دورات متاحة",
+    noEducationalDetails: "لا توجد تفاصيل تعليمية",
     visibility: "الرؤية",
     public: "عام",
     private: "خاص",
@@ -410,6 +82,7 @@ const translations = {
     lessonVideo: "فيديو الدرس",
     dragDropVideo: "اسحب وأفلت الفيديو هنا، أو انقر للاختيار",
     selectVideo: "اختر الفيديو",
+    removeVideo: "إزالة الفيديو",
     lessonContent: "محتوى الدرس",
     updateLesson: "تحديث الدرس",
     lessonUpdatedSuccessfully: "تم تحديث الدرس بنجاح!",
@@ -431,42 +104,36 @@ const UpdateLesson = () => {
   const navigate = useNavigate();
   const courses = useSelector((state) => state.courses.courses);
   const lesson = useSelector((state) => state.lesson.lesson);
-  const teacher = useSelector(loggedUser); // Get logged in teacher for discipline
+  const teacher = useSelector(loggedUser);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [course, setCourse] = useState("");
   const [published, setPublished] = useState(false);
-  const [loading, setLoading] = useState(true); // For initial data fetch
-  const [submitting, setSubmitting] = useState(false); // For form submission
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [video, setVideo] = useState(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState(null);
   const [hasVideo, setHasVideo] = useState(false);
-  const [message, setMessage] = useState("");
   const [pdf, setPdf] = useState(null);
 
-  // New state for educational restrictions
   const [hasEducationalDetails, setHasEducationalDetails] = useState(false);
   const [availableCourses, setAvailableCourses] = useState([]);
   const [restrictionMessage, setRestrictionMessage] = useState("");
 
   const quillRef = useRef(null);
-  const [quillEditorInstance, setQuillEditorInstance] = useState(null);
+  const videoInputRef = useRef(null);
 
   const getDirection = (text) => {
     const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
     return rtlChars.test(text) ? "rtl" : "ltr";
   };
 
-  // Determine direction and translation key based on teacher.discipline
-  const disciplineDirection = teacher?.discipline
-    ? getDirection(teacher.discipline)
-    : "ltr";
+  const disciplineDirection = teacher?.discipline ? getDirection(teacher.discipline) : "ltr";
   const t = translations[disciplineDirection];
 
   useEffect(() => {
     if (!lessonId) {
-      console.error("Lesson ID is undefined.");
       setLoading(false);
       return;
     }
@@ -476,7 +143,6 @@ const UpdateLesson = () => {
         await dispatch(fetchLesson(lessonId));
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
         setLoading(false);
         toast.error(`Error fetching data: ${error.message || "Unknown error"}`);
       }
@@ -484,14 +150,21 @@ const UpdateLesson = () => {
     fetchData();
   }, [dispatch, lessonId]);
 
-  // Check teacher's educational details and filter courses accordingly
+  // Clean up Blob URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (videoPreviewUrl && videoPreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(videoPreviewUrl);
+      }
+    };
+  }, [videoPreviewUrl]);
+
   useEffect(() => {
     if (!teacher || !courses.length) return;
 
     const teacherCycles = teacher.educationalCycles || [];
     const teacherLevels = teacher.educationalLevels || [];
 
-    // Check if teacher has assigned educational details
     const hasDetails = teacherCycles.length > 0 && teacherLevels.length > 0;
     setHasEducationalDetails(hasDetails);
 
@@ -501,7 +174,6 @@ const UpdateLesson = () => {
       return;
     }
 
-    // Filter courses based on teacher's educational details AND ownership
     const matchingCourses = courses.filter((course) => {
       if (
         !course.subject ||
@@ -513,12 +185,8 @@ const UpdateLesson = () => {
         return false;
       }
 
-      const matchesCycle = teacherCycles.includes(
-        course.subject.educationalCycle
-      );
-      const matchesLevel = teacherLevels.includes(
-        course.subject.educationalLevel
-      );
+      const matchesCycle = teacherCycles.includes(course.subject.educationalCycle);
+      const matchesLevel = teacherLevels.includes(course.subject.educationalLevel);
       const matchesTeacher = course.teacher.username === teacher.username;
 
       return matchesCycle && matchesLevel && matchesTeacher;
@@ -527,13 +195,11 @@ const UpdateLesson = () => {
     setAvailableCourses(matchingCourses);
 
     if (matchingCourses.length === 0) {
-      setRestrictionMessage(
-        t.restrictionMessage(teacher.discipline, teacherLevels.join(", "))
-      );
+      setRestrictionMessage(t.restrictionMessage(teacher.discipline, teacherLevels.join(", ")));
     } else {
       setRestrictionMessage("");
     }
-  }, [courses, teacher, t]);
+  }, [courses, teacher, t.noEducationalDetailsMessage, t.restrictionMessage]);
 
   useEffect(() => {
     if (lesson) {
@@ -545,22 +211,6 @@ const UpdateLesson = () => {
       setHasVideo(Boolean(lesson.video));
     }
   }, [lesson]);
-
-  useEffect(() => {
-    if (quillEditorInstance && quillEditorInstance.root) {
-      const observer = new MutationObserver(() => {
-        // Callback for when mutations are observed
-        // You can add logic here if you need to react to content changes
-      });
-      observer.observe(quillEditorInstance.root, {
-        childList: true,
-        subtree: true,
-      });
-      return () => {
-        observer.disconnect();
-      };
-    }
-  }, [quillEditorInstance]);
 
   const handleVideoChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -578,34 +228,36 @@ const UpdateLesson = () => {
   const handleDrop = (event) => {
     event.preventDefault();
     const selectedFile = event.dataTransfer.files[0];
-    if (selectedFile) {
+    if (selectedFile && selectedFile.type.startsWith("video/")) {
       setVideo(selectedFile);
       setVideoPreviewUrl(URL.createObjectURL(selectedFile));
       setHasVideo(true);
     }
   };
 
+  const handleRemoveVideo = () => {
+    if (videoPreviewUrl && videoPreviewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(videoPreviewUrl);
+    }
+    setVideo(null);
+    setVideoPreviewUrl(null);
+    setHasVideo(false);
+    if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!lessonId) {
-      console.error("Lesson ID is undefined.");
-      setMessage("Error: Lesson ID is missing.");
       toast.error("Error: Lesson ID is missing.");
       return;
     }
 
-    // Additional validation for educational restrictions
     if (!hasEducationalDetails) {
       toast.error(t.noEducationalDetailsMessage);
       return;
     }
     if (availableCourses.length === 0) {
-      toast.error(
-        t.restrictionMessage(
-          teacher.discipline,
-          teacher.educationalLevels.join(", ")
-        )
-      );
+      toast.error(t.restrictionMessage(teacher.discipline, teacher.educationalLevels.join(", ")));
       return;
     }
 
@@ -615,72 +267,58 @@ const UpdateLesson = () => {
     formData.append("content", content);
     formData.append("course", course);
     formData.append("published", published ? "true" : "false");
-    if (video) {
-      formData.append("video", video);
-    }
-    if (pdf) {
-      formData.append("pdf", pdf);
-    }
+    
+    // Note: Depends on backend implementation. Appending video updates it. 
+    // Usually, you need a flag to explicitly delete a video if no new file is provided.
+    if (video) formData.append("video", video);
+    if (pdf) formData.append("pdf", pdf);
 
     try {
       await dispatch(updateLesson({ lessonId, formData })).unwrap();
       toast.success(t.lessonUpdatedSuccessfully);
       setTimeout(() => navigate("/lessons"), 1000);
     } catch (error) {
-      console.error("Update error:", error);
-      if (error.response) {
-        setMessage(`${t.errorUpdatingLesson}: ${error.response.data.error}`);
-        toast.error(`${t.errorUpdatingLesson}: ${error.response.data.error}`);
-      } else {
-        setMessage(`${t.errorUpdatingLesson}: ${error.message}`);
-        toast.error(`${t.errorUpdatingLesson}: ${error.message}`);
-      }
+      const errorMsg = error.response ? error.response.data.error : error.message;
+      toast.error(`${t.errorUpdatingLesson}: ${errorMsg}`);
     } finally {
       setSubmitting(false);
     }
   };
 
   const modules = {
-    toolbar: [
-      [{ header: [1, 2, false] }],
-      [{ font: Font.whitelist }],
-      [{ size: ["small", false, "large", "huge"] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ color: [] }, { background: [] }],
-      [{ script: "sub" }, { script: "super" }],
-      [{ align: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image", "video"],
-      ["formula"],
-      ["clean"],
-      [{ direction: "rtl" }],
-    ],
+    toolbar: {
+      container: [
+        [{ header: [1, 2, false] }],
+        [{ font: Font.whitelist }],
+        [{ size: ["small", false, "large", "huge"] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ script: "sub" }, { script: "super" }],
+        [{ align: [] }],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link", "image", "video"],
+        ["formula"],
+        ["clean"],
+        [{ direction: "rtl" }],
+      ],
+    },
+    formula: true,
+    imageResize: {
+      parchment: Quill.import("parchment"),
+      modules: ["Resize", "DisplaySize", "Toolbar"],
+    },
   };
+
   const formats = [
-    "header",
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "color",
-    "background",
-    "script",
-    "align",
-    "list",
-    "bullet",
-    "link",
-    "image",
-    "video",
-    "formula",
-    "direction",
+    "header", "font", "size", "bold", "italic", "underline", "strike",
+    "color", "background", "script", "align", "list", "bullet",
+    "link", "image", "video", "formula", "direction",
+    "width", "height", "style" 
   ];
 
   return (
     <div className="bg-gray-100 min-h-screen p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Restriction Message */}
         {restrictionMessage && (
           <Alert className="m-6 mb-0" variant="destructive">
             <InfoIcon className="h-4 w-4" />
@@ -689,23 +327,13 @@ const UpdateLesson = () => {
             </AlertDescription>
           </Alert>
         )}
-        <form
-          className="p-6 space-y-6"
-          onSubmit={handleSubmit}
-          dir={disciplineDirection}
-        >
+        <form className="p-6 space-y-6" onSubmit={handleSubmit} dir={disciplineDirection}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <Label
-                  htmlFor="title"
-                  className="text-lg font-semibold text-gray-700"
-                >
+                <Label htmlFor="title" className="text-lg font-semibold text-gray-700">
                   <BookOpenIcon
-                    className={cn(
-                      "inline-block h-5 w-5",
-                      disciplineDirection === "rtl" ? "ml-2" : "mr-2"
-                    )}
+                    className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-2" : "mr-2")}
                   />
                   {t.lessonTitle}
                 </Label>
@@ -716,24 +344,14 @@ const UpdateLesson = () => {
                   dir={disciplineDirection}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder={t.enterLessonTitle}
-                  disabled={
-                    loading ||
-                    submitting ||
-                    !hasEducationalDetails ||
-                    availableCourses.length === 0
-                  }
+                  disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                 />
               </div>
+              
               <div>
-                <Label
-                  htmlFor="course"
-                  className="text-lg font-semibold text-gray-700"
-                >
+                <Label htmlFor="course" className="text-lg font-semibold text-gray-700">
                   <BookOpenIcon
-                    className={cn(
-                      "inline-block h-5 w-5",
-                      disciplineDirection === "rtl" ? "ml-2" : "mr-2"
-                    )}
+                    className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-2" : "mr-2")}
                   />
                   {t.course}
                 </Label>
@@ -744,12 +362,7 @@ const UpdateLesson = () => {
                     onChange={(event) => setCourse(event.target.value)}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                     dir={disciplineDirection}
-                    disabled={
-                      loading ||
-                      submitting ||
-                      !hasEducationalDetails ||
-                      availableCourses.length === 0
-                    }
+                    disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                   >
                     <option value="">
                       {!hasEducationalDetails
@@ -766,18 +379,10 @@ const UpdateLesson = () => {
                   </select>
                 </div>
               </div>
+
               <div>
-                <Label className="text-lg font-semibold text-gray-700">
-                  {t.visibility}
-                </Label>
-                <div
-                  className={cn(
-                    "mt-2 flex",
-                    disciplineDirection === "rtl"
-                      ? "flex-row-reverse space-x-reverse"
-                      : "space-x-4"
-                  )}
-                >
+                <Label className="text-lg font-semibold text-gray-700">{t.visibility}</Label>
+                <div className={cn("mt-2 flex", disciplineDirection === "rtl" ? "flex-row-reverse space-x-reverse" : "space-x-4")}>
                   <Label className="inline-flex items-center">
                     <Input
                       type="radio"
@@ -786,25 +391,10 @@ const UpdateLesson = () => {
                       value="true"
                       checked={published === true}
                       onChange={() => setPublished(true)}
-                      disabled={
-                        loading ||
-                        submitting ||
-                        !hasEducationalDetails ||
-                        availableCourses.length === 0
-                      }
+                      disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                     />
-                    <span
-                      className={cn(
-                        "text-gray-700",
-                        disciplineDirection === "rtl" ? "mr-2" : "ml-2"
-                      )}
-                    >
-                      <EyeIcon
-                        className={cn(
-                          "inline-block h-5 w-5",
-                          disciplineDirection === "rtl" ? "ml-1" : "mr-1"
-                        )}
-                      />
+                    <span className={cn("text-gray-700", disciplineDirection === "rtl" ? "mr-2" : "ml-2")}>
+                      <EyeIcon className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-1" : "mr-1")} />
                       {t.public}
                     </span>
                   </Label>
@@ -816,40 +406,20 @@ const UpdateLesson = () => {
                       value="false"
                       checked={published === false}
                       onChange={() => setPublished(false)}
-                      disabled={
-                        loading ||
-                        submitting ||
-                        !hasEducationalDetails ||
-                        availableCourses.length === 0
-                      }
+                      disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                     />
-                    <span
-                      className={cn(
-                        "text-gray-700",
-                        disciplineDirection === "rtl" ? "mr-2" : "ml-2"
-                      )}
-                    >
-                      <EyeOffIcon
-                        className={cn(
-                          "inline-block h-5 w-5",
-                          disciplineDirection === "rtl" ? "ml-1" : "mr-1"
-                        )}
-                      />
+                    <span className={cn("text-gray-700", disciplineDirection === "rtl" ? "mr-2" : "ml-2")}>
+                      <EyeOffIcon className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-1" : "mr-1")} />
                       {t.private}
                     </span>
                   </Label>
                 </div>
               </div>
+
               <div className="space-y-2">
-                <Label
-                  htmlFor="pdf"
-                  className="text-lg font-semibold text-gray-700"
-                >
+                <Label htmlFor="pdf" className="text-lg font-semibold text-gray-700">
                   <UploadCloudIcon
-                    className={cn(
-                      "inline-block h-5 w-5",
-                      disciplineDirection === "rtl" ? "ml-2" : "mr-2"
-                    )}
+                    className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-2" : "mr-2")}
                   />
                   {t.uploadPdf}
                 </Label>
@@ -859,138 +429,128 @@ const UpdateLesson = () => {
                   onChange={(e) => setPdf(e.target.files[0])}
                   className="block w-full text-sm text-gray-900 file:mr-4 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   dir={disciplineDirection}
-                  disabled={
-                    loading ||
-                    submitting ||
-                    !hasEducationalDetails ||
-                    availableCourses.length === 0
-                  }
+                  disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                 />
               </div>
             </div>
+
             <div className="space-y-4">
-              <Label
-                htmlFor="video"
-                className="text-lg font-semibold text-gray-700"
-              >
+              <Label htmlFor="video" className="text-lg font-semibold text-gray-700">
                 <VideoIcon
-                  className={cn(
-                    "inline-block h-5 w-5",
-                    disciplineDirection === "rtl" ? "ml-2" : "mr-2"
-                  )}
+                  className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-2" : "mr-2")}
                 />
                 {t.lessonVideo}
               </Label>
               <div
                 className={cn(
                   "border-2 border-dashed rounded-lg p-4 text-center",
-                  hasVideo
-                    ? "hidden"
-                    : "border-gray-300 hover:border-blue-500 transition-colors duration-300"
+                  hasVideo ? "hidden" : "border-gray-300 hover:border-blue-500 transition-colors duration-300"
                 )}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
                 <div>
                   <UploadCloudIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <p
-                    className="mt-1 text-sm text-gray-600"
-                    dir={disciplineDirection}
-                  >
+                  <p className="mt-1 text-sm text-gray-600" dir={disciplineDirection}>
                     {t.dragDropVideo}
                   </p>
                   <input
+                    ref={videoInputRef}
                     id="file-upload"
                     name="file-upload"
                     type="file"
                     className="sr-only"
                     onChange={handleVideoChange}
                     accept="video/*"
-                    disabled={
-                      loading ||
-                      submitting ||
-                      !hasEducationalDetails ||
-                      availableCourses.length === 0
-                    }
+                    disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                   />
                   <Button
                     type="button"
-                    onClick={() =>
-                      document.getElementById("file-upload").click()
-                    }
+                    onClick={() => videoInputRef.current?.click()}
                     className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    disabled={
-                      loading ||
-                      submitting ||
-                      !hasEducationalDetails ||
-                      availableCourses.length === 0
-                    }
+                    disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
                   >
                     {t.selectVideo}
                   </Button>
                 </div>
               </div>
+              
               {videoPreviewUrl && (
-                <video className="w-full h-auto rounded-lg shadow-md" controls>
-                  <source src={videoPreviewUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
+                <div className="space-y-3">
+                  <video className="w-full h-auto rounded-lg shadow-md" controls>
+                    <source src={videoPreviewUrl} type={video?.type || "video/mp4"} />
+                    Your browser does not support the video tag.
+                  </video>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleRemoveVideo}
+                    className="w-full"
+                    disabled={loading || submitting}
+                  >
+                    <Trash2Icon className="h-4 w-4 mr-2" />
+                    {t.removeVideo}
+                  </Button>
+                </div>
               )}
             </div>
           </div>
+
+          {/* QUILL TEXT EDITOR AREA */}
           <div className="space-y-2">
-            <Label
-              htmlFor="description"
-              className="text-lg font-semibold text-gray-700"
-            >
+            <Label htmlFor="description" className="text-lg font-semibold text-gray-700">
               <BookOpenIcon
-                className={cn(
-                  "inline-block h-5 w-5",
-                  disciplineDirection === "rtl" ? "ml-2" : "mr-2"
-                )}
+                className={cn("inline-block h-5 w-5", disciplineDirection === "rtl" ? "ml-2" : "mr-2")}
               />
               {t.lessonContent}
             </Label>
-            <div className="h-64 sm:h-72 md:h-80 overflow-y-auto border border-gray-300 rounded-md shadow-sm">
+            
+            <style>{`
+              .custom-quill {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+              }
+              .custom-quill .ql-toolbar {
+                border: none !important;
+                border-bottom: 1px solid #e5e7eb !important;
+                background-color: #f9fafb;
+              }
+              .custom-quill .ql-container {
+                border: none !important;
+                height: auto !important; 
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+              }
+            `}</style>
+            
+            <div className="h-64 sm:h-72 md:h-80 border border-gray-300 rounded-md shadow-sm bg-white flex flex-col overflow-hidden">
               <ReactQuill
                 theme="snow"
                 value={content}
                 onChange={setContent}
                 modules={modules}
                 formats={formats}
-                className="h-full bg-white"
-                ref={(el) => {
-                  quillRef.current = el;
-                  if (el) {
-                    setQuillEditorInstance(el.getEditor());
-                  }
-                }}
+                className="custom-quill flex-1"
+                ref={quillRef}
                 style={{ direction: disciplineDirection }}
-                readOnly={
-                  loading ||
-                  submitting ||
-                  !hasEducationalDetails ||
-                  availableCourses.length === 0
-                }
+                readOnly={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
               />
             </div>
           </div>
+
           {submitting && (
             <div className="mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 relative overflow-hidden">
-                <div
-                  className="absolute inset-0 bg-blue-600 animate-pulse"
-                  style={{ width: "100%" }}
-                ></div>
+                <div className="absolute inset-0 bg-blue-600 animate-pulse" style={{ width: "100%" }}></div>
               </div>
-              <p
-                className="text-sm text-gray-600 mt-1 text-center"
-                dir={disciplineDirection}
-              >
+              <p className="text-sm text-gray-600 mt-1 text-center" dir={disciplineDirection}>
                 {t.updating}
               </p>
             </div>
           )}
+
           <div className="flex gap-4 pt-4">
             <Button
               type="button"
@@ -1003,37 +563,24 @@ const UpdateLesson = () => {
             </Button>
             <Button
               type="submit"
-              disabled={
-                loading ||
-                submitting ||
-                !hasEducationalDetails ||
-                availableCourses.length === 0
-              }
+              disabled={loading || submitting || !hasEducationalDetails || availableCourses.length === 0}
               className="flex-1 px-4 py-2 text-lg font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {submitting
-                ? t.updating
-                : !hasEducationalDetails
-                ? t.educationalDetailsRequiredButton
-                : availableCourses.length === 0
-                ? t.noCoursesAvailableButton
-                : t.updateLesson}
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin inline" />
+                  {t.updating}
+                </>
+              ) : !hasEducationalDetails ? (
+                t.educationalDetailsRequiredButton
+              ) : availableCourses.length === 0 ? (
+                t.noCoursesAvailableButton
+              ) : (
+                t.updateLesson
+              )}
             </Button>
           </div>
         </form>
-        {message && (
-          <div
-            className={cn(
-              "p-4 text-sm sm:text-base rounded-b-lg",
-              message.includes("Error")
-                ? "bg-red-100 text-red-700"
-                : "bg-green-100 text-green-700"
-            )}
-            dir={disciplineDirection}
-          >
-            {message}
-          </div>
-        )}
       </div>
     </div>
   );
