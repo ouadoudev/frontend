@@ -11,21 +11,65 @@ import {
   AlertTriangle,
   Award,
   TrendingUp,
-  Lock,
   Star,
   Clock,
   BarChart3,
-  Home,
   X,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined;
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />,
+        );
+      } catch (error) {
+        parts.push(`$${latexContent}$`);
+      }
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={cn("inline-block", className)}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
 
 const QuizResult = ({
   result,
   lessonTitle,
   onRetake,
   isRetaking,
-  error,
   alreadyPassed = false,
   onClose,
   isInDialog = false,
@@ -34,54 +78,6 @@ const QuizResult = ({
   const correctAnswers = result.results?.filter((r) => r.isCorrect).length || 0;
   const totalQuestions = result.results?.length || 0;
 
-  const getScoreColor = (score) => {
-    if (score >= 90) return "text-emerald-600";
-    if (score >= 75) return "text-blue-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getScoreBgColor = (score) => {
-    if (score >= 90) return "from-emerald-50 to-green-50 border-emerald-200";
-    if (score >= 75) return "from-blue-50 to-indigo-50 border-blue-200";
-    if (score >= 60) return "from-yellow-50 to-orange-50 border-yellow-200";
-    return "from-red-50 to-pink-50 border-red-200";
-  };
-
-  const getPerformanceMessage = (score) => {
-    if (score >= 90)
-      return isRTL
-        ? "أداء متميز! لقد أتقنت هذا الموضوع."
-        : "Performance exceptionnelle ! Vous avez maîtrisé ce sujet.";
-    if (score >= 75)
-      return isRTL
-        ? "عمل رائع! لقد نجحت في اجتياز الاختبار."
-        : "Excellent travail ! Vous avez réussi le quiz.";
-    if (score >= 60)
-      return isRTL
-        ? "جهد جيد! أنت قريب من النجاح. حاول مرة أخرى لتحسين درجتك."
-        : "Bon effort ! Vous êtes proche de la réussite. Réessayez pour améliorer.";
-    return isRTL
-      ? "واصل الدراسة وحاول مرة أخرى. يمكنك تحقيق نتيجة أفضل!"
-      : "Continuez à étudier et réessayez. Vous pouvez faire mieux !";
-  };
-
-  const getPerformanceIcon = (score) => {
-    if (alreadyPassed) return <Star className="w-10 h-10 text-emerald-500" />;
-    if (score >= 90) return <Trophy className="w-10 h-10 text-yellow-500" />;
-    if (score >= 75) return <Award className="w-10 h-10 text-blue-500" />;
-    if (score >= 60)
-      return <TrendingUp className="w-10 h-10 text-yellow-500" />;
-    return <AlertTriangle className="w-10 h-10 text-red-500" />;
-  };
-
-  const formatTime = (seconds) => {
-    const totalSeconds = Math.ceil(seconds);
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const getDirection = (text) => {
     const rtlChars = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/;
     return rtlChars.test(text) ? "rtl" : "ltr";
@@ -89,163 +85,258 @@ const QuizResult = ({
 
   const isRTL = getDirection(lessonTitle || "") === "rtl";
 
+  const getScoreColor = (score) => {
+    if (score >= 90) return "text-emerald-600";
+    if (score >= 75) return "text-blue-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+  console.log("QuizResult Rendered with result:", result);
   return (
-   <div
+    <div
       className={cn(
-        "w-full max-w-full mx-auto space-y-4 sm:space-y-6 px-2 sm:px-6 overflow-x-hidden",
-        isRTL ? "text-right" : "text-left"
+        "w-full max-w-4xl mx-auto space-y-6",
+        isRTL ? "text-right" : "text-left",
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >
       <Card
         className={cn(
-          "shadow-xl border-2 bg-gradient-to-br transition-all",
-          alreadyPassed
+          "shadow-xl border-2 bg-gradient-to-br transition-all overflow-hidden",
+          isPassed || alreadyPassed
             ? "from-emerald-50 to-green-50 border-emerald-200"
-            : getScoreBgColor(result.percentageScore)
+            : "from-red-50 to-pink-50 border-red-200",
         )}
       >
-        <CardHeader className="text-center space-y-4 pb-4 px-4 sm:px-6 relative">
-          {/* Bouton Fermer optimisé */}
+        <CardHeader className="text-center relative pb-2">
           {isInDialog && onClose && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className={cn("absolute top-2 z-10", isRTL ? "left-2" : "right-2")}
+              className={cn("absolute top-2", isRTL ? "left-2" : "right-2")}
             >
               <X className="w-5 h-5" />
             </Button>
           )}
 
-          {/* Icone de performance adaptable */}
-          <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center bg-white shadow-lg shrink-0">
-            {getPerformanceIcon(result.percentageScore)}
+          <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center bg-white shadow-md mb-4">
+            {isPassed || alreadyPassed ? (
+              <Trophy className="w-10 h-10 text-yellow-500" />
+            ) : (
+              <AlertTriangle className="w-10 h-10 text-red-500" />
+            )}
           </div>
 
-          <div className="space-y-1 px-2 sm:px-6">
-            <CardTitle className="text-2xl font-bold text-gray-900 leading-tight">
-              {alreadyPassed 
-                ? (isRTL ? "الاختبار مكتمل بالفعل !" : "Quiz déjà complété !") 
-                : isPassed 
-                ? (isRTL ? "تهانينا !" : "Félicitations !") 
-                : (isRTL ? "استمر في المحاولة!" : "Continuez d'essayer !")}
-            </CardTitle>
-            <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto leading-snug">
-              {alreadyPassed 
-                ? (isRTL ? "لقد نجحت في هذا الاختبار من قبل." : "Vous avez déjà réussi ce quiz.") 
-                : getPerformanceMessage(result.percentageScore)}
-            </p>
-          </div>
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            {alreadyPassed
+              ? isRTL
+                ? "اكتمل بنجاح"
+                : "Déjà complété"
+              : isPassed
+                ? isRTL
+                  ? "تهانينا !"
+                  : "Félicitations !"
+                : isRTL
+                  ? "حاول مرة أخرى"
+                  : "Continuez d'essayer !"}
+          </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-2 px-4 sm:px-8 pb-8">
-          {/* Section Score - Correction du Badge décalé */}
-          <div className="flex flex-col items-center">
-            <div className="relative flex flex-col items-center">
-              <div className={cn(
-                  "text-4xl lg:text-6xl font-black tabular-nums",
-                  alreadyPassed ? "text-emerald-600" : getScoreColor(result.percentageScore)
+        <CardContent className="space-y-8 px-4 sm:px-8">
+          {/* Score Principal */}
+          <div className="flex flex-col items-center space-y-2">
+            <div className="relative inline-flex items-center">
+              <span
+                className={cn(
+                  "text-6xl font-black tabular-nums",
+                  getScoreColor(result.percentageScore),
                 )}
               >
                 {result.percentageScore}%
-              </div>
+              </span>
               <Badge
-                variant={isPassed || alreadyPassed ? "default" : "secondary"}
                 className={cn(
-                  "mt-2 sm:absolute sm:mt-0 sm:-top-2 sm:-right-20 text-xs font-bold py-1 px-3",
-                  isPassed || alreadyPassed
-                    ? "bg-green-100 text-green-800 border-green-300"
-                    : "bg-red-100 text-red-800 border-red-300"
+                  "ml-4",
+                  isPassed || alreadyPassed ? "bg-green-600" : "bg-red-600",
                 )}
               >
-                {isPassed || alreadyPassed ? (isRTL ? "نجاح" : "RÉUSSI") : (isRTL ? "لم تنجح" : "ÉCHOUÉ")}
+                {isPassed || alreadyPassed
+                  ? isRTL
+                    ? "ناجح"
+                    : "RÉUSSI"
+                  : isRTL
+                    ? "راسب"
+                    : "ÉCHOUÉ"}
               </Badge>
             </div>
-            <Progress value={result.percentageScore} className="h-3 w-full max-w-xs sm:max-w-md bg-gray-100" />
+            <Progress
+              value={result.percentageScore}
+              className="h-3 w-full max-w-md"
+            />
           </div>
 
-          {/* Statistiques - Grid responsive */}
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 ">
-            <StatItem 
-              icon={<CheckCircle className="w-10 h-10 text-green-600" />}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-4">
+            <StatItem
+              icon={<CheckCircle className="text-green-600" />}
               value={correctAnswers}
-              label={isRTL ? "صحصيحة" : "Correctes"}
-              borderColor="border-green-100"
+              label={isRTL ? "صحيح" : "Correct"}
             />
-            <StatItem 
-              icon={<BarChart3 className="w-10 h-10 text-purple-600" />}
+            <StatItem
+              icon={<BarChart3 className="text-blue-600" />}
               value={totalQuestions}
-              label={isRTL ? "الأسئلة" : "Questions"}
-              borderColor="border-purple-100"
+              label={isRTL ? "أسئلة" : "Questions"}
             />
-            <StatItem 
-              icon={<Clock className="w-10 h-10 text-orange-600" />}
+            <StatItem
+              icon={<Clock className="text-orange-600" />}
               value={result.timeTaken ? formatTime(result.timeTaken) : "--:--"}
-              label={isRTL ? "الوقت" : "Temps"}
-              borderColor="border-orange-100"
+              label={isRTL ? "وقت" : "Temps"}
             />
           </div>
 
-          {/* Décomposition des questions - Utilisation de Flex Wrap */}
-          {result.results?.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                {isRTL ? "تفصيل الأسئلة" : "Détails par question"}
-                {alreadyPassed && <Badge className="text-[10px] h-5">Ancien</Badge>}
-              </h4>
-              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                {result.results.map((item, index) => (
-                  <div
-                    key={index}
-                    className={cn(
-                      "flex flex-col items-center justify-center w-12 h-14 rounded-lg border-2 transition-transform hover:scale-105",
-                      item.isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
-                    )}
-                  >
-                    <span className="text-[10px] font-bold text-gray-400">Q{index + 1}</span>
-                    {item.isCorrect ? <CheckCircle className="w-4 h-4 text-green-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+          <Separator />
+          {/* Détails des Questions */}
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Info className="w-5 h-5 text-indigo-600" />
+              {isRTL ? "مراجعة الإجابات" : "Révision des réponses"}
+            </h3>
+            <div className="space-y-4">
+              {result.results?.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "p-4 rounded-xl border-l-4 bg-white shadow-sm transition-all hover:shadow-md",
+                    item.isCorrect ? "border-l-green-500" : "border-l-red-500",
+                  )}
+                >
+                  {/* En-tête de la question : Numéro + Texte de la question */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      <Badge
+                        variant="outline"
+                        className="h-7 w-7 rounded-full flex items-center justify-center p-0 shrink-0 border-2 font-bold text-gray-600"
+                      >
+                        {idx + 1}
+                      </Badge>
+                      <MathText
+                        text={item.question}
+                        className="font-bold text-gray-900 text-sm sm:text-base leading-tight"
+                      />
+                    </div>
+
+                    {/* Badge de statut à droite */}
+                    <div className="shrink-0 self-end sm:self-center">
+                      {item.isCorrect ? (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 px-2 py-0.5 gap-1.5">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase">
+                            {isRTL ? "صحيح" : "Correct"}
+                          </span>
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200 px-2 py-0.5 gap-1.5">
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase">
+                            {isRTL ? "خطأ" : "Incorrect"}
+                          </span>
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Réponses utilisateur et correcte */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div
+                      className={cn(
+                        "p-3 rounded-lg border",
+                        item.isCorrect
+                          ? "bg-green-50/50 border-green-100"
+                          : "bg-red-50/50 border-red-100",
+                      )}
+                    >
+                      <span className="text-gray-500 block text-[10px] font-bold uppercase mb-1">
+                        {isRTL ? "إجابتك:" : "Votre réponse:"}
+                      </span>
+                      <MathText
+                        text={item.userAnswer}
+                        className={
+                          item.isCorrect ? "text-green-800" : "text-red-800"
+                        }
+                      />
+                    </div>
+
+                    {!item.isCorrect && (
+                      <div className="p-3 rounded-lg border border-blue-100 bg-blue-50/50">
+                        <span className="text-gray-500 block text-[10px] font-bold uppercase mb-1">
+                          {isRTL ? "الإجابة الصحيحة:" : "Réponse correcte:"}
+                        </span>
+                        <MathText
+                          text={item.correctAnswer}
+                          className="text-blue-800 font-medium"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Explication (Rationale) */}
+                  {item.rationale && (
+                    <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200 border-dashed text-sm text-slate-700">
+                      <div className="flex items-center gap-2 mb-1 text-indigo-600">
+                        <Info className="w-4 h-4" />
+                        <span className="font-bold text-xs uppercase">
+                          {isRTL ? "توضيح:" : "Explication:"}
+                        </span>
+                      </div>
+                      <MathText
+                        text={item.rationale}
+                        className="italic leading-relaxed"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
-          <Separator className="opacity-50" />
-
-          {/* Actions - Flex-col sur mobile */}
-          <div className={cn(
-            "flex flex-col sm:flex-row gap-3 w-full",
-            isRTL ? "sm:flex-row-reverse" : "sm:justify-center"
-          )}>
-            {!isPassed && !alreadyPassed && onRetake && (
+          {/* Bouton Recommencer */}
+          {!isPassed && !alreadyPassed && onRetake && (
+            <div className="flex justify-center pt-4">
               <Button
                 onClick={onRetake}
                 disabled={isRetaking}
                 size="lg"
-                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 shadow-lg shadow-indigo-100"
+                className="bg-indigo-600 hover:bg-indigo-700 px-12"
               >
                 {isRetaking ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <RotateCcw className="animate-spin mr-2" />
                 ) : (
-                  <RotateCcw className="w-4 h-4 mr-2" />
+                  <RotateCcw className="mr-2" />
                 )}
-                {isRTL ? "إعادة الاختبار" : "Réessayer"}
+                {isRTL ? "إعادة المحاولة" : "Réessayer l'examen"}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 };
 
-// Composant Helper pour les stats
-const StatItem = ({ icon, value, label, borderColor }) => (
-  <div className={cn("bg-white/50 border-2 rounded-xl p-3 flex flex-col items-center justify-center", borderColor)}>
-    <div className="p-1.5 bg-white rounded-full shadow-sm mb-1">{icon}</div>
-    <div className="text-xl font-bold text-gray-800">{value}</div>
-    <div className="text-[10px] font-medium text-gray-500 uppercase">{label}</div>
+const StatItem = ({ icon, value, label }) => (
+  <div className="bg-white p-3 rounded-xl border shadow-sm flex flex-col items-center justify-center text-center">
+    <div className="mb-1">{icon}</div>
+    <div className="text-lg font-bold text-gray-800">{value}</div>
+    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+      {label}
+    </div>
   </div>
 );
 
