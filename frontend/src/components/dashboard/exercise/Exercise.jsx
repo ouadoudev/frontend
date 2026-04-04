@@ -35,12 +35,15 @@ import {
   Save,
   GripVertical,
   X,
+  AlertCircle,
+  Repeat,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import katex from "katex";
 import "katex/dist/katex.min.css";
+import { Switch } from "@/components/ui/switch";
 
 // Composant pour afficher le texte avec support KaTeX
 const MathText = ({ text, dir = "ltr", className = "" }) => {
@@ -71,7 +74,7 @@ const MathText = ({ text, dir = "ltr", className = "" }) => {
           output: "html",
         });
         parts.push(
-          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />,
         );
       } catch (error) {
         console.error("Erreur KaTeX:", error);
@@ -132,6 +135,7 @@ const ExerciseGenerator = () => {
   const [exercise, setExercise] = useState({
     title: "",
     description: "",
+    forExam: false,
     questions: [],
     difficulty: 1,
     totalPoints: 0,
@@ -177,7 +181,7 @@ const ExerciseGenerator = () => {
       setFormErrors(errors);
       return Object.keys(errors).length === 0;
     },
-    [exercise]
+    [exercise],
   );
 
   useEffect(() => {
@@ -203,7 +207,7 @@ const ExerciseGenerator = () => {
         setCurrentStep(stepId);
       }
     },
-    [currentStep, completedSteps]
+    [currentStep, completedSteps],
   );
 
   const handleExerciseChange = (e) => {
@@ -225,8 +229,8 @@ const ExerciseGenerator = () => {
         type === "multiple-choice"
           ? []
           : type === "short-answer" || type === "fill-in-the-blank"
-          ? [""]
-          : undefined,
+            ? [""]
+            : undefined,
       matching:
         type === "matching"
           ? {
@@ -254,7 +258,7 @@ const ExerciseGenerator = () => {
     setExercise((prev) => ({
       ...prev,
       questions: prev.questions.map((q) =>
-        q.id === id ? { ...q, ...updates } : q
+        q.id === id ? { ...q, ...updates } : q,
       ),
     }));
   };
@@ -274,7 +278,7 @@ const ExerciseGenerator = () => {
       newQuestions.splice(result.destination.index, 0, reorderedItem);
       setExercise((prev) => ({ ...prev, questions: newQuestions }));
     },
-    [exercise.questions]
+    [exercise.questions],
   );
 
   const getDirection = (text) => {
@@ -316,21 +320,23 @@ const ExerciseGenerator = () => {
     setIsSubmitting(true);
     try {
       // 1. Capture the result of the dispatch to get the new exercise data.
-      const resultAction = await dispatch(createExercise({ ...exercise, lessonId }));
-      
+      const resultAction = await dispatch(
+        createExercise({ ...exercise, lessonId }),
+      );
+
       // The exercise controller returns { message, exercise }, so the payload contains the new exercise object.
       // Based on exerciseController.js, the ID is in resultAction.payload.exercise._id.
-      const newExerciseId = resultAction.payload.exercise._id; 
+      const newExerciseId = resultAction.payload.exercise._id;
 
-      setFormErrors({ 
-        success: "Exercice créé avec succès ! Redirection vers l'upload de pièce jointe...",
+      setFormErrors({
+        success:
+          "Exercice créé avec succès ! Redirection vers l'upload de pièce jointe...",
       });
-      
+
       // 2. Remove the setTimeout and navigate to the attachment upload page.
       // NOTE: You may need to adjust the path '/exercise/upload-attachment/'
       // based on how you have set up your React Router routes for ExerciseAttachmentUpload.
       navigate(`/exercise/upload-attachment/${newExerciseId}`);
-
     } catch (error) {
       console.error("Erreur de création :", error);
       setFormErrors({
@@ -399,7 +405,7 @@ const ExerciseGenerator = () => {
                         size="sm"
                         onClick={() => {
                           const newOptions = question.options?.filter(
-                            (_, i) => i !== index
+                            (_, i) => i !== index,
                           );
                           updateQuestion(question.id, { options: newOptions });
 
@@ -438,7 +444,7 @@ const ExerciseGenerator = () => {
                         <span className="mr-2 font-mono">
                           {String.fromCharCode(65 + index)}.
                         </span>
-                       <MathText value={option} />
+                        {option}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -666,7 +672,7 @@ const ExerciseGenerator = () => {
                   size="sm"
                   onClick={() => {
                     const newItems = question.dragAndDrop?.items?.filter(
-                      (_, i) => i !== index
+                      (_, i) => i !== index,
                     );
                     updateQuestion(question.id, {
                       dragAndDrop: {
@@ -746,7 +752,7 @@ const ExerciseGenerator = () => {
                     onClick={() => {
                       const newCorrectOrder =
                         question.dragAndDrop.correctOrder.filter(
-                          (_, i) => i !== index
+                          (_, i) => i !== index,
                         );
                       updateQuestion(question.id, {
                         dragAndDrop: {
@@ -797,7 +803,7 @@ const ExerciseGenerator = () => {
                   onChange={(e) => {
                     const numRows = Math.max(
                       1,
-                      Math.min(parseInt(e.target.value) || 1, 10)
+                      Math.min(parseInt(e.target.value) || 1, 10),
                     );
                     const newRows = Array(numRows).fill("");
                     const currentCols =
@@ -811,7 +817,7 @@ const ExerciseGenerator = () => {
                             rowIndex,
                             columnIndex: colIndex,
                             text: "",
-                          }))
+                          })),
                     ).flat();
 
                     updateQuestion(question.id, {
@@ -836,7 +842,7 @@ const ExerciseGenerator = () => {
                   onChange={(e) => {
                     const numCols = Math.max(
                       1,
-                      Math.min(parseInt(e.target.value) || 1, 6)
+                      Math.min(parseInt(e.target.value) || 1, 6),
                     );
                     const newColumns = Array(numCols).fill("");
                     const currentRows =
@@ -850,7 +856,7 @@ const ExerciseGenerator = () => {
                             rowIndex,
                             columnIndex: colIndex,
                             text: "",
-                          }))
+                          })),
                     ).flat();
 
                     updateQuestion(question.id, {
@@ -897,7 +903,7 @@ const ExerciseGenerator = () => {
                                 placeholder={`Colonne ${colIndex + 1}`}
                               />
                             </th>
-                          )
+                          ),
                         )}
                       </tr>
                     </thead>
@@ -934,13 +940,13 @@ const ExerciseGenerator = () => {
                               const cell = question.tableCompletion.cells?.find(
                                 (c) =>
                                   c.rowIndex === rowIndex &&
-                                  c.columnIndex === colIndex
+                                  c.columnIndex === colIndex,
                               );
                               const correction =
                                 question.tableCompletion.cellCorrections?.find(
                                   (c) =>
                                     c.rowIndex === rowIndex &&
-                                    c.columnIndex === colIndex
+                                    c.columnIndex === colIndex,
                                 );
 
                               return (
@@ -958,7 +964,7 @@ const ExerciseGenerator = () => {
                                               c.rowIndex === rowIndex &&
                                               c.columnIndex === colIndex
                                                 ? { ...c, text: e.target.value }
-                                                : c
+                                                : c,
                                           );
                                         updateQuestion(question.id, {
                                           tableCompletion: {
@@ -977,7 +983,7 @@ const ExerciseGenerator = () => {
                                           question.tableCompletion.cellCorrections?.find(
                                             (c) =>
                                               c.rowIndex === rowIndex &&
-                                              c.columnIndex === colIndex
+                                              c.columnIndex === colIndex,
                                           );
 
                                         const newCorrections =
@@ -990,7 +996,7 @@ const ExerciseGenerator = () => {
                                                         correctionText:
                                                           e.target.value,
                                                       }
-                                                    : c
+                                                    : c,
                                               )
                                             : [
                                                 ...question.tableCompletion
@@ -1016,7 +1022,7 @@ const ExerciseGenerator = () => {
                                   </div>
                                 </td>
                               );
-                            }
+                            },
                           )}
                         </tr>
                       ))}
@@ -1063,6 +1069,26 @@ const ExerciseGenerator = () => {
                 </div>
                 <div className="space-y-2">
                   <Label
+                    htmlFor="forExam"
+                    className="flex items-center space-x-1"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Exercice d'examen</span>
+                  </Label>
+                  <Switch
+                    id="forExam"
+                    name="forExam"
+                    checked={exercise.forExam}
+                    onCheckedChange={(checked) =>
+                      setExercise((prev) => ({ ...prev, forExam: checked }))
+                    }
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label
                     htmlFor="timeLimit"
                     className="flex items-center space-x-1"
                   >
@@ -1085,15 +1111,13 @@ const ExerciseGenerator = () => {
                     </p>
                   )}
                 </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label
                     htmlFor="totalPoints"
                     className="flex items-center space-x-1"
                   >
                     <Target className="h-4 w-4" />
-                    <span>Points *</span>
+                    <span> Points *</span>
                   </Label>
                   <Input
                     id="totalPoints"
@@ -1113,7 +1137,13 @@ const ExerciseGenerator = () => {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="maxAttempts">Tentatives maximales *</Label>
+                  <Label
+                    htmlFor="maxAttempts"
+                    className="flex items-center space-x-1"
+                  >
+                    <Repeat className="h-4 w-4" />
+                    Tentatives maximales *
+                  </Label>
                   <Input
                     id="maxAttempts"
                     name="maxAttempts"
@@ -1231,16 +1261,19 @@ const ExerciseGenerator = () => {
                                       {question.type === "multiple-choice"
                                         ? "Choix multiple"
                                         : question.type === "short-answer"
-                                        ? "Réponse courte"
-                                        : question.type === "fill-in-the-blank"
-                                        ? "Remplissage de blancs"
-                                        : question.type === "matching"
-                                        ? "Appariement"
-                                        : question.type === "table-completion"
-                                        ? "Complétion de tableau"
-                                        : question.type === "drag-and-drop"
-                                        ? "Glisser-Déposer"
-                                        : question.type}
+                                          ? "Réponse courte"
+                                          : question.type ===
+                                              "fill-in-the-blank"
+                                            ? "Remplissage de blancs"
+                                            : question.type === "matching"
+                                              ? "Appariement"
+                                              : question.type ===
+                                                  "table-completion"
+                                                ? "Complétion de tableau"
+                                                : question.type ===
+                                                    "drag-and-drop"
+                                                  ? "Glisser-Déposer"
+                                                  : question.type}
                                     </Badge>
                                   </div>
                                   {exercise.questions.length > 1 && (
@@ -1309,7 +1342,7 @@ const ExerciseGenerator = () => {
                                 <Separator />
                                 <div className="space-y-2">
                                   <Label>Bonne réponse :</Label>
-                                  <MathText>{renderCorrectAnswerInput(question)}</MathText>
+                                  {renderCorrectAnswerInput(question)}
                                 </div>
                               </CardContent>
                             </Card>
@@ -1373,16 +1406,16 @@ const ExerciseGenerator = () => {
                         {question.type === "multiple-choice"
                           ? "Choix multiple"
                           : question.type === "short-answer"
-                          ? "Réponse courte"
-                          : question.type === "fill-in-the-blank"
-                          ? "Remplissage de blancs"
-                          : question.type === "matching"
-                          ? "Appariement"
-                          : question.type === "table-completion"
-                          ? "Complétion de tableau"
-                          : question.type === "drag-and-drop"
-                          ? "Glisser-Déposer"
-                          : question.type}
+                            ? "Réponse courte"
+                            : question.type === "fill-in-the-blank"
+                              ? "Remplissage de blancs"
+                              : question.type === "matching"
+                                ? "Appariement"
+                                : question.type === "table-completion"
+                                  ? "Complétion de tableau"
+                                  : question.type === "drag-and-drop"
+                                    ? "Glisser-Déposer"
+                                    : question.type}
                       </Badge>
                     </div>
                     <p className="font-medium">
@@ -1395,7 +1428,7 @@ const ExerciseGenerator = () => {
                             key={optIndex}
                             className={`text-sm p-2 rounded ${
                               question.correctAnswers?.includes(
-                                optIndex.toString()
+                                optIndex.toString(),
                               )
                                 ? "bg-green-100 text-green-800 font-medium"
                                 : "bg-gray-50"
@@ -1404,9 +1437,9 @@ const ExerciseGenerator = () => {
                             <span className="mr-2 font-mono">
                               {String.fromCharCode(65 + optIndex)}.
                             </span>
-                            {option}
+                            <MathText text={option} />
                             {question.correctAnswers?.includes(
-                              optIndex.toString()
+                              optIndex.toString(),
                             ) && (
                               <CheckCircle className="inline h-4 w-4 ml-2" />
                             )}
@@ -1470,10 +1503,10 @@ const ExerciseGenerator = () => {
                             isActive
                               ? "bg-blue-100 text-blue-700"
                               : isCompleted
-                              ? "bg-green-100 text-green-700"
-                              : isClickable
-                              ? "hover:bg-gray-100"
-                              : "text-gray-400 cursor-not-allowed"
+                                ? "bg-green-100 text-green-700"
+                                : isClickable
+                                  ? "hover:bg-gray-100"
+                                  : "text-gray-400 cursor-not-allowed"
                           }`}
                         >
                           <div
@@ -1481,8 +1514,8 @@ const ExerciseGenerator = () => {
                               isActive
                                 ? "bg-blue-600 text-white"
                                 : isCompleted
-                                ? "bg-green-600 text-white"
-                                : "bg-gray-200"
+                                  ? "bg-green-600 text-white"
+                                  : "bg-gray-200"
                             }`}
                           >
                             {isCompleted ? (
@@ -1604,4 +1637,3 @@ const ExerciseGenerator = () => {
 };
 
 export default ExerciseGenerator;
-

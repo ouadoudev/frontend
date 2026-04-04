@@ -170,6 +170,30 @@ export const getExamLeaderboard = createAsyncThunk(
   }
 );
 
+export const recordViolation = createAsyncThunk(
+  "exam/recordViolation",
+  async ({ examId, type, details }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const user = loggedUser(state);
+
+      const response = await axios.post(
+        `/exam/${examId}/violation`,
+        { userId: user.id, type, details },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 // ───── Initial State ─────
 const initialState = {
   exams: [],

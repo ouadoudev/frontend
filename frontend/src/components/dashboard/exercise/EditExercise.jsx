@@ -41,11 +41,13 @@ import {
   Save,
   GripVertical,
   X,
+  FileText,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import katex from "katex";
 import "katex/dist/katex.min.css";
+import { Switch } from "@/components/ui/switch";
 
 // Composant pour afficher le texte avec support KaTeX
 const MathText = ({ text, dir = "ltr", className = "" }) => {
@@ -76,7 +78,7 @@ const MathText = ({ text, dir = "ltr", className = "" }) => {
           output: "html",
         });
         parts.push(
-          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />,
         );
       } catch (error) {
         console.error("Erreur KaTeX:", error);
@@ -146,6 +148,7 @@ const EditExercise = () => {
   const [exercise, setExercise] = useState({
     title: "",
     description: "",
+    forExam: false,
     questions: [],
     difficulty: 1,
     totalPoints: 0,
@@ -170,6 +173,7 @@ const EditExercise = () => {
       setExercise({
         title: fetchedExercise.title || "",
         description: fetchedExercise.description || "",
+        forExam: fetchedExercise.forExam || false,
         questions: fetchedExercise.questions || [],
         difficulty: fetchedExercise.difficulty || 1,
         totalPoints: fetchedExercise.totalPoints || 0,
@@ -191,17 +195,17 @@ const EditExercise = () => {
   }, [fetchedExercise, isInitialized]);
 
   // Synchronise Redux uploadedAttachment with local exercise state
-useEffect(() => {
+  useEffect(() => {
     if (uploadedAttachment) {
       setExercise((prev) => ({
         ...prev,
         attachment: uploadedAttachment,
       }));
       if (isReduxLoading) {
-        setUploadProgress(100); 
+        setUploadProgress(100);
       }
     }
-}, [uploadedAttachment, isReduxLoading]);
+  }, [uploadedAttachment, isReduxLoading]);
 
   useEffect(() => {
     return () => {
@@ -210,6 +214,7 @@ useEffect(() => {
       setExercise({
         title: "",
         description: "",
+        forExam: false,
         questions: [],
         difficulty: 1,
         totalPoints: 0,
@@ -260,7 +265,7 @@ useEffect(() => {
       setFormErrors(errors);
       return Object.keys(errors).length === 0;
     },
-    [exercise]
+    [exercise],
   );
 
   const handleNext = useCallback(() => {
@@ -280,7 +285,7 @@ useEffect(() => {
         setCurrentStep(stepId);
       }
     },
-    [currentStep, completedSteps]
+    [currentStep, completedSteps],
   );
 
   const handleExerciseChange = (e) => {
@@ -292,15 +297,15 @@ useEffect(() => {
   };
 
   // Gestionnaire pour l'upload de fichier
-const handleFileUpload = useCallback(
+  const handleFileUpload = useCallback(
     (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       setUploadProgress(0);
-      dispatch(clearUploadState()); 
+      dispatch(clearUploadState());
 
-      const idToUse = exerciseId || fetchedExercise?._id; 
+      const idToUse = exerciseId || fetchedExercise?._id;
 
       if (idToUse) {
         dispatch(
@@ -308,13 +313,16 @@ const handleFileUpload = useCallback(
             exerciseId: idToUse,
             file,
             onProgress: setUploadProgress, // Passe la fonction pour suivre la progression
-          })
+          }),
         ).then((action) => {
-           if (action.error) {
-              setFormErrors((prev) => ({ ...prev, upload: action.payload || "Échec du téléchargement du fichier." }));
-           } else {
-              setFormErrors((prev) => ({ ...prev, upload: undefined }));
-           }
+          if (action.error) {
+            setFormErrors((prev) => ({
+              ...prev,
+              upload: action.payload || "Échec du téléchargement du fichier.",
+            }));
+          } else {
+            setFormErrors((prev) => ({ ...prev, upload: undefined }));
+          }
         });
       } else {
         setFormErrors((prev) => ({
@@ -323,35 +331,42 @@ const handleFileUpload = useCallback(
         }));
       }
     },
-    [dispatch, exerciseId, fetchedExercise?._id]
-);
+    [dispatch, exerciseId, fetchedExercise?._id],
+  );
 
-// Gestionnaire pour la suppression de fichier
-const handleFileDelete = useCallback(() => {
+  // Gestionnaire pour la suppression de fichier
+  const handleFileDelete = useCallback(() => {
     const attachmentInState = exercise.attachment || uploadedAttachment;
 
     if (!attachmentInState) {
-        dispatch(clearUploadState());
-        setExercise((prev) => ({ ...prev, attachment: null }));
-        return;
+      dispatch(clearUploadState());
+      setExercise((prev) => ({ ...prev, attachment: null }));
+      return;
     }
 
-    const idToDelete = exerciseId || fetchedExercise?._id; 
+    const idToDelete = exerciseId || fetchedExercise?._id;
 
     if (idToDelete) {
-        dispatch(deleteAttachment(idToDelete)).then((action) => {
-             if (!action.error) {
-                setExercise((prev) => ({ ...prev, attachment: null })); // Mise à jour de l'état local
-                setUploadProgress(0);
-                setFormErrors((prev) => ({ ...prev, delete: undefined }));
-             } else {
-                setFormErrors((prev) => ({ ...prev, delete: action.payload || "Échec de la suppression du fichier." }));
-             }
-        });
+      dispatch(deleteAttachment(idToDelete)).then((action) => {
+        if (!action.error) {
+          setExercise((prev) => ({ ...prev, attachment: null })); // Mise à jour de l'état local
+          setUploadProgress(0);
+          setFormErrors((prev) => ({ ...prev, delete: undefined }));
+        } else {
+          setFormErrors((prev) => ({
+            ...prev,
+            delete: action.payload || "Échec de la suppression du fichier.",
+          }));
+        }
+      });
     }
-
-}, [dispatch, exercise.attachment, uploadedAttachment, exerciseId, fetchedExercise?._id]);
-
+  }, [
+    dispatch,
+    exercise.attachment,
+    uploadedAttachment,
+    exerciseId,
+    fetchedExercise?._id,
+  ]);
 
   const addQuestion = (type) => {
     const newQuestion = {
@@ -363,8 +378,8 @@ const handleFileDelete = useCallback(() => {
         type === "multiple-choice"
           ? []
           : type === "short-answer" || type === "fill-in-the-blank"
-          ? [""]
-          : undefined,
+            ? [""]
+            : undefined,
       matching:
         type === "matching"
           ? {
@@ -392,7 +407,7 @@ const handleFileDelete = useCallback(() => {
     setExercise((prev) => ({
       ...prev,
       questions: prev.questions.map((q) =>
-        q.id === id || q._id === id ? { ...q, ...updates } : q
+        q.id === id || q._id === id ? { ...q, ...updates } : q,
       ),
     }));
   };
@@ -412,7 +427,7 @@ const handleFileDelete = useCallback(() => {
       newQuestions.splice(result.destination.index, 0, reorderedItem);
       setExercise((prev) => ({ ...prev, questions: newQuestions }));
     },
-    [exercise.questions]
+    [exercise.questions],
   );
 
   const getDirection = (text) => {
@@ -428,7 +443,7 @@ const handleFileDelete = useCallback(() => {
     setIsSubmitting(true);
     try {
       const response = await dispatch(
-        updateExercise({ id: exerciseId, exerciseData: exercise })
+        updateExercise({ id: exerciseId, exerciseData: exercise }),
       );
       setFormErrors({ success: "Exercice mis à jour avec succès !" });
       setTimeout(() => {
@@ -446,6 +461,7 @@ const handleFileDelete = useCallback(() => {
       setExercise({
         title: "",
         description: "",
+        forExam: false,
         questions: [],
         difficulty: 1,
         totalPoints: 0,
@@ -459,13 +475,16 @@ const handleFileDelete = useCallback(() => {
     }
   };
 
-  const handleCancel = useCallback((e) => {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  navigate(-1);
-}, [navigate]);
+  const handleCancel = useCallback(
+    (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      navigate(-1);
+    },
+    [navigate],
+  );
   const renderCorrectAnswerInput = (question) => {
     switch (question.type) {
       case "multiple-choice":
@@ -504,7 +523,7 @@ const handleFileDelete = useCallback(() => {
                     } else {
                       newCorrectAnswers.splice(
                         newCorrectAnswers.indexOf(index.toString()),
-                        1
+                        1,
                       );
                     }
                     updateQuestion(question.id || question._id, {
@@ -519,7 +538,7 @@ const handleFileDelete = useCallback(() => {
                   size="sm"
                   onClick={() => {
                     const newOptions = question.options?.filter(
-                      (_, i) => i !== index
+                      (_, i) => i !== index,
                     );
                     updateQuestion(question.id || question._id, {
                       options: newOptions,
@@ -748,7 +767,7 @@ const handleFileDelete = useCallback(() => {
                   size="sm"
                   onClick={() => {
                     const newItems = question.dragAndDrop?.items?.filter(
-                      (_, i) => i !== index
+                      (_, i) => i !== index,
                     );
                     updateQuestion(question.id || question._id, {
                       dragAndDrop: { ...question.dragAndDrop, items: newItems },
@@ -839,7 +858,7 @@ const handleFileDelete = useCallback(() => {
                           rowIndex: rowIndex,
                           columnIndex: colIndex,
                           text: "",
-                        }))
+                        })),
                   ).flat();
                   const newCorrections = [];
                   updateQuestion(question.id || question._id, {
@@ -868,7 +887,7 @@ const handleFileDelete = useCallback(() => {
                           rowIndex: rowIndex,
                           columnIndex: colIndex,
                           text: "",
-                        }))
+                        })),
                   );
                   const newCorrections = [];
                   updateQuestion(question.id || question._id, {
@@ -908,7 +927,7 @@ const handleFileDelete = useCallback(() => {
                           }}
                           placeholder={`Colonne ${colIndex + 1}`}
                         />
-                      )
+                      ),
                     )}
                   </div>
                   {question.tableCompletion?.rows?.map(
@@ -952,7 +971,7 @@ const handleFileDelete = useCallback(() => {
                                           return { ...c, text: e.target.value };
                                         }
                                         return c;
-                                      }
+                                      },
                                     );
                                   updateQuestion(question.id || question._id, {
                                     tableCompletion: {
@@ -971,7 +990,7 @@ const handleFileDelete = useCallback(() => {
                                   question.tableCompletion?.cellCorrections?.find(
                                     (correction) =>
                                       correction.rowIndex === rowIndex &&
-                                      correction.columnIndex === colIndex
+                                      correction.columnIndex === colIndex,
                                   )?.correctionText || ""
                                 }
                                 onChange={(e) => {
@@ -983,7 +1002,7 @@ const handleFileDelete = useCallback(() => {
                                     newCorrections.findIndex(
                                       (correction) =>
                                         correction.rowIndex === rowIndex &&
-                                        correction.columnIndex === colIndex
+                                        correction.columnIndex === colIndex,
                                     );
                                   if (correctionIndex >= 0) {
                                     newCorrections[
@@ -1010,7 +1029,7 @@ const handleFileDelete = useCallback(() => {
                             </div>
                           ))}
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               )}
@@ -1086,65 +1105,93 @@ const handleFileDelete = useCallback(() => {
                     <p className="text-red-500 text-sm">{formErrors.title}</p>
                   )}
                 </div>
+                {/* Remplacez ce bloc dans l'étape 1 */}
                 <div className="space-y-2">
-                <Label htmlFor="attachment">Attachement (Facultatif)</Label>
-                {exercise.attachment ? (
-                  // Fichier attaché existant ou uploadé avec succès
-                  <Alert>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="flex justify-between items-center">
-                      <span className="truncate">
-                        Fichier attaché :{" "}
-                        <a
-                          href={exercise.attachment.url || "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline font-medium"
+                  <Label
+                    htmlFor="forExam"
+                    className="flex items-center space-x-1"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Exercice d'examen ?</span>
+                  </Label>
+                  <Switch
+                    id="forExam"
+                    name="forExam"
+                    checked={exercise.forExam}
+                    onCheckedChange={(
+                      checked, // <-- CHANGEMENT ICI (onCheckedChange au lieu de onChange)
+                    ) => setExercise((prev) => ({ ...prev, forExam: checked }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="attachment">Attachement (Facultatif)</Label>
+                  {exercise.attachment ? (
+                    // Fichier attaché existant ou uploadé avec succès
+                    <Alert>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="flex justify-between items-center">
+                        <span className="truncate">
+                          Fichier attaché :{" "}
+                          <a
+                            href={exercise.attachment.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline font-medium"
+                          >
+                            {exercise.attachment.fileName ||
+                              exercise.attachment.key ||
+                              "Fichier"}
+                          </a>
+                        </span>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleFileDelete}
+                          disabled={isReduxLoading}
                         >
-                          {exercise.attachment.fileName || exercise.attachment.key || "Fichier"}
-                        </a>
-                      </span>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleFileDelete}
-                        disabled={isReduxLoading}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Supprimer
-                      </Button>
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  // Champ de saisie de fichier
-                  <div className="space-y-2">
-                    <Input
-                      id="attachment"
-                      name="attachment"
-                      type="file"
-                      onChange={handleFileUpload}
-                      disabled={isReduxLoading} // Désactiver l'input pendant l'upload
-                    />
-                    {isReduxLoading && uploadProgress > 0 && uploadProgress < 100 && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500">
-                          Téléchargement en cours... {uploadProgress}%
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Supprimer
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    // Champ de saisie de fichier
+                    <div className="space-y-2">
+                      <Input
+                        id="attachment"
+                        name="attachment"
+                        type="file"
+                        onChange={handleFileUpload}
+                        disabled={isReduxLoading} // Désactiver l'input pendant l'upload
+                      />
+                      {isReduxLoading &&
+                        uploadProgress > 0 &&
+                        uploadProgress < 100 && (
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-500">
+                              Téléchargement en cours... {uploadProgress}%
+                            </p>
+                            <Progress
+                              value={uploadProgress}
+                              className="w-full"
+                            />
+                          </div>
+                        )}
+                      {(reduxError || formErrors.upload) && (
+                        <p className="text-red-500 text-sm">
+                          {formErrors.upload ||
+                            (typeof reduxError === "string"
+                              ? reduxError
+                              : "Une erreur est survenue lors de l'upload.")}
                         </p>
-                        <Progress value={uploadProgress} className="w-full" />
-                      </div>
-                    )}
-                    {(reduxError || formErrors.upload) && (
-                      <p className="text-red-500 text-sm">
-                        {formErrors.upload || (typeof reduxError === 'string' ? reduxError : "Une erreur est survenue lors de l'upload.")}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {formErrors.delete && (
+                      )}
+                    </div>
+                  )}
+                  {formErrors.delete && (
                     <p className="text-red-500 text-sm">{formErrors.delete}</p>
-                )}
-              </div>
+                  )}
+                </div>
                 <div className="space-y-2">
                   <Label
                     htmlFor="timeLimit"
@@ -1317,16 +1364,19 @@ const handleFileDelete = useCallback(() => {
                                       {question.type === "multiple-choice"
                                         ? "Choix multiple"
                                         : question.type === "short-answer"
-                                        ? "Réponse courte"
-                                        : question.type === "fill-in-the-blank"
-                                        ? "Remplissage de blancs"
-                                        : question.type === "matching"
-                                        ? "Appariement"
-                                        : question.type === "table-completion"
-                                        ? "Complétion de tableau"
-                                        : question.type === "drag-and-drop"
-                                        ? "Glisser-Déposer"
-                                        : question.type}
+                                          ? "Réponse courte"
+                                          : question.type ===
+                                              "fill-in-the-blank"
+                                            ? "Remplissage de blancs"
+                                            : question.type === "matching"
+                                              ? "Appariement"
+                                              : question.type ===
+                                                  "table-completion"
+                                                ? "Complétion de tableau"
+                                                : question.type ===
+                                                    "drag-and-drop"
+                                                  ? "Glisser-Déposer"
+                                                  : question.type}
                                     </Badge>
                                   </div>
                                   {exercise.questions.length > 1 && (
@@ -1334,7 +1384,7 @@ const handleFileDelete = useCallback(() => {
                                       type="button"
                                       onClick={() =>
                                         removeQuestion(
-                                          question.id || question._id
+                                          question.id || question._id,
                                         )
                                       }
                                       variant="ghost"
@@ -1356,7 +1406,7 @@ const handleFileDelete = useCallback(() => {
                                         question.id || question._id,
                                         {
                                           questionText: e.target.value,
-                                        }
+                                        },
                                       )
                                     }
                                     className={
@@ -1384,7 +1434,7 @@ const handleFileDelete = useCallback(() => {
                                         question.id || question._id,
                                         {
                                           difficulty: Number.parseInt(value),
-                                        }
+                                        },
                                       )
                                     }
                                   >
@@ -1460,16 +1510,16 @@ const handleFileDelete = useCallback(() => {
                         {question.type === "multiple-choice"
                           ? "Choix multiple"
                           : question.type === "short-answer"
-                          ? "Réponse courte"
-                          : question.type === "fill-in-the-blank"
-                          ? "Remplissage de blancs"
-                          : question.type === "matching"
-                          ? "Appariement"
-                          : question.type === "table-completion"
-                          ? "Complétion de tableau"
-                          : question.type === "drag-and-drop"
-                          ? "Glisser-Déposer"
-                          : question.type}
+                            ? "Réponse courte"
+                            : question.type === "fill-in-the-blank"
+                              ? "Remplissage de blancs"
+                              : question.type === "matching"
+                                ? "Appariement"
+                                : question.type === "table-completion"
+                                  ? "Complétion de tableau"
+                                  : question.type === "drag-and-drop"
+                                    ? "Glisser-Déposer"
+                                    : question.type}
                       </Badge>
                     </div>
                     <p className="font-medium">{question.questionText}</p>
@@ -1480,7 +1530,7 @@ const handleFileDelete = useCallback(() => {
                             key={optIndex}
                             className={`text-sm p-2 rounded ${
                               question.correctAnswers?.includes(
-                                optIndex.toString()
+                                optIndex.toString(),
                               )
                                 ? "bg-green-100 text-green-800 font-medium"
                                 : "bg-gray-50"
@@ -1491,7 +1541,7 @@ const handleFileDelete = useCallback(() => {
                             </span>
                             {option}
                             {question.correctAnswers?.includes(
-                              optIndex.toString()
+                              optIndex.toString(),
                             ) && (
                               <CheckCircle className="inline h-4 w-4 ml-2" />
                             )}
@@ -1556,10 +1606,10 @@ const handleFileDelete = useCallback(() => {
                             isActive
                               ? "bg-blue-100 text-blue-700"
                               : isCompleted
-                              ? "bg-green-100 text-green-700"
-                              : isClickable
-                              ? "hover:bg-gray-100"
-                              : "text-gray-400 cursor-not-allowed"
+                                ? "bg-green-100 text-green-700"
+                                : isClickable
+                                  ? "hover:bg-gray-100"
+                                  : "text-gray-400 cursor-not-allowed"
                           }`}
                         >
                           <div
@@ -1567,8 +1617,8 @@ const handleFileDelete = useCallback(() => {
                               isActive
                                 ? "bg-blue-600 text-white"
                                 : isCompleted
-                                ? "bg-green-600 text-white"
-                                : "bg-gray-200"
+                                  ? "bg-green-600 text-white"
+                                  : "bg-gray-200"
                             }`}
                           >
                             {isCompleted ? (

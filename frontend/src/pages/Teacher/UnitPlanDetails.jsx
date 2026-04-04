@@ -23,6 +23,7 @@ import {
   FileText,
   ChevronRight,
   ShieldCheck,
+  Lightbulb,
 } from "lucide-react";
 import moment from "moment";
 import "moment/locale/fr";
@@ -37,10 +38,16 @@ const UnitPlanDetails = () => {
   );
 
   // États locaux pour l'édition des ressources et remarques
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingResources, setEditingResources] = useState(false);
+  const [editingRemarques, setEditingRemarques] = useState(false);
   const [remarques, setRemarques] = useState("");
   const [newResource, setNewResource] = useState("");
   const [resources, setResources] = useState([]);
+  const [prolongements, setProlongements] = useState({
+    internal: [],
+    interdisciplinary: [],
+  });
+  const [editingProlongements, setEditingProlongements] = useState(false);
 
   useEffect(() => {
     dispatch(fetchUnitPlan({ annualPlanId, unitId }));
@@ -51,17 +58,44 @@ const UnitPlanDetails = () => {
     if (currentUnitPlan) {
       setRemarques(currentUnitPlan.remarques || "");
       setResources(currentUnitPlan.resources || []);
+      setProlongements(
+        currentUnitPlan.prolongements || {
+          internal: [],
+          interdisciplinary: [],
+        },
+      );
     }
   }, [currentUnitPlan]);
 
-  const handleSaveData = () => {
+  const saveResources = () => {
     dispatch(
       updateUnitPlan({
         id: currentUnitPlan._id,
-        data: { remarques, resources },
+        data: { resources },
       }),
     );
-    setIsEditing(false);
+    setEditingResources(false);
+  };
+
+  const saveRemarques = () => {
+    dispatch(
+      updateUnitPlan({
+        id: currentUnitPlan._id,
+        data: { remarques },
+      }),
+    );
+    setEditingRemarques(false);
+  };
+
+  const saveProlongements = () => {
+    dispatch(
+      updateUnitPlan({
+        id: currentUnitPlan._id,
+        data: { prolongements },
+      }),
+    );
+
+    setEditingProlongements(false);
   };
 
   const addResource = () => {
@@ -73,6 +107,74 @@ const UnitPlanDetails = () => {
 
   const removeResource = (index) => {
     setResources(resources.filter((_, i) => i !== index));
+  };
+
+  const addInternalProlongement = () => {
+    setProlongements({
+      ...prolongements,
+      internal: [
+        ...prolongements.internal,
+        { theme: "", level: "", notions: [] },
+      ],
+    });
+  };
+
+  const updateInternal = (index, field, value) => {
+    const updated = [...prolongements.internal];
+
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+
+    setProlongements({
+      ...prolongements,
+      internal: updated,
+    });
+  };
+
+  const removeInternal = (index) => {
+    const updated = prolongements.internal.filter((_, i) => i !== index);
+
+    setProlongements({
+      ...prolongements,
+      internal: updated,
+    });
+  };
+
+  const addInterdisciplinaryProlongement = () => {
+    setProlongements({
+      ...prolongements,
+      interdisciplinary: [
+        ...prolongements.interdisciplinary,
+        { discipline: "", notions: [] },
+      ],
+    });
+  };
+
+  const updateInterdisciplinary = (index, field, value) => {
+    const updated = [...prolongements.interdisciplinary];
+
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+
+    setProlongements({
+      ...prolongements,
+      interdisciplinary: updated,
+    });
+  };
+
+  const removeInterdisciplinary = (index) => {
+    const updated = prolongements.interdisciplinary.filter(
+      (_, i) => i !== index,
+    );
+
+    setProlongements({
+      ...prolongements,
+      interdisciplinary: updated,
+    });
   };
 
   const handleOpenJoudada = (sessionId) => {
@@ -218,7 +320,8 @@ const UnitPlanDetails = () => {
           {/* Compétences & Connaissances */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <ShieldCheck size={18} className="text-blue-600" /> Compétences visées
+              <ShieldCheck size={18} className="text-blue-600" /> Compétences
+              visées
             </h3>
             <div className="space-y-2">
               <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5">
@@ -234,17 +337,143 @@ const UnitPlanDetails = () => {
             </div>
           </div>
 
+ <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+    <Lightbulb size={18} className="text-purple-500" />
+    Prolongements du cours
+  </h3>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+    {/* INTERNAL */}
+    <div className="space-y-4">
+
+      <button
+        onClick={addInternalProlongement}
+        className="flex items-center gap-1 text-[12px] font-black text-purple-600 hover:bg-purple-50 px-2 py-1 rounded-lg"
+      >
+        <Plus size={14} /> Interne
+      </button>
+
+      {prolongements.internal.map((p, idx) => (
+        <div
+          key={idx}
+          className="group relative bg-slate-50 p-4 rounded-2xl border hover:border-purple-100"
+        >
+
+          <input
+            className="w-full text-[11px] font-bold mb-1 bg-transparent outline-none"
+            placeholder="Thème"
+            value={p.theme}
+            onChange={(e) =>
+              updateInternal(idx, "theme", e.target.value)
+            }
+          />
+
+          <input
+            className="w-full text-[10px] italic bg-transparent outline-none"
+            placeholder="Niveau"
+            value={p.level}
+            onChange={(e) =>
+              updateInternal(idx, "level", e.target.value)
+            }
+          />
+
+          <input
+            className="w-full text-[9px] text-purple-400 mt-2 border-t pt-2 bg-transparent outline-none"
+            placeholder="Notions séparées par virgule"
+            value={p.notions?.join(", ")}
+            onChange={(e) =>
+              updateInternal(
+                idx,
+                "notions",
+                e.target.value.split(",").map((s) => s.trim())
+              )
+            }
+          />
+
+          <button
+            onClick={() => removeInternal(idx)}
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
+    </div>
+
+    {/* INTERDISCIPLINARY */}
+    <div className="space-y-4">
+
+      <button
+        onClick={addInterdisciplinaryProlongement}
+        className="flex items-center gap-1 text-[12px] font-black text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg"
+      >
+        <Plus size={14} /> Interdisciplinaire
+      </button>
+
+      {prolongements.interdisciplinary.map((p, idx) => (
+        <div
+          key={idx}
+          className="group relative bg-blue-50 p-4 rounded-2xl border hover:border-blue-100"
+        >
+
+          <input
+            className="w-full text-[11px] font-bold text-blue-700 uppercase bg-transparent outline-none"
+            placeholder="Discipline"
+            value={p.discipline}
+            onChange={(e) =>
+              updateInterdisciplinary(idx, "discipline", e.target.value)
+            }
+          />
+
+          <input
+            className="w-full text-[9px] text-blue-400 mt-2 border-t pt-2 bg-transparent outline-none"
+            placeholder="Notions transversales"
+            value={p.notions?.join(", ")}
+            onChange={(e) =>
+              updateInterdisciplinary(
+                idx,
+                "notions",
+                e.target.value.split(",").map((s) => s.trim())
+              )
+            }
+          />
+
+          <button
+            onClick={() => removeInterdisciplinary(idx)}
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
+    </div>
+
+  </div>
+
+  {/* SAVE BUTTON */}
+  <button
+    onClick={saveProlongements}
+    className="w-full mt-6 bg-slate-900 text-white py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800"
+  >
+    <Save size={16} />
+    Enregistrer les prolongements
+  </button>
+</div>
+
           {/* Ressources & Liens */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                <ExternalLink size={18} className="text-indigo-600" />{" "}
+                <ExternalLink size={18} className="text-indigo-600" />
                 Ressources
               </h3>
-              {!isEditing && (
+
+              {!editingResources && (
                 <button
-                  onClick={() => setIsEditing(true)}
-                  className="text-xs font-bold text-blue-600 hover:underline"
+                  onClick={() => setEditingResources(true)}
+                  className="text-xs font-bold text-blue-600"
                 >
                   Modifier
                 </button>
@@ -260,7 +489,8 @@ const UnitPlanDetails = () => {
                   <span className="text-xs text-slate-600 truncate flex-1 pr-2">
                     {res}
                   </span>
-                  {isEditing ? (
+
+                  {editingResources ? (
                     <button
                       onClick={() => removeResource(idx)}
                       className="text-red-400 hover:text-red-600"
@@ -273,51 +503,74 @@ const UnitPlanDetails = () => {
                 </div>
               ))}
 
-              {isEditing && (
-                <div className="flex gap-2 mt-4">
-                  <input
-                    type="text"
-                    value={newResource}
-                    onChange={(e) => setNewResource(e.target.value)}
-                    placeholder="Lien ou titre..."
-                    className="flex-1 text-xs border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
+              {editingResources && (
+                <>
+                  <div className="flex gap-2 mt-4">
+                    <input
+                      type="text"
+                      value={newResource}
+                      onChange={(e) => setNewResource(e.target.value)}
+                      placeholder="Lien ou titre..."
+                      className="flex-1 text-xs border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+
+                    <button
+                      onClick={addResource}
+                      className="p-2 bg-blue-600 text-white rounded-lg"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+
                   <button
-                    onClick={addResource}
-                    className="p-2 bg-blue-600 text-white rounded-lg"
+                    onClick={saveResources}
+                    className="w-full mt-4 bg-slate-900 text-white py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800"
                   >
-                    <Plus size={16} />
+                    <Save size={16} /> Enregistrer
                   </button>
-                </div>
+                </>
               )}
             </div>
           </div>
 
           {/* Remarques / Observations */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <MessageSquare size={18} className="text-amber-500" /> Remarques
-            </h3>
-            {isEditing ? (
-              <textarea
-                value={remarques}
-                onChange={(e) => setRemarques(e.target.value)}
-                className="w-full h-32 text-sm border rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Notes sur la classe, difficultés rencontrées..."
-              />
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                <MessageSquare size={18} className="text-amber-500" />
+                Remarques
+              </h3>
+
+              {!editingRemarques && (
+                <button
+                  onClick={() => setEditingRemarques(true)}
+                  className="text-xs font-bold text-blue-600"
+                >
+                  Modifier
+                </button>
+              )}
+            </div>
+
+            {editingRemarques ? (
+              <>
+                <textarea
+                  value={remarques}
+                  onChange={(e) => setRemarques(e.target.value)}
+                  className="w-full h-32 text-sm border rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="Notes sur la classe, difficultés rencontrées..."
+                />
+
+                <button
+                  onClick={saveRemarques}
+                  className="w-full mt-4 bg-slate-900 text-white py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800"
+                >
+                  <Save size={18} /> Enregistrer
+                </button>
+              </>
             ) : (
               <p className="text-sm text-slate-500 italic leading-relaxed">
                 {remarques || "Aucune remarque pour le moment."}
               </p>
-            )}
-
-            {isEditing && (
-              <button
-                onClick={handleSaveData}
-                className="w-full mt-4 bg-slate-900 text-white py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
-              >
-                <Save size={18} /> Enregistrer les modifs
-              </button>
             )}
           </div>
         </div>

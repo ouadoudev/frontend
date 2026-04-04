@@ -100,8 +100,15 @@ const Courses = () => {
     navigate(`/courses/${id}`);
   };
 
-  const filteredCourses =
+  // 1. Vérifier si un filtre est actif
+  const hasActiveFilters =
     user.role === "admin"
+      ? Boolean(selectedSubject || selectedEducationalLevel || selectedTeacher)
+      : Boolean(selectedEducationalLevel); // Un enseignant doit au moins choisir un niveau pour voir ses cours
+
+  // 2. Si aucun filtre n'est sélectionné, on retourne un tableau vide []
+  const filteredCourses = hasActiveFilters
+    ? user.role === "admin"
       ? courses.filter(
           (course) =>
             (!selectedSubject || course.subject.title === selectedSubject) &&
@@ -114,12 +121,17 @@ const Courses = () => {
             course.teacher.username === user.username &&
             (!selectedEducationalLevel ||
               course.subject.educationalLevel === selectedEducationalLevel)
-        );
+        )
+    : [];
+
   const currentCourses = filteredCourses.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
+  
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
+  
+  // Les options des filtres sont toujours basées sur la totalité des cours
   const subjects = [...new Set(courses.map((course) => course.subject.title))];
   const educationalLevels = [
     ...new Set(courses.map((course) => course.subject.educationalLevel)),
@@ -163,9 +175,10 @@ const Courses = () => {
                       </Label>
                       <select
                         id="subjectFilter"
-                        onChange={(e) =>
-                          setSelectedSubject(e.target.value || null)
-                        }
+                        onChange={(e) => {
+                          setSelectedSubject(e.target.value || null);
+                          setCurrentPage(1); // Retour à la page 1 lors d'un filtrage
+                        }}
                         value={selectedSubject || ""}
                         className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
@@ -188,9 +201,10 @@ const Courses = () => {
                       </Label>
                       <select
                         id="teacherFilter"
-                        onChange={(e) =>
-                          setSelectedTeacher(e.target.value || null)
-                        }
+                        onChange={(e) => {
+                          setSelectedTeacher(e.target.value || null);
+                          setCurrentPage(1);
+                        }}
                         value={selectedTeacher || ""}
                         className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
@@ -215,13 +229,14 @@ const Courses = () => {
                   </Label>
                   <select
                     id="levelFilter"
-                    onChange={(e) =>
-                      setSelectedEducationalLevel(e.target.value || null)
-                    }
+                    onChange={(e) => {
+                      setSelectedEducationalLevel(e.target.value || null);
+                      setCurrentPage(1);
+                    }}
                     value={selectedEducationalLevel || ""}
                     className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">Tous</option>
+                    <option value="">Sélectionnez un niveau</option>
                     {educationalLevels.map((level, index) => (
                       <option key={index} value={level}>
                         {level}
@@ -247,9 +262,9 @@ const Courses = () => {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              {status === "loading" && <p>Loading...</p>}
-              {status === "failed" && <p>Error: {error}</p>}
-              {status === "succeeded" && (
+              {status === "loading" && <TableBody><TableRow><TableCell colSpan={6} className="text-center py-4">Loading...</TableCell></TableRow></TableBody>}
+              {status === "failed" && <TableBody><TableRow><TableCell colSpan={6} className="text-center py-4 text-red-500">Error: {error}</TableCell></TableRow></TableBody>}
+              {status === "succeeded" && currentCourses.length > 0 && (
                 <TableBody>
                   {currentCourses.map((course, index) => (
                     <TableRow key={index}>
@@ -315,7 +330,8 @@ const Courses = () => {
               )}
             </Table>
 
-            {currentCourses.length === 0 && (
+            {/* 3. Modification du composant vide (empty state) */}
+            {status === "succeeded" && currentCourses.length === 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -324,10 +340,18 @@ const Courses = () => {
               >
                 <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-2xl font-semibold mb-2">
-                  Aucun cours n’a été ajouté pour le moment
+                  {courses.length === 0 
+                    ? "Aucun cours n’a été ajouté pour le moment" 
+                    : !hasActiveFilters 
+                    ? "Veuillez sélectionner un filtre" 
+                    : "Aucun cours trouvé"}
                 </h3>
                 <p className="text-muted-foreground">
-                  Il n’y a actuellement aucun cours à afficher.
+                  {courses.length === 0 
+                    ? "Il n’y a actuellement aucun cours à afficher dans la base de données." 
+                    : !hasActiveFilters 
+                    ? "Sélectionnez au moins un filtre (Discipline, Enseignant ou Niveau) pour afficher la liste des cours." 
+                    : "Aucun cours ne correspond à vos critères de recherche."}
                 </p>
               </motion.div>
             )}
@@ -341,6 +365,7 @@ const Courses = () => {
                       <PaginationPrevious
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
+                        className="cursor-pointer"
                       />
                     )}
                   </PaginationItem>
@@ -350,6 +375,7 @@ const Courses = () => {
                         <PaginationLink
                           onClick={() => handlePageChange(page)}
                           isActive={page === currentPage}
+                          className="cursor-pointer"
                         >
                           {page}
                         </PaginationLink>
@@ -361,6 +387,7 @@ const Courses = () => {
                       <PaginationNext
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
+                        className="cursor-pointer"
                       />
                     )}
                   </PaginationItem>

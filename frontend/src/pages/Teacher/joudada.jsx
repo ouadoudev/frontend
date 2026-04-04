@@ -23,9 +23,52 @@ import {
   CheckCircle,
   Lightbulb,
   Users,
+  Activity,
 } from "lucide-react";
 import moment from "moment";
 import "moment/locale/fr";
+
+const BulletTextarea = ({ value, onChange, placeholder, className }) => {
+  const handleChange = (e) => {
+    onChange(e.target.value);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      const textarea = e.target;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+
+      const newValue =
+        value.substring(0, start) + "\n• " + value.substring(end);
+
+      onChange(newValue);
+
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 3;
+      }, 0);
+    }
+  };
+
+  const handleFocus = () => {
+    if (!value || value.trim() === "") {
+      onChange("• ");
+    }
+  };
+
+  return (
+    <textarea
+      value={value}
+      placeholder={placeholder}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      onFocus={handleFocus}
+      className={className}
+    />
+  );
+};
 
 const JoudadaPage = () => {
   const { annualPlanId, sessionId } = useParams();
@@ -80,36 +123,6 @@ const JoudadaPage = () => {
     );
   };
 
-  // les prolongements internes
-  const addInternalProlongement = () => {
-    const updated = [
-      ...j.pedagogicalFrame.prolongements.internal,
-      { theme: "", level: "", notions: [] },
-    ];
-    dispatch(
-      updatePedagogicalFrame({
-        field: "prolongements",
-        value: { ...j.pedagogicalFrame.prolongements, internal: updated },
-      }),
-    );
-  };
-
-  const addInterdisciplinaryProlongement = () => {
-    const updated = [
-      ...j.pedagogicalFrame.prolongements.interdisciplinary,
-      { discipline: "", notions: [] },
-    ];
-    dispatch(
-      updatePedagogicalFrame({
-        field: "prolongements",
-        value: {
-          ...j.pedagogicalFrame.prolongements,
-          interdisciplinary: updated,
-        },
-      }),
-    );
-  };
-
   if (loading) return <LoadingSkeleton />;
   if (!j) return null;
 
@@ -156,6 +169,7 @@ const JoudadaPage = () => {
             <div className="space-y-4">
               <InfoRow label="Matière" value={j.header.subject} />
               <InfoRow label="Leçon" value={j.header.lessonTitle} />
+              <InfoRow label="Section" value={j.header.sectionTitle} />
               <div className="grid grid-cols-2 gap-4">
                 <InfoRow label="Séance" value={j.header.sessionNumber} />
                 <InfoRow label="Durée" value={j.header.duration} />
@@ -165,6 +179,27 @@ const JoudadaPage = () => {
                 value={moment(j.header.date).format("LL")}
               />
             </div>
+          </div>
+          {/* competence Specifique Card */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <CheckCircle size={18} className="text-green-500" /> Compétence
+              spécifique
+            </h3>
+
+            <textarea
+              className="w-full bg-green-50/40 border-none rounded-2xl p-4 text-xs h-24 outline-none focus:ring-2 ring-green-100 leading-relaxed"
+              placeholder="Ex : Mobiliser les connaissances sur les états de la matière pour interpréter des phénomènes observés..."
+              value={j.pedagogicalFrame.competenceSpecifique || ""}
+              onChange={(e) =>
+                dispatch(
+                  updatePedagogicalFrame({
+                    field: "competenceSpecifique",
+                    value: e.target.value,
+                  }),
+                )
+              }
+            />
           </div>
 
           {/* Objectifs Card */}
@@ -266,250 +301,69 @@ const JoudadaPage = () => {
               </button>
             </div>
           </div>
-          {/* Prolongements Card */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 lg:col-span-2">
-                   <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Lightbulb size={18} className="text-purple-500" /> Prolongements du cours
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <CheckCircle size={18} className="text-amber-500" />{" "}
+              Auto-évaluation / Observations
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* COLONNE GAUCHE : INTERNE (Vertical) */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={addInternalProlongement}
-                    className="flex items-center gap-1 text-[12px] font-black text-purple-600 hover:bg-purple-50 px-2 py-1 rounded-lg transition-colors"
-                  >
-                    <Plus size={14} /> Interne (Matière)
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {j.pedagogicalFrame.prolongements.internal.map((p, idx) => (
-                    <div
-                      key={idx}
-                      className="group relative bg-slate-50/50 p-4 rounded-2xl border border-transparent hover:border-purple-100 hover:bg-white transition-all shadow-sm"
-                    >
-                      <input
-                        className="w-full bg-transparent text-[11px] font-bold text-slate-700 outline-none mb-1"
-                        placeholder="Thème (ex: Électronique de puissance)"
-                        value={p.theme}
-                        onChange={(e) => {
-                          const updated = [
-                            ...j.pedagogicalFrame.prolongements.internal,
-                          ];
-                          updated[idx] = {
-                            ...updated[idx],
-                            theme: e.target.value,
-                          };
-                          dispatch(
-                            updatePedagogicalFrame({
-                              field: "prolongements",
-                              value: {
-                                ...j.pedagogicalFrame.prolongements,
-                                internal: updated,
-                              },
-                            }),
-                          );
-                        }}
-                      />
-                      <input
-                        className="w-full bg-transparent text-[10px] text-slate-500 outline-none italic"
-                        placeholder="Niveau (ex: 1ère Année Bac)"
-                        value={p.level}
-                        onChange={(e) => {
-                          const updated = [
-                            ...j.pedagogicalFrame.prolongements.internal,
-                          ];
-                          updated[idx] = {
-                            ...updated[idx],
-                            level: e.target.value,
-                          };
-                          dispatch(
-                            updatePedagogicalFrame({
-                              field: "prolongements",
-                              value: {
-                                ...j.pedagogicalFrame.prolongements,
-                                internal: updated,
-                              },
-                            }),
-                          );
-                        }}
-                      />
-
-                      {/* Gestion simple des notions via virgule */}
-                      <input
-                        className="w-full bg-transparent text-[9px] text-purple-400 font-medium outline-none mt-2 border-t border-slate-100 pt-2"
-                        placeholder="Notions (séparées par des virgules)"
-                        value={p.notions?.join(", ")}
-                        onChange={(e) => {
-                          const updated = [
-                            ...j.pedagogicalFrame.prolongements.internal,
-                          ];
-                          updated[idx] = {
-                            ...updated[idx],
-                            notions: e.target.value
-                              .split(",")
-                              .map((s) => s.trim()),
-                          };
-                          dispatch(
-                            updatePedagogicalFrame({
-                              field: "prolongements",
-                              value: {
-                                ...j.pedagogicalFrame.prolongements,
-                                internal: updated,
-                              },
-                            }),
-                          );
-                        }}
-                      />
-
-                      <button
-                        onClick={() => {
-                          const updated =
-                            j.pedagogicalFrame.prolongements.internal.filter(
-                              (_, i) => i !== idx,
-                            );
-                          dispatch(
-                            updatePedagogicalFrame({
-                              field: "prolongements",
-                              value: {
-                                ...j.pedagogicalFrame.prolongements,
-                                internal: updated,
-                              },
-                            }),
-                          );
-                        }}
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* COLONNE DROITE : INTERDISCIPLINAIRE (Horizontal) */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={addInterdisciplinaryProlongement}
-                    className="flex items-center gap-1 text-[14px] font-black text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors"
-                  >
-                    <Plus size={14} /> Interdisciplinaire
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {j.pedagogicalFrame.prolongements.interdisciplinary.map(
-                    (p, idx) => (
-                      <div
-                        key={idx}
-                        className="group relative bg-blue-50/30 p-4 rounded-2xl border border-transparent hover:border-blue-100 hover:bg-white transition-all shadow-sm"
-                      >
-                        <input
-                          className="w-full bg-transparent text-[11px] font-black text-blue-700 outline-none uppercase tracking-wide"
-                          placeholder="Discipline (ex: SVT, MATHS)"
-                          value={p.discipline}
-                          onChange={(e) => {
-                            const updated = [
-                              ...j.pedagogicalFrame.prolongements
-                                .interdisciplinary,
-                            ];
-                            updated[idx] = {
-                              ...updated[idx],
-                              discipline: e.target.value,
-                            };
-                            dispatch(
-                              updatePedagogicalFrame({
-                                field: "prolongements",
-                                value: {
-                                  ...j.pedagogicalFrame.prolongements,
-                                  interdisciplinary: updated,
-                                },
-                              }),
-                            );
-                          }}
-                        />
-
-                        <input
-                          className="w-full bg-transparent text-[9px] text-blue-400 font-medium outline-none mt-2 border-t border-blue-100 pt-2"
-                          placeholder="Notions transversales..."
-                          value={p.notions?.join(", ")}
-                          onChange={(e) => {
-                            const updated = [
-                              ...j.pedagogicalFrame.prolongements
-                                .interdisciplinary,
-                            ];
-                            updated[idx] = {
-                              ...updated[idx],
-                              notions: e.target.value
-                                .split(",")
-                                .map((s) => s.trim()),
-                            };
-                            dispatch(
-                              updatePedagogicalFrame({
-                                field: "prolongements",
-                                value: {
-                                  ...j.pedagogicalFrame.prolongements,
-                                  interdisciplinary: updated,
-                                },
-                              }),
-                            );
-                          }}
-                        />
-
-                        <button
-                          onClick={() => {
-                            const updated =
-                              j.pedagogicalFrame.prolongements.interdisciplinary.filter(
-                                (_, i) => i !== idx,
-                              );
-                            dispatch(
-                              updatePedagogicalFrame({
-                                field: "prolongements",
-                                value: {
-                                  ...j.pedagogicalFrame.prolongements,
-                                  interdisciplinary: updated,
-                                },
-                              }),
-                            );
-                          }}
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
-            </div>
+            <textarea
+              className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs h-24 outline-none focus:ring-2 ring-amber-100"
+              placeholder="Difficultés rencontrées, remédiation à prévoir pour la séance suivante..."
+              value={j.observations}
+              onChange={(e) => dispatch(updateObservations(e.target.value))}
+            />
           </div>
         </div>
 
         {/* COLONNE DROITE : DÉROULEMENT (Le Scénario) */}
         <div className="lg:col-span-2 space-y-6">
+          {/* SITUATION DE DÉPART (Améliorée) */}
+          <div className="bg-gradient-to-br from-blue-500 to-indigo-500 rounded-[2.5rem] p-8 shadow-xl text-white">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Lightbulb size={20} />
+              </div>
+              <h2 className="font-black uppercase text-xl tracking-widest">
+                Situation de départ
+              </h2>
+            </div>
+            <textarea
+              className="w-full bg-white/10 border border-white/20 rounded-2xl p-4 text-sm font-medium placeholder:text-blue-200 outline-none focus:ring-2 ring-white/30 transition-all min-h-[120px] leading-relaxed"
+              placeholder="Décrivez ici la situation déclenchante, l'obstacle ou le défi proposé aux élèves..."
+              value={j.pedagogicalFrame.situation}
+              onChange={(e) =>
+                dispatch(
+                  updatePedagogicalFrame({
+                    field: "situation",
+                    value: e.target.value,
+                  }),
+                )
+              }
+            />
+          </div>
+
           <div className="flex justify-between items-center px-4">
             <h3 className="font-black text-slate-400 uppercase text-xs tracking-widest">
-              Scénario de la séance
+              Déroulement des activités
             </h3>
             <button
               onClick={() => dispatch(addStep())}
-              className="flex items-center gap-1 text-blue-600 font-black text-xs hover:underline uppercase"
+              className="flex items-center gap-1 bg-white text-blue-600 px-4 py-2 rounded-xl shadow-sm border border-slate-100 font-black text-xs hover:bg-blue-50 transition-colors"
             >
-              <Plus size={14} /> Ajouter une étape
+              <Plus size={14} /> Ajouter une phase
             </button>
           </div>
 
-          <div className="space-y-4">
+          {/* PHASES DU COURS */}
+          <div className="space-y-6">
             {j.steps.map((step, index) => (
               <div
                 key={index}
-                className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 group"
+                className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative group"
               >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                   <input
-                    className="text-xl font-black text-slate-800 bg-transparent outline-none focus:text-blue-600 w-full md:w-auto"
+                    className="text-2xl font-black text-slate-800 bg-transparent outline-none focus:text-blue-600 flex-1"
                     value={step.phase}
                     onChange={(e) =>
                       dispatch(
@@ -522,7 +376,7 @@ const JoudadaPage = () => {
                     }
                   />
 
-                  <div className="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                  <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
                     <div className="flex items-center gap-2 text-slate-500">
                       <Clock size={14} />
                       <input
@@ -545,7 +399,7 @@ const JoudadaPage = () => {
                     </div>
                     <div className="h-4 w-px bg-slate-200"></div>
                     <select
-                      className="bg-transparent text-[10px] font-black uppercase text-slate-500 outline-none cursor-pointer"
+                      className="bg-transparent text-[10px] font-black uppercase text-slate-500 outline-none"
                       value={step.modality}
                       onChange={(e) =>
                         dispatch(
@@ -564,47 +418,94 @@ const JoudadaPage = () => {
                     </select>
                     <button
                       onClick={() => dispatch(removeStep(index))}
-                      className="text-slate-300 hover:text-red-500 ml-2 transition-colors"
+                      className="text-slate-300 hover:text-red-500 transition-colors"
                     >
                       <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Activités Enseignant */}
+                  <div className="space-y-3">
                     <label className="flex items-center gap-2 text-[10px] font-black text-blue-500 uppercase tracking-widest ml-2">
                       <Lightbulb size={12} /> Activités de l'enseignant
                     </label>
-                    <textarea
-                      className="w-full bg-slate-50/50 border-none rounded-2xl p-4 text-xs h-32 outline-none focus:ring-2 ring-blue-100 transition-all leading-relaxed"
-                      placeholder="Quelles questions ? Quelle expérience montrer ?"
+                    <BulletTextarea
+                      className="w-full bg-slate-50/50 border-none rounded-3xl p-5 text-xs h-40 outline-none focus:ring-2 ring-blue-100 leading-relaxed"
+                      placeholder="Activités de l'enseignant..."
                       value={step.teacherActivity}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         dispatch(
                           updateStep({
                             index,
                             field: "teacherActivity",
-                            value: e.target.value,
+                            value,
                           }),
                         )
                       }
                     />
                   </div>
-                  <div className="space-y-2">
+
+                  {/* Activités Apprenant */}
+                  <div className="space-y-3">
                     <label className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest ml-2">
                       <Users size={12} /> Activités de l'apprenant
                     </label>
-                    <textarea
-                      className="w-full bg-slate-50/50 border-none rounded-2xl p-4 text-xs h-32 outline-none focus:ring-2 ring-emerald-100 transition-all leading-relaxed"
-                      placeholder="Que fait l'élève ? Ce qu'il doit écrire..."
+                    <BulletTextarea
+                      className="w-full bg-slate-50/50 border-none rounded-3xl p-5 text-xs h-40 outline-none focus:ring-2 ring-emerald-100 leading-relaxed"
+                      placeholder="Activités des apprenants..."
                       value={step.studentActivity}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         dispatch(
                           updateStep({
                             index,
                             field: "studentActivity",
-                            value: e.target.value,
+                            value,
+                          }),
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* ÉVALUATION DE LA PHASE (Améliorée) */}
+                  <div className="md:col-span-2 bg-amber-50/40 rounded-[2rem] p-6 border border-amber-100/50">
+                    <div className="flex items-center justify-between mb-4">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                        <CheckCircle size={14} /> Évaluation & Indicateurs de
+                        réussite
+                      </label>
+                      <select
+                        className="bg-white text-[9px] font-black uppercase text-amber-700 outline-none px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm"
+                        value={step.evaluation?.evaluationType || "Formative"}
+                        onChange={(e) =>
+                          dispatch(
+                            updateStep({
+                              index,
+                              field: "evaluation.evaluationType",
+                              value: e.target.value,
+                            }),
+                          )
+                        }
+                      >
+                        <option value="Diagnostic">Diagnostic</option>
+                        <option value="Formative">Formative</option>
+                        <option value="Sommative">Sommative</option>
+                      </select>
+                    </div>
+                    <BulletTextarea
+                      className="w-full bg-white/60 border-none rounded-2xl p-4 text-[11px] h-20 outline-none focus:ring-2 ring-amber-200 italic leading-relaxed"
+                      placeholder="Indicateurs de réussite..."
+                      value={step.evaluation?.evaluationCriteria || ""}
+                      onChange={(value) =>
+                        dispatch(
+                          updateStep({
+                            index,
+                            field: "evaluation",
+                            value: {
+                              ...step.evaluation,
+                              evaluationCriteria: value,
+                            },
                           }),
                         )
                       }
@@ -613,20 +514,6 @@ const JoudadaPage = () => {
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Observations finales */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <CheckCircle size={18} className="text-amber-500" />{" "}
-              Auto-évaluation / Observations
-            </h3>
-            <textarea
-              className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs h-24 outline-none focus:ring-2 ring-amber-100"
-              placeholder="Difficultés rencontrées, remédiation à prévoir pour la séance suivante..."
-              value={j.observations}
-              onChange={(e) => dispatch(updateObservations(e.target.value))}
-            />
           </div>
         </div>
       </main>
