@@ -1342,7 +1342,7 @@ const ExerciseHeader = ({ exercise, isRTL, flexDir }) => {
 
 const translations = {
   ar: {
-    enterAnswer: "أدخل إجابتك هنا",
+    enterAnswer: "إجابة الفراغ",
     selectMatch: "اختر التطابق",
     error: "خطأ",
     question: "السؤال %d",
@@ -1372,7 +1372,7 @@ const translations = {
     element: "عنصر",
   },
   fr: {
-    enterAnswer: "Entrez votre réponse ici",
+    enterAnswer: "Réponse du vide",
     selectMatch: "Sélectionner une correspondance",
     error: "Erreur",
     question: "Question %d",
@@ -1427,11 +1427,12 @@ const renderQuestion = (
         }),
       };
 
+      const children = element.props.children;
       return React.cloneElement(element, {
         ...disabledProps,
-        children: React.Children.map(element.props.children, (child) =>
-          disableComponent(child),
-        ),
+        children: children 
+          ? React.Children.map(children, (child) => disableComponent(child)) 
+          : undefined,
       });
     };
 
@@ -1473,37 +1474,61 @@ const renderQuestion = (
         <Textarea
           value={userAnswers[question._id] || ""}
           onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-          placeholder={t.enterAnswer}
-          className="w-full h-32 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-base md:text-sm"
+          placeholder={`${t.enterAnswer}...`}
+          className="w-full h-32 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 text-base md:text-sm"
           dir={questionDir}
         />,
       );
 
-    case "fill-in-the-blank":
+    case "fill-in-the-blank": {
+      // 1. Defend against backend stripping correctAnswers to prevent cheating
+      let blankCount = 1;
+      if (question.blankCount) {
+        blankCount = question.blankCount;
+      } else if (question.correctAnswers && question.correctAnswers.length > 0) {
+        blankCount = question.correctAnswers.length;
+      } else if (question.questionText) {
+        // Fallback: match occurrences of multiple underscores e.g., "____" or dots "...." or "[blank]"
+        const matches = question.questionText.match(/_{2,}|\.{3,}|\[blank\]/gi);
+        if (matches && matches.length > 0) {
+          blankCount = matches.length;
+        }
+      }
+
+      const blanksArray = Array.from({ length: blankCount });
+
       return applyDisabledProps(
-        <div className="space-y-3">
-          {(question.correctAnswers || []).map((_, index) => (
-            <Input
-              key={index}
-              value={
-                userAnswers[question._id]?.[index] !== undefined
-                  ? userAnswers[question._id][index]
-                  : ""
-              }
-              onChange={(e) => {
-                const updatedAnswers = userAnswers[question._id]
-                  ? [...userAnswers[question._id]]
-                  : [];
-                updatedAnswers[index] = e.target.value;
-                handleAnswerChange(question._id, updatedAnswers);
-              }}
-              placeholder={`${t.enterAnswer} ${index + 1}`}
-              className="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-500 text-base md:text-sm"
-              dir={questionDir}
-            />
-          ))}
-        </div>,
+        <div className="space-y-3 sm:space-y-4 pt-2">
+          {blanksArray.map((_, index) => {
+            // 2. Safely initialize array to prevent "iterable" crashes
+            const currentAnswers = userAnswers[question._id];
+            const safeAnswersArray = Array.isArray(currentAnswers) 
+              ? currentAnswers 
+              : Array(blankCount).fill("");
+
+            return (
+              <div key={index} className={`flex items-center gap-3 ${flexDir}`}>
+                {/* 3. Number Badge for clarity on Mobile */}
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-sm font-semibold text-blue-800 shadow-sm">
+                  {index + 1}
+                </span>
+                <Input
+                  value={safeAnswersArray[index] !== undefined ? safeAnswersArray[index] : ""}
+                  onChange={(e) => {
+                    const updatedAnswers = [...safeAnswersArray];
+                    updatedAnswers[index] = e.target.value;
+                    handleAnswerChange(question._id, updatedAnswers);
+                  }}
+                  placeholder={`${t.enterAnswer} ${index + 1}`}
+                  className="w-full h-11 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 text-base md:text-sm shadow-sm"
+                  dir={questionDir}
+                />
+              </div>
+            );
+          })}
+        </div>
       );
+    }
 
     case "matching":
       const leftItems = question.matching.leftItems || [];
@@ -1528,7 +1553,7 @@ const renderQuestion = (
                   handleAnswerChange(question._id, newAnswers);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-2/3 text-base md:text-sm" dir={questionDir}>
+                <SelectTrigger className="w-full sm:w-2/3 text-base md:text-sm h-11 sm:h-10" dir={questionDir}>
                   <SelectValue placeholder={t.selectMatch} />
                 </SelectTrigger>
                 <SelectContent>
@@ -1666,7 +1691,7 @@ const renderQuestion = (
                             }
                           }}
                           disabled={isCellTextNonEmpty || isReviewMode}
-                          className="w-full h-full min-h-[40px] text-base md:text-sm border-none bg-transparent focus:ring-2 focus:ring-blue-500 rounded-none shadow-none"
+                          className="w-full h-full min-h-[44px] text-base md:text-sm border-none bg-transparent focus:ring-2 focus:ring-blue-500 rounded-none shadow-none"
                           dir={questionDir}
                         />
                       </td>
@@ -1757,7 +1782,7 @@ const QuestionRenderer = ({
         </div>
         <div className="flex-1 mt-2">
           <CardDescription
-            className="text-sm sm:text-base leading-relaxed"
+            className="text-sm sm:text-base leading-relaxed text-black font-medium"
             dir={getDirection(question.questionText)}
           >
             <MathText text={question.questionText} />
@@ -1978,7 +2003,7 @@ const SubmitExam = () => {
     if (!currentExam || isSubmitting || isReviewMode) return;
 
     const handleViolation = (type, details) => {
-      // dispatch(recordViolation({ examId, type, details })); // Uncomment if implementation exists
+      // dispatch(recordViolation({ examId, type, details })); 
 
       toast.error(
         isRTL
@@ -2289,7 +2314,6 @@ const SubmitExam = () => {
         </CardContent>
       </Card>
 
-      {/* Added Missing Submission Dialog */}
       <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
         <AlertDialogContent dir={isRTL ? "rtl" : "ltr"} className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
