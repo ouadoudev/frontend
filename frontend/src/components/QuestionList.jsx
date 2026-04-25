@@ -1,108 +1,3 @@
-// import  { useEffect, useState } from 'react';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { fetchLessonQuestions, updateQuestion, deleteQuestion } from '@/store/questionSlice';
-// import { loggedUser } from '@/store/authSlice';
-// import { useParams } from 'react-router-dom';
-// import moment from 'moment';
-// import AnswerForm from './AnswerForm';
-// import AnswerList from './AnswerList';
-
-// const QuestionList = () => {
-//   const { id } = useParams();
-//   const user = useSelector(loggedUser);
-//   const dispatch = useDispatch();
-//   const rawQuestions = useSelector((state) => state.question.questions);
-//   const [sortedQuestions, setSortedQuestions] = useState([]);
-//   const [visibleAnswers, setVisibleAnswers] = useState({});
-
-//   useEffect(() => {
-//     if (id) {
-//       dispatch(fetchLessonQuestions(id));
-//     }
-//   }, [dispatch, id]);
-
-//   useEffect(() => {
-//     const sorted = [...rawQuestions].sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)));
-//     setSortedQuestions(sorted);
-//   }, [rawQuestions]);
-
-//   const handleUpdate = (lessonId, questionId) => {
-//     const newQuestionText = prompt('Enter the updated question:');
-//     if (newQuestionText) {
-//       dispatch(updateQuestion({ lessonId, questionId, questionData: { question: newQuestionText } }));
-//     }
-//   };
-
-//   const handleDelete = (lessonId, questionId) => {
-//     if (window.confirm('Are you sure you want to delete this question?')) {
-//       dispatch(deleteQuestion({ lessonId, questionId }));
-//     }
-//   };
-
-//   const toggleAnswersVisibility = (questionId) => {
-//     setVisibleAnswers((prev) => ({
-//       ...prev,
-//       [questionId]: !prev[questionId],
-//     }));
-//   };
-
-//   return (
-//     <div className="space-y-4">
-//       {sortedQuestions.map((question) => (
-
-//         <div key={question._id} className="rounded-lg border bg-background p-4">
-//           <div>
-//             <div className="flex items-center gap-4">
-//               {question.user?.user_image && (
-//                 <img
-//                   src={question.user.user_image.url}
-//                   alt="User"
-//                   className="rounded-xl object-cover"
-//                   style={{ width: 40, height: 40 }}
-//                 />
-//               )}
-//               <div className="text-gray-600 text-sm">
-//                 <span className="font-semibold">{question.user?.username}</span>
-//                 <h4>{moment(question.createdAt).fromNow()}</h4>
-//               </div>
-//             </div>
-//           </div>
-//           <p className="text-gray-700 mt-2">{question.question}</p>
-//           <div className="flex gap-2 mt-2">
-//           <button className=" text-gray-900 px-2 py-1 rounded"
-//             onClick={() => toggleAnswersVisibility(question._id)}>Answer</button>
-//           </div>
-
-//           {user && question.user && user.id === question.user._id && (
-//             <div className="flex gap-2 mt-2">
-//               <button
-//                 className="bg-blue-500 text-white px-2 py-1 rounded"
-//                 onClick={() => handleUpdate(id, question._id)}
-//               >
-//                 Update
-//               </button>
-//               <button
-//                 className="bg-red-500 text-white px-2 py-1 rounded"
-//                 onClick={() => handleDelete(id, question._id)}
-//               >
-//                 Delete
-//               </button>
-//             </div>
-//           )}
-//           {visibleAnswers[question._id] && (
-//             <div className="mt-2">
-//               <AnswerForm questionId={question._id} />
-//               <AnswerList questionId={question._id} />
-//             </div>
-//           )}
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default QuestionList;
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -119,6 +14,61 @@ import { Edit, Trash, MessageCircle, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+const MathText = ({ text, dir = "ltr", className = "" }) => {
+  if (!text) return null;
+
+  const renderWithKaTeX = (content) => {
+    // Regex pour trouver les formules LaTeX entre $$ ou $
+    const latexRegex = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = latexRegex.exec(content)) !== null) {
+      // Texte avant la formule
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // La formule LaTeX (avec $$ ou $)
+      const latexContent = match[1] || match[2];
+      const isDisplayMode = match[1] !== undefined; // $$ pour mode display
+
+      try {
+        const html = katex.renderToString(latexContent, {
+          displayMode: isDisplayMode,
+          throwOnError: false,
+          output: "html",
+        });
+        parts.push(
+          <span key={match.index} dangerouslySetInnerHTML={{ __html: html }} />,
+        );
+      } catch (error) {
+        console.error("Erreur KaTeX:", error);
+        parts.push(`$${latexContent}$`);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Texte après la dernière formule
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  return (
+    <span dir={dir} className={className}>
+      {renderWithKaTeX(text)}
+    </span>
+  );
+};
 
 const QuestionList = ({ lessonTitle }) => {
   const { id } = useParams();
@@ -141,12 +91,12 @@ const QuestionList = ({ lessonTitle }) => {
     }
   }, [dispatch, id]);
 
-  useEffect(() => {
-    const sorted = [...rawQuestions].sort((a, b) =>
-      moment(b.createdAt).diff(moment(a.createdAt))
-    );
-    setSortedQuestions(sorted);
-  }, [rawQuestions]);
+ useEffect(() => {
+  const sorted = [...rawQuestions].sort((a, b) =>
+    moment(a.createdAt).diff(moment(b.createdAt))
+  );
+  setSortedQuestions(sorted);
+}, [rawQuestions]);
 
   const openEditModal = (questionId, currentText) => {
     setEditQuestionId(questionId);
@@ -269,7 +219,7 @@ const QuestionList = ({ lessonTitle }) => {
                 dir={questionIsRTL ? "rtl" : "ltr"}
                 style={{ textAlign: questionIsRTL ? "right" : "left" }}
               >
-                <p className="text-sm text-foreground">{question.question}</p>
+                <p className="text-sm text-foreground"><MathText text= {question.question}/></p>
               </div>
 
               {/* Answers Section */}
@@ -338,138 +288,3 @@ const QuestionList = ({ lessonTitle }) => {
 };
 
 export default QuestionList;
-
-
-// import { useEffect, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import {
-//   fetchLessonQuestions,
-//   updateQuestion,
-//   deleteQuestion,
-// } from "@/store/questionSlice";
-// import { loggedUser } from "@/store/authSlice";
-// import { useParams } from "react-router-dom";
-// import moment from "moment";
-// import AnswerForm from "./AnswerForm";
-// import AnswerList from "./AnswerList";
-// import { Edit, Trash, MessageCircle } from "lucide-react";
-
-// const QuestionList = () => {
-//   const { id } = useParams();
-//   const user = useSelector(loggedUser);
-//   const dispatch = useDispatch();
-//   const rawQuestions = useSelector((state) => state.question.questions);
-//   const [sortedQuestions, setSortedQuestions] = useState([]);
-//   const [visibleAnswers, setVisibleAnswers] = useState({});
-
-//   useEffect(() => {
-//     if (id) {
-//       dispatch(fetchLessonQuestions(id));
-//     }
-//   }, [dispatch, id]);
-
-//   useEffect(() => {
-//     const sorted = [...rawQuestions].sort((a, b) =>
-//       moment(b.createdAt).diff(moment(a.createdAt))
-//     );
-//     setSortedQuestions(sorted);
-//   }, [rawQuestions]);
-
-//   const handleUpdate = (lessonId, questionId) => {
-//     const newQuestionText = prompt("Enter the updated question:");
-//     if (newQuestionText) {
-//       dispatch(
-//         updateQuestion({
-//           lessonId,
-//           questionId,
-//           questionData: { question: newQuestionText },
-//         })
-//       );
-//     }
-//   };
-
-//   const handleDelete = (lessonId, questionId) => {
-//     if (window.confirm("Are you sure you want to delete this question?")) {
-//       dispatch(deleteQuestion({ lessonId, questionId }));
-//     }
-//   };
-
-//   const toggleAnswersVisibility = (questionId) => {
-//     setVisibleAnswers((prev) => ({
-//       ...prev,
-//       [questionId]: !prev[questionId],
-//     }));
-//   };
-
-//   return (
-//     <div className="space-y-4">
-//     {sortedQuestions.map((question) => (
-
-//       <div
-//         key={question._id}
-//         className="relative rounded-xl  bg-background px-3 py-2"
-//       >
-//         <div className="flex justify-between">
-//         <div>
-//           <div className="flex items-center gap-4">
-//             {question.user?.user_image && (
-//               <img
-//                 src={question.user.user_image.url}
-//                 alt="User"
-//                 className="rounded-xl object-cover"
-//                 style={{ width: 40, height: 40 }}
-//               />
-//             )}
-//             <div className="text-gray-600 text-sm">
-//               <span className="font-semibold">{question.user?.username}</span>
-//               <h4>{moment(question.createdAt).fromNow()}</h4>
-//             </div>
-//           </div>
-//         </div>
-//         <div className="flex justify-end items-center">
-//           <div className="flex items-center space-x-1">
-//             {user && question.user && user.id === question.user._id && (
-//               <>
-//                 <button
-//                   className="text-blue-800 px-1 py-1 rounded flex items-center"
-//                   onClick={() => handleUpdate(id, question._id)}
-//                 >
-//                   <Edit/>
-//                 </button>
-//                 <button
-//                   className="text-red-500 px-1 py-1 rounded flex items-center"
-//                   onClick={() => handleDelete(id, question._id)}
-//                 >
-//                   <Trash />
-//                 </button>
-//               </>
-//             )}
-//             <button
-//               className="text-gray-900 px-2 py-1 rounded flex items-center gap-1"
-//               onClick={() => toggleAnswersVisibility(question._id)}
-//             >
-//               <MessageCircle />
-//               <span>Answer</span>
-//             </button>
-//           </div>
-//         </div>
-//         </div>
-
-//         <div className="my-2">
-//           <p className="text-gray-700">{question.question}</p>
-//         </div>
-
-//         {visibleAnswers[question._id] && (
-//           <div className="mt-2">
-//             <AnswerForm questionId={question._id} questionCreatorId={question.user._id}/>
-//             <AnswerList questionId={question._id} />
-//           </div>
-//         )}
-//       </div>
-//     ))}
-//   </div>
-
-//   );
-// };
-
-// export default QuestionList;
